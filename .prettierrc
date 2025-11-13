@@ -1,0 +1,31 @@
+/** @type {import("prettier").Config} */
+export default {
+  // Use 2 spaces for indentation
+  tabWidth: 2,
+  useTabs: false,
+
+  // Always use semicolons
+  semi: true,
+
+  // Use single quotes in JS/TS
+  singleQuote: true,
+
+  // Include trailing commas where valid in ES5 (objects, arrays, etc.)
+  trailingComma: 'all',
+
+  // Print spaces between brackets in object literals
+  bracketSpacing: true,
+
+  // Format JSX with 2 spaces indentation
+  jsxBracketSameLine: false,
+  jsxSingleQuote: true,
+
+  // Wrap lines at 100 characters
+  printWidth: 100,
+
+  // Ensure consistent line endings
+  endOfLine: 'lf',
+
+  // Optional: put > of multi-line JSX on its own line
+  bracketSameLine: false,
+};
