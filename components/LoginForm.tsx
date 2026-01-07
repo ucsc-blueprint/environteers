@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, TextInput, Text } from 'react-native';
-import {Button} from './ui/Button';
+import {Button} from '@/components/Button';
 
 export interface LoginFormProps {
     onSubmit: (email: string, password: string) => void;
