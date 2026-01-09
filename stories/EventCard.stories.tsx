@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-native-web-vite';
 import { View } from 'react-native';
 import { fn } from 'storybook/test';
 
-import { EventCard } from '@/components/ui/EventCard';
+import { EventCard } from '@/components/EventCard';
 
 const meta = {
   title: 'Example/EventCard',
