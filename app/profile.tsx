@@ -16,7 +16,7 @@ export default function Profile() {
       </View>
 
       <Text style={styles.infoText}>
-        Great work, you've participated in 
+        Great work, you&apos;ve participated in 
         <Text style={{ fontWeight: "bold" }}> 12 </Text> 
         eco-actions so far!
       </Text>
