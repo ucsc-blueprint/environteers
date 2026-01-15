@@ -1,4 +1,7 @@
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Image, Text, StyleSheet, Pressable } from 'react-native';
+
+import Icon from '@mdi/react';
+import { mdiCalendar, mdiLeaf } from '@mdi/js';
 
 export interface EcoFeedProps {
   title: string;
@@ -31,7 +34,7 @@ export const EcoFeed = ({
   date,
   location,
   spotsLeft,
-  type = 'Eco-Action',
+  type,
   onLearnMore,
   onSignUp,
 }: EcoFeedProps) => {
@@ -41,7 +44,10 @@ export const EcoFeed = ({
       <View style={styles.row}>
         {/* Image placeholder */}
         <View style={styles.imagePlaceholder}>
-          <Text style={styles.typeLabel}>{type}</Text>
+          <View style={styles.header}>
+            <Icon path={(type==='Eco-Action') ? mdiLeaf : mdiCalendar} size={0.8} />
+            <Text style={styles.typeLabel}>{type}</Text>
+          </View>
 
           {spotsLeft !== undefined && (
             <View style={styles.spotsPill}>
@@ -54,7 +60,6 @@ export const EcoFeed = ({
         <View style={styles.info}>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.date}>{date}</Text>
-
           <Text style={styles.location}>{location}</Text>
 
           {/* Buttons */}
@@ -114,8 +119,8 @@ const styles = StyleSheet.create({
   },
 
   imagePlaceholder: {
-    width: 110,
-    height: 140,
+    width: 130,
+    height: 160,
     backgroundColor: '#FFFFFF',
     padding: 8,
     justifyContent: 'space-between',
@@ -206,4 +211,10 @@ const styles = StyleSheet.create({
     color: '#6B6B6B',
     textAlign: 'right',
   },
+
+  header: {
+    flexDirection: 'row',
+    gap: '2px',
+    alignItems: 'center',
+  }
 });
