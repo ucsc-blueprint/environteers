@@ -26,7 +26,8 @@ export const Default: Story = {
     organizationType: 'Non-Profit',
     likeCount: 5,
     commentCount: 4,
-    description: 'example description',
+    description: 'example long description salkja;sdkjf;alsdjf;alsdjf;alksjdf;laksdjf;laksdjf;laksdjf;alsdjfa;dkdjfkdlsieow',
     onReadMore: () => console.log('Read more'),
   },
+
 };

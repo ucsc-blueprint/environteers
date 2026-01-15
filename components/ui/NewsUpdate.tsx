@@ -1,6 +1,8 @@
 // should have Title, Date, Organization + org type(non profit), like count, comment count, start of description + "Read more" link
-import type { StyleProp, ViewStyle } from 'react-native';
-import { StyleSheet, Text, TouchableOpacity, View, Image} from 'react-native';
+
+import { StyleSheet, Text, TouchableOpacity, View, Pressable, Image} from 'react-native';
+import {useState} from 'react';
+import {Ionicons} from '@expo/vector-icons';
 
 export interface NewsUpdateProps {
     title: string;
@@ -11,6 +13,7 @@ export interface NewsUpdateProps {
     commentCount: number;
     description: string;
     previewImage?: string;
+    profilePicture?: string;
     onReadMore: () => void;
 }
 
@@ -23,16 +26,23 @@ export const NewsUpdate = ({
     commentCount,
     description,
     previewImage,
+    profilePicture,
     onReadMore,
 
     }: NewsUpdateProps) => {
+    const [isLiked, setIsLiked] = useState(false);
     return(
-        <View> 
+        <View style = {styles.card}> 
+            {profilePicture ?
+                <Image style = {styles.circularImage} source = {{uri: profilePicture}} />
+            :
+                <View style={styles.circularImagePlaceholder} />
+            }
             <View style = {{alignItems: 'center'}}>
             <Text style = {styles.title}>
                 {organization}
             </Text>
-            <Text style = {styles.text}>
+            <Text style = {styles.subText}>
                 {organizationType} • {date}
             </Text>
             </View>
@@ -51,19 +61,34 @@ export const NewsUpdate = ({
 
             </View>
             <View>
-            {previewImage && (
+            {previewImage ? 
             <Image
                 source={{ uri: previewImage }}
                 style={styles.image}
             />
-        )}
-            </View>
-            <View>
-                <Text>
-                    Likes: {likeCount}   Comments: {commentCount}
-                </Text>
-            </View>
             
+            :
+            <View style={styles.imagePlaceholder} />
+            
+        }
+            </View>
+            <View style = {{flexDirection : "row" }}>
+
+                <View style = {{flexDirection: 'row', alignItems: 'center'}}>
+                {/* Like button with count */}
+                    <Pressable onPress = {() => setIsLiked(!isLiked)}>
+                        <Ionicons name = {isLiked? "heart" : "heart-outline"} size={20} color= {isLiked? "red" : "gray"} />
+                    </Pressable>
+                    <Text> {likeCount + (isLiked ? 1 : 0)}</Text>
+                </View>
+                <View style = {{flexDirection: 'row', alignItems: 'center', marginLeft: 12}}>
+                {/* Comment icon with count */}
+                    <Ionicons name = "chatbubble-ellipses-outline" size={20} color= "gray" />
+                    <Text> {commentCount}</Text>
+                </View>
+            </View>
+
+
         </View>
         
     )
@@ -80,15 +105,57 @@ const styles = StyleSheet.create({
     {
         fontSize: 12,
     },
+    subText:
+    {
+        fontSize: 10,
+        color: 'gray',
+    },
+    card: 
+    {
+        width: '40%',
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 12,
+        marginBottom: 12,
+    },
     image:
     {
-        width: 200,
-        height: 200,
+        width: '100%',
+        height: 150,
+        borderRadius: 8,
+        marginVertical: 8,
+    },
+    circularImage:
+    {
+    
+        width: 40,
+        height: 40,
+        borderRadius: 50/2,
+        overflow: "hidden",
+        borderWidth: 3,
+        borderColor: "gray"
     },
     readMore:
     {
-        color: 'blue',
+        color: 'gray', 
         textDecorationLine: 'underline',
+    },
+    imagePlaceholder: {
+        width: '100%',
+        height: 150,
+        borderRadius: 8,
+        marginVertical: 8,
+        backgroundColor: '#e0e0e0',
+    },
+    circularImagePlaceholder: 
+    {
+        width: 40,
+        height: 40,
+        borderRadius: 50/2,
+        overflow: "hidden",
+        borderWidth: 3,
+        borderColor: "gray",
+        backgroundColor: '#e0e0e0',
     },
 
 })
