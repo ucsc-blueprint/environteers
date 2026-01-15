@@ -1,8 +1,16 @@
 import { View, Image, Text, StyleSheet, Pressable } from 'react-native';
 // Icons
 import Icon from '@mdi/react';
-import { mdiCalendar, mdiLeaf, mdiExportVariant, mdiCardsHeartOutline } from '@mdi/js';
-import GoogleCalendar from '../assets/images/google-calendar.png';
+import { 
+  mdiCalendar, 
+  mdiLeaf, 
+  mdiExportVariant, 
+  mdiCardsHeartOutline,
+  mdiMapMarker,
+  mdiFilterVariant,
+  mdiMenu,
+  mdiBell
+} from '@mdi/js';
 
 export interface EcoFeedProps {
   title: string;
@@ -16,12 +24,29 @@ export interface EcoFeedProps {
 
 export const Header = () => (
   <View style={styles.feedHeader}>
-    <View style={styles.name}>
-      <Text style={styles.nameText}>Ready to Volunteer <Text style={{ fontWeight: '700' }}>Name?</Text></Text>
+    {/* Navbar (Top)*/}
+    <View style={styles.formatBetween}>
+      <Icon path={mdiMenu} size={1.5} />
+      <Icon path={mdiBell} size={1.5} />
     </View>
+    <Text style={styles.nameText}>Ready to Volunteer <Text style={{ fontWeight: '700' }}>Name?</Text></Text>
+    {/* Searchbar */}
+    <View>
+      <Text style={[styles.filter, styles.searchBar]}>Search for a keyword...</Text>
+    </View>
+    {/* Buttons */}
+    <View style={styles.buttons}>
+        <Text style={styles.filter}>Eco-Actions</Text>
+        <Text style={styles.filter}>Events</Text>
+        <Text style={styles.filter}>In person</Text>
+        <Text style={styles.filter}>Online</Text>
+        <Text style={styles.filter}>Archived/past?</Text>
+    </View>
+
     <View style={styles.cardDes}>
-      <View style={styles.sort}>
-        <Text style={styles.sort}>Most Recent</Text>
+      <View style={styles.formatRow}>
+        <Icon path={mdiFilterVariant} size={1} />
+        <Text style={{ fontWeight: '400' }}>Most Recent</Text>
       </View>
       <View style={styles.results}>
         <Text style={styles.results}>25 results</Text>
@@ -61,7 +86,10 @@ export const EcoFeed = ({
         <View style={styles.info}>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.date}>{date}</Text>
-          <Text style={styles.location}>{location}</Text>
+          <View style={styles.location}>
+            <Icon path={mdiMapMarker} size={1} />
+            <Text>{location}</Text>
+          </View>
 
           {/* Buttons */}
           <View style={styles.buttonRow}>
@@ -84,7 +112,7 @@ export const EcoFeed = ({
         <View style={styles.actions}>
           <Icon path={mdiExportVariant} size={1} />
           <Icon path={mdiCardsHeartOutline} size={1} />
-          <Image source={GoogleCalendar} style={styles.image}/>
+          <Image source={require('../assets/images/google-calendar.png')} style={styles.image}/>
         </View>
         <Text style={styles.notes}>
           Notes: Children under 14 require adult supervision
@@ -98,22 +126,19 @@ export const EcoFeed = ({
 const styles = StyleSheet.create({
   feedHeader: {
     flexDirection: 'column',
-  },
-  name: {
-    marginBottom: 100
+    justifyContent: 'space-between'
   },
   nameText: {
-    fontSize: 40,
+    fontSize: 38,
+    paddingVertical: 20,
   },
   cardDes: {
     flexDirection: 'row',
     gap: 300,
   },
-  sort: {
-    alignSelf: 'flex-start',
-  },
   results: {
     alignSelf: 'flex-end',
+    fontWeight: '400',
   },
   card: {
     backgroundColor: '#E0E0E0',
@@ -141,7 +166,7 @@ const styles = StyleSheet.create({
   },
 
   spotsPill: {
-    alignSelf: 'flex-start',
+    alignSelf: 'flex-end',
     backgroundColor: '#D1D1D1',
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -175,6 +200,8 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     textDecorationLine: 'underline',
     marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 
   buttonRow: {
@@ -225,17 +252,53 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    gap: '2px',
+    gap: 6,
     alignItems: 'center',
   },
   actions: {
     flexDirection: 'row',
-    gap: '10px',
+    gap: 12,
     alignItems: 'center',
 
   },
   image: {
     width: 21,
     height: 21,
+  },
+  
+  formatRow: {
+    flexDirection: 'row',
+    gap: 5,
+    alignItems: 'center',
+  },
+
+  formatBetween: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  buttons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 20,
+  },
+
+  filter: {
+    borderColor: 'black',
+    borderWidth: 2,
+    borderRadius: 30,
+    padding: 8,
+    paddingLeft: 12,
+    paddingRight: 12,
+    fontWeight: 400,
+  },
+  searchBar: {
+    color: 'gray',
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+  },
+  shareIcon: {
+    paddingBottom: 1,
   },
 });
