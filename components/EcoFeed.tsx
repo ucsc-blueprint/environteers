@@ -1,7 +1,8 @@
 import { View, Image, Text, StyleSheet, Pressable } from 'react-native';
-
+// Icons
 import Icon from '@mdi/react';
-import { mdiCalendar, mdiLeaf } from '@mdi/js';
+import { mdiCalendar, mdiLeaf, mdiExportVariant, mdiCardsHeartOutline } from '@mdi/js';
+import GoogleCalendar from '../assets/images/google-calendar.png';
 
 export interface EcoFeedProps {
   title: string;
@@ -79,10 +80,18 @@ export const EcoFeed = ({
       <View style={styles.divider} />
 
       {/* Notes */}
-      <Text style={styles.notes}>
-        Notes: Children under 14 require adult supervision
-      </Text>
+      <View style={styles.footnote}>
+        <View style={styles.actions}>
+          <Icon path={mdiExportVariant} size={1} />
+          <Icon path={mdiCardsHeartOutline} size={1} />
+          <Image source={GoogleCalendar} style={styles.image}/>
+        </View>
+        <Text style={styles.notes}>
+          Notes: Children under 14 require adult supervision
+        </Text>
+      </View>
     </View>
+  
   );
 };
 
@@ -206,15 +215,27 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
   },
 
+  footnote: {
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+  },
   notes: {
     fontSize: 14,
     color: '#6B6B6B',
-    textAlign: 'right',
   },
-
   header: {
     flexDirection: 'row',
     gap: '2px',
     alignItems: 'center',
-  }
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: '10px',
+    alignItems: 'center',
+
+  },
+  image: {
+    width: 21,
+    height: 21,
+  },
 });
