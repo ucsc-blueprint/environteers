@@ -119,7 +119,6 @@ export const EcoFeed = ({
         </Text>
       </View>
     </View>
-  
   );
 };
 
@@ -128,18 +127,23 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'space-between'
   },
+
   nameText: {
     fontSize: 38,
     paddingVertical: 20,
+    marginLeft: 9
   },
+
   cardDes: {
     flexDirection: 'row',
-    gap: 300,
+    gap: 280,
   },
+
   results: {
     alignSelf: 'flex-end',
     fontWeight: '400',
   },
+
   card: {
     backgroundColor: '#E0E0E0',
     borderRadius: 24,
@@ -246,21 +250,24 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     flexDirection: 'row',
   },
+
   notes: {
     fontSize: 14,
     color: '#6B6B6B',
   },
+
   header: {
     flexDirection: 'row',
     gap: 6,
     alignItems: 'center',
   },
+
   actions: {
     flexDirection: 'row',
     gap: 12,
     alignItems: 'center',
-
   },
+
   image: {
     width: 21,
     height: 21,
@@ -293,11 +300,13 @@ const styles = StyleSheet.create({
     paddingRight: 12,
     fontWeight: 400,
   },
+
   searchBar: {
     color: 'gray',
     paddingVertical: 12,
     paddingHorizontal: 15,
   },
+
   shareIcon: {
     paddingBottom: 1,
   },
