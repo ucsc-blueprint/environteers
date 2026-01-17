@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, StyleSheet } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Button } from "@components/Button";
+import { Button } from "@/components/Button";
 
 export interface LogHoursProps {
   onSubmit: (
@@ -19,14 +19,14 @@ export const LogHours = ({ onSubmit }: LogHoursProps) => {
   const [additionalNotes, setAdditionalNotes] = useState("");
 
   const handleSubmit = () => {
-		if (date && checkInTime && checkOutTime) {
-			onSubmit(
-				new Date(date), 
-				new Date(checkInTime), 
-				new Date(checkOutTime),
-				additionalNotes.trim() ? additionalNotes : undefined
-			);
-		}
+    if (date && checkInTime && checkOutTime) {
+      onSubmit(
+        new Date(date), 
+        new Date(checkInTime), 
+        new Date(checkOutTime),
+        additionalNotes.trim() ? additionalNotes : undefined
+      );
+    }
   }
 
   return (
@@ -34,40 +34,40 @@ export const LogHours = ({ onSubmit }: LogHoursProps) => {
       <View style={styles.row}>
         <Text style={styles.label}>What day were you here?</Text>
         <DateTimePicker
-					mode="date"
-					value={date}
-					onChange={(event, selectedDate) => {
-						if (selectedDate) {
-							setDate(selectedDate);
-						}
-					}}
-				/>
+          mode="date"
+          value={date}
+          onChange={(event, selectedDate) => {
+            if (selectedDate) {
+              setDate(selectedDate);
+            }
+          }}
+        />
       </View>
 
       <View style={styles.row}>
         <Text style={styles.label}>When did you check in?</Text>
-				<DateTimePicker
-					mode="time"
-					value={checkInTime}
-					onChange={(event, selectedTime) => {
-						if (selectedTime) {
-							setCheckInTime(selectedTime);
-						}
-					}}
-				/>
+        <DateTimePicker
+          mode="time"
+          value={checkInTime}
+          onChange={(event, selectedTime) => {
+            if (selectedTime) {
+              setCheckInTime(selectedTime);
+            }
+          }}
+        />
       </View>
         
       <View style={styles.row}>
         <Text style={styles.label}>When did you check out?</Text>
-				<DateTimePicker
-					mode="time"
-					value={checkOutTime}
-					onChange={(event, selectedTime) => {
-						if (selectedTime) {
-							setCheckOutTime(selectedTime);
-						}
-					}}
-				/>
+        <DateTimePicker
+          mode="time"
+          value={checkOutTime}
+          onChange={(event, selectedTime) => {
+            if (selectedTime) {
+              setCheckOutTime(selectedTime);
+            }
+          }}
+        />
       </View>
       
       <Text style={styles.label}>Any additional notes you&apos;d like to leave?</Text>
@@ -79,10 +79,10 @@ export const LogHours = ({ onSubmit }: LogHoursProps) => {
         textAlignVertical="top"
       />
 
-			<View style={styles.buttonsContainer}>
-				<Button label="Cancel"/>
-				<Button label="Log my hours" onPress={handleSubmit}/>
-			</View>
+      <View style={styles.buttonsContainer}>
+        <Button label="Cancel"/>
+        <Button label="Log my hours" onPress={handleSubmit}/>
+      </View>
     </View>
   )
 } 
@@ -90,7 +90,7 @@ export const LogHours = ({ onSubmit }: LogHoursProps) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-		margin: 20
+    margin: 20
   },
   row: {
     flexDirection: "row", 
@@ -109,8 +109,8 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     padding: 10,
   },
-	buttonsContainer: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-	}
+  buttonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  }
 });
