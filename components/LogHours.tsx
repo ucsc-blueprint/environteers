@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Platform, StyleSheet } from "react-native";
+import { View, Text, TextInput, StyleSheet } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Button } from "./ui/Button";
+import { Button } from "@components/Button";
 
 export interface LogHoursProps {
   onSubmit: (
