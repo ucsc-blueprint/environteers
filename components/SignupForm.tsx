@@ -8,7 +8,8 @@ import {
   GestureResponderEvent,
   StyleSheet,
 } from 'react-native';
-import Checkbox from 'expo-checkbox';
+import {Checkbox} from 'expo-checkbox';
+import { useRouter } from 'expo-router';
 
 export interface SignupFormProps {
   onSubmit: (
@@ -19,7 +20,8 @@ export interface SignupFormProps {
   ) => void;
 }
 
-export const SignupForm = ({ onSubmit }: SignupFormProps) => {
+const SignupForm = ({ onSubmit }: SignupFormProps) => {
+  const router = useRouter();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -108,7 +110,7 @@ export const SignupForm = ({ onSubmit }: SignupFormProps) => {
         </Pressable>
 
         <Text style={styles.loginText}>
-          Have an account? <Text style={styles.loginLink}>Login</Text>
+          Have an account? <Pressable onPress={() => router.push('/login')}><Text style={styles.loginLink}>Login</Text></Pressable>
         </Text>
       </View>
     </View>
