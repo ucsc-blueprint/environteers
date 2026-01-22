@@ -1,7 +1,11 @@
+import React from 'react';
 import { Text, View, StyleSheet, Image } from "react-native";
 import { Button } from "@/components/Button";
+import { ProfileButtons } from "@/components/ProfileButtons";
+import { useRouter } from 'expo-router';
 
 export default function Profile() {
+  const router = useRouter();
 
   return (
     <View style={styles.container}>
@@ -22,15 +26,7 @@ export default function Profile() {
       </Text>
 
       <View style={styles.buttonsContainer}>
-        <View style={styles.buttonWrapper}>
-          <Button label="Eco Action History" style={styles.button} />
-        </View>
-        <View style={styles.buttonWrapper}>
-          <Button label="Achievements" style={styles.button} />
-        </View>
-        <View style={styles.buttonWrapper}>
-          <Button label="Upcoming" style={styles.button} />
-        </View>
+        <ProfileButtons />
       </View>
     </View>
   );
