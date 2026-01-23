@@ -2,6 +2,7 @@ import React from 'react';
 import { Text, View, ScrollView, StyleSheet, Image } from "react-native";
 import { Button } from "@/components/Button";
 import { ProfileButtons } from "@/components/ProfileButtons";
+import { LogHours } from '@/components/LogHours';
 import { useRouter } from 'expo-router';
 
 export default function Profile() {
@@ -28,6 +29,8 @@ export default function Profile() {
       <View style={styles.buttonsContainer}>
         <ProfileButtons />
       </View>
+
+      <LogHours onSubmit={() => {}} />
     </ScrollView>
   );
 }
