@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, View, StyleSheet, Image } from "react-native";
+import { Text, View, ScrollView, StyleSheet, Image } from "react-native";
 import { Button } from "@/components/Button";
 import { ProfileButtons } from "@/components/ProfileButtons";
 import { useRouter } from 'expo-router';
@@ -8,7 +8,7 @@ export default function Profile() {
   const router = useRouter();
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={{ alignItems: "center" }}>
       <Text style={styles.header}>Hello
         <Text style={{ fontWeight: "bold" }}> Name</Text>
       </Text>
@@ -28,7 +28,7 @@ export default function Profile() {
       <View style={styles.buttonsContainer}>
         <ProfileButtons />
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -36,7 +36,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 30,
-    justifyContent: "flex-start",
   },
   header: {
     fontSize: 28,

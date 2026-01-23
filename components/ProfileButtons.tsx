@@ -161,7 +161,6 @@ const styles = {
   eventItem: {
     fontFamily: 'Inter',
     fontWeight: '700',
-    fontStyle: 'bold',
     fontSize: 12,
     lineHeight: 14,
     letterSpacing: 0,
