@@ -3,13 +3,10 @@ import { View, Text, TextInput, StyleSheet } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Button } from "@/components/Button";
 
+import { supabase } from "@/constants/supabase";
+
 export interface LogHoursProps {
-  onSubmit: (
-    date: Date, 
-    checkInTime: Date, 
-    checkOutTime: Date, 
-    additionalNotes?: string
-  ) => void;
+  onSubmit: () => void;
 }
 
 export const LogHours = ({ onSubmit }: LogHoursProps) => {
@@ -18,14 +15,24 @@ export const LogHours = ({ onSubmit }: LogHoursProps) => {
   const [checkOutTime, setCheckOutTime] = useState(new Date());
   const [additionalNotes, setAdditionalNotes] = useState("");
 
-  const handleSubmit = () => {
-    if (date && checkInTime && checkOutTime) {
-      onSubmit(
-        new Date(date), 
-        new Date(checkInTime), 
-        new Date(checkOutTime),
-        additionalNotes.trim() ? additionalNotes : undefined
-      );
+  const handleSubmit = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("event_reports")
+        .insert({
+          event_date: date,
+          check_in: checkInTime,
+          check_out: checkOutTime,
+          additional_notes: additionalNotes.trim() ? additionalNotes : null,
+        });
+      
+      if (error) {
+        console.error("Error logging hours:", error);
+      }
+
+      onSubmit();
+    } catch (error) {
+      console.error("Unexpected error:", error);
     }
   }
 
