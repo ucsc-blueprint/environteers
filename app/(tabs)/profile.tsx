@@ -9,7 +9,7 @@ export default function Profile() {
   const router = useRouter();
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ alignItems: "center" }}>
+    <ScrollView style={styles.container} contentContainerStyle={{ justifyContent: "center" }}>
       <Text style={styles.header}>Hello
         <Text style={{ fontWeight: "bold" }}> Name</Text>
       </Text>
