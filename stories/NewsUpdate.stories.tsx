@@ -21,7 +21,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     title: 'Title',
-    date: 'Jan 12, 2026',
+    date: '01/12/2026',
     organization: 'Environteers',
     organizationType: 'Non-Profit',
     likeCount: 5,

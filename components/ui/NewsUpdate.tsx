@@ -1,6 +1,6 @@
 // should have Title, Date, Organization + org type(non profit), like count, comment count, start of description + "Read more" link
 
-import { StyleSheet, Text, TouchableOpacity, View, Pressable, Image} from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Pressable, Image, Linking} from 'react-native';
 import {useState} from 'react';
 import {Ionicons} from '@expo/vector-icons';
 
@@ -12,9 +12,9 @@ export interface NewsUpdateProps {
     likeCount: number;
     commentCount: number;
     description: string;
+    link?: string;
     previewImage?: string;
     profilePicture?: string;
-    onReadMore: () => void;
 }
 
 export const NewsUpdate = ({
@@ -25,71 +25,74 @@ export const NewsUpdate = ({
     likeCount,
     commentCount,
     description,
+    link,
     previewImage,
     profilePicture,
-    onReadMore,
 
     }: NewsUpdateProps) => {
     const [isLiked, setIsLiked] = useState(false);
     return(
-        <View style = {styles.card}> 
-            {profilePicture ?
-                <Image style = {styles.circularImage} source = {{uri: profilePicture}} />
-            :
-                <View style={styles.circularImagePlaceholder} />
-            }
-            <View style = {{alignItems: 'center'}}>
-            <Text style = {styles.title}>
-                {organization}
-            </Text>
-            <Text style = {styles.subText}>
-                {organizationType} • {date}
-            </Text>
-            </View>
+        <Pressable onPress ={() => {Linking.openURL(link || '')}}>
+            <View style = {styles.card}> 
+                <View style={styles.header}>
+                    {profilePicture ? (
+                        <Image style={styles.circularImage} source={{ uri: profilePicture }} />
+                    ) : 
+                    (
+                        <View style={styles.circularImagePlaceholder} />
+                    )}
+
+                    <View style={styles.orgInfo}>
+                        <Text style={styles.orgName}>{organization}</Text>
+                        <Text style={styles.subText}>
+                            {organizationType} • {date}
+                        </Text>
+                    </View>
+                </View>
             <View>
-                <Text style = {styles.title}>
-                    {title}
-                </Text>
-                <Text style={styles.text}>
-                    {description.length > 100
-                        ? description.slice(0, 100) + '... '
-                        : description + ' '}
-                    <Text style={styles.readMore} onPress={onReadMore}>
-                        Read more
+                    <Text style = {styles.title}>
+                        {title}
                     </Text>
-                </Text>
-
-            </View>
-            <View>
-            {previewImage ? 
-            <Image
-                source={{ uri: previewImage }}
-                style={styles.image}
-            />
-            
-            :
-            <View style={styles.imagePlaceholder} />
-            
-        }
-            </View>
-            <View style = {{flexDirection : "row" }}>
-
-                <View style = {{flexDirection: 'row', alignItems: 'center'}}>
-                {/* Like button with count */}
-                    <Pressable onPress = {() => setIsLiked(!isLiked)}>
-                        <Ionicons name = {isLiked? "heart" : "heart-outline"} size={20} color= {isLiked? "red" : "gray"} />
-                    </Pressable>
-                    <Text> {likeCount + (isLiked ? 1 : 0)}</Text>
-                </View>
-                <View style = {{flexDirection: 'row', alignItems: 'center', marginLeft: 12}}>
-                {/* Comment icon with count */}
-                    <Ionicons name = "chatbubble-ellipses-outline" size={20} color= "gray" />
-                    <Text> {commentCount}</Text>
+                <View>
+                    <Text style={styles.text} numberOfLines = {1} ellipsizeMode='tail'>
+                        {description} + ' '
+                    </Text>
+                        <Text style={styles.readMore}>
+                            Read more
+                        </Text>
                 </View>
             </View>
+                <View>
+                {previewImage ? 
+                <Image
+                    source={{ uri: previewImage }}
+                    style={styles.image}
+                />
+                
+                :
+                <View style={styles.imagePlaceholder} />
+                
+            }
+                </View>
+                <View style = {{flexDirection : "row" }}>
+
+                    <View style = {{flexDirection: 'row', alignItems: 'center'}}>
+                    {/* Like button with count */}
+                        <Pressable onPress = {() => setIsLiked(!isLiked)}>
+                            <Ionicons name = {isLiked? "heart" : "heart-outline"} size={20} color= {isLiked? "red" : "gray"} />
+                        </Pressable>
+                        <Text> {likeCount + (isLiked ? 1 : 0)}</Text>
+                    </View>
+                    <View style = {{flexDirection: 'row', alignItems: 'center', marginLeft: 8}}>
+                    {/* Comment icon with count */}
+                        <Ionicons name = "chatbubble-ellipses-outline" size={20} color= "gray" />
+                        <Text> {commentCount}</Text>
+                    </View>
+                </View>
 
 
-        </View>
+            </View>
+        </Pressable>
         
     )
 }
@@ -113,7 +116,7 @@ const styles = StyleSheet.create({
     card: 
     {
         width: '40%',
-        backgroundColor: '#fff',
+        backgroundColor: '#ceccccff',
         borderRadius: 12,
         padding: 12,
         marginBottom: 12,
@@ -136,9 +139,9 @@ const styles = StyleSheet.create({
         borderColor: "gray"
     },
     readMore:
-    {
-        color: 'gray', 
+    { 
         textDecorationLine: 'underline',
+        fontSize: 12,
     },
     imagePlaceholder: {
         width: '100%',
@@ -156,6 +159,20 @@ const styles = StyleSheet.create({
         borderWidth: 3,
         borderColor: "gray",
         backgroundColor: '#e0e0e0',
+    },
+    header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    },
+
+    orgInfo: {
+        marginLeft: 8,
+    },
+
+    orgName: {
+        fontSize: 14,
+        fontWeight: 'bold',
     },
 
 })
