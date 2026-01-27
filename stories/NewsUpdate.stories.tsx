@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-native-web-vite';
 import { View } from 'react-native';
-import { NewsUpdate } from '../components/ui/NewsUpdate';
+import React from 'react';
+import {NewsUpdate} from '../components/NewsUpdate';
 
 const meta = {
   title: 'UI/NewsUpdate',
@@ -26,8 +27,7 @@ export const Default: Story = {
     organizationType: 'Non-Profit',
     likeCount: 5,
     commentCount: 4,
-    description: 'example long description salkja;sdkjf;alsdjf;alsdjf;alksjdf;laksdjf;laksdjf;laksdjf;alsdjfa;dkdjfkdlsieow',
-    onReadMore: () => console.log('Read more'),
+    description: 'example long description salkja;sdkjf;alsdjf;alsdjf;alksjdf;laksdjf;laksdjf;laksdjf;alsdjfa;dkdjfkdlsieow'
   },
 
 };

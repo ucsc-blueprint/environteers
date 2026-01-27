@@ -1,5 +1,5 @@
 // should have Title, Date, Organization + org type(non profit), like count, comment count, start of description + "Read more" link
-
+import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Pressable, Image, Linking} from 'react-native';
 import {useState} from 'react';
 import {Ionicons} from '@expo/vector-icons';
