@@ -1,9 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-native-web-vite';
 import { View } from 'react-native';
 import { fn } from 'storybook/test';
+import React from "react";
 
 import { EcoFeed } from '@/components/EcoFeed';
-import { Header } from '@/components/EcoFeed'
+import { Header } from '@/components/EcoFeed';
+
+
 
 const meta = {
   title: 'Example/EcoFeed',
@@ -21,6 +24,7 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+
 
 export const Feed: Story = {
   args: {

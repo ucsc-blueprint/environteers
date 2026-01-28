@@ -10,6 +10,7 @@ import {
  Filter,
  Menu,
  Bell,
+ ListFilter
 } from "lucide-react-native";
 
 
@@ -42,13 +43,12 @@ export const Header = () => (
        <Text style={styles.filter}>Events</Text>
        <Text style={styles.filter}>In person</Text>
        <Text style={styles.filter}>Online</Text>
-       <Text style={styles.filter}>Archived/past?</Text>
    </View>
 
 
    <View style={styles.cardDes}>
      <View style={styles.formatRow}>
-       <Filter size={1} />
+       <ListFilter size={20} />
        <Text style={{ fontWeight: '400' }}>Most Recent</Text>
      </View>
      <View style={styles.results}>
@@ -90,12 +90,16 @@ export const EcoFeed = ({
 
        {/* Info */}
        <View style={styles.info}>
-         <Text style={styles.title}>{title}</Text>
+        <View style={styles.eventInfo}>
+
+        <Text style={styles.title}>{title}</Text>
          <Text style={styles.date}>{date}</Text>
          <View style={styles.location}>
-           <MapPin size={24} />
+           <MapPin size={20} />
            <Text>{location}</Text>
          </View>
+
+        </View>
 
 
          {/* Buttons */}
@@ -136,28 +140,24 @@ export const EcoFeed = ({
 const styles = StyleSheet.create({
  feedHeader: {
    flexDirection: 'column',
-   justifyContent: 'space-between'
  },
 
-
  nameText: {
-   fontSize: 38,
+   fontSize: 30,
    paddingVertical: 20,
    marginLeft: 9
  },
 
-
  cardDes: {
    flexDirection: 'row',
-   gap: 280,
+   justifyContent: 'space-between',
+   alignItems: 'center',
  },
-
 
  results: {
    alignSelf: 'flex-end',
    fontWeight: '400',
  },
-
 
  card: {
    backgroundColor: '#E0E0E0',
@@ -166,27 +166,24 @@ const styles = StyleSheet.create({
    flex: 1,
  },
 
-
  row: {
    flexDirection: 'row',
    gap: 16,
  },
 
-
  imagePlaceholder: {
    width: 130,
-   height: 160,
+   height: 170,
    backgroundColor: '#FFFFFF',
    padding: 8,
    justifyContent: 'space-between',
+   marginTop: 20,
  },
-
 
  typeLabel: {
    fontSize: 14,
    fontWeight: '700',
  },
-
 
  spotsPill: {
    alignSelf: 'flex-end',
@@ -196,24 +193,26 @@ const styles = StyleSheet.create({
    borderRadius: 999,
  },
 
-
  spotsText: {
    fontSize: 12,
    fontWeight: '600',
  },
 
-
  info: {
    flex: 1,
+   justifyContent: 'space-between',
+   marginTop: 20,
  },
 
+ eventInfo: {
+  gap: 1,
+ },
 
  title: {
    fontSize: 18,
    fontWeight: '700',
    marginBottom: 6,
  },
-
 
  date: {
    fontSize: 16,
@@ -222,72 +221,66 @@ const styles = StyleSheet.create({
    marginBottom: 8,
  },
 
-
  location: {
    fontSize: 14,
    fontWeight: '500',
    textDecorationLine: 'underline',
-   marginBottom: 16,
    flexDirection: 'row',
-   alignItems: 'center',
+   alignItems: 'flex-start',
  },
-
 
  buttonRow: {
    flexDirection: 'row',
    gap: 12,
+   alignItems: 'flex-end',
  },
-
 
  learnMoreButton: {
-   borderWidth: 2,
+   flexShrink: 1,
+   borderWidth: 1,
    borderColor: '#000',
    borderRadius: 999,
-   paddingVertical: 10,
-   paddingHorizontal: 18,
+   paddingVertical: 6,
+   paddingHorizontal: 8,
  },
 
-
  learnMoreText: {
-   fontSize: 16,
+   fontSize: 14.3,
    fontWeight: '700',
  },
 
-
  signUpButton: {
+   flexShrink: 1,
    backgroundColor: '#000',
    borderRadius: 999,
-   paddingVertical: 10,
-   paddingHorizontal: 22,
+   paddingVertical: 6,
+   paddingHorizontal: 8,
  },
-
 
  signUpText: {
    color: '#FFF',
-   fontSize: 16,
+   fontSize: 14.3,
    fontWeight: '700',
  },
 
-
  divider: {
-   marginVertical: 16,
-   borderBottomWidth: 1,
-   borderBottomColor: '#B0B0B0',
-   borderStyle: 'dashed',
+  height: 1,
+  backgroundColor: '#B0B0B0',
+  marginVertical: 16,
  },
-
 
  footnote: {
-   justifyContent: 'space-between',
    flexDirection: 'row',
+   alignItems: 'flex-end',
  },
-
 
  notes: {
    fontSize: 14,
    color: '#6B6B6B',
+   flex: 1,
+   flexShrink: 1,
+   marginLeft: 70
  },
-
 
  header: {
    flexDirection: 'row',
@@ -295,24 +288,22 @@ const styles = StyleSheet.create({
    alignItems: 'center',
  },
 
-
  actions: {
    flexDirection: 'row',
    gap: 12,
    alignItems: 'center',
  },
 
-
  image: {
    width: 21,
    height: 21,
  },
+
   formatRow: {
    flexDirection: 'row',
-   gap: 5,
    alignItems: 'center',
+   gap: 10,
  },
-
 
  formatBetween: {
    flexDirection: 'row',
@@ -320,31 +311,27 @@ const styles = StyleSheet.create({
    alignItems: 'center',
  },
 
-
  buttons: {
+   marginTop: 20,
+   marginBottom: 20,
    flexDirection: 'row',
    justifyContent: 'space-between',
-   paddingVertical: 20,
  },
-
 
  filter: {
    borderColor: 'black',
    borderWidth: 2,
    borderRadius: 30,
-   padding: 8,
-   paddingLeft: 12,
-   paddingRight: 12,
-   fontWeight: 400,
+   paddingHorizontal: 8,
+   paddingVertical: 2,
+   fontWeight: '400',
  },
-
 
  searchBar: {
    color: 'gray',
    paddingVertical: 12,
    paddingHorizontal: 15,
  },
-
 
  shareIcon: {
    paddingBottom: 1,
