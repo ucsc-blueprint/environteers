@@ -43,6 +43,17 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="VolunteerView"
+        options={{
+          title: 'Volunteer View',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="bar-chart"></Ionicons>
+          ),
+        }}
+      />
+
     </Tabs>
+      
   );
 }
