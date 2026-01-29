@@ -4,7 +4,6 @@ import { supabase } from '@/constants/supabase';
 
 export default function SignupScreen() {
   async function onSubmit(username: string, email: string, password: string, isAdmin: boolean) {
-    console.log(password)
     const { data, error } = await supabase.auth.signUp({email, password});
     if (error) throw error;
     const success = await supabase.from('users').insert({
