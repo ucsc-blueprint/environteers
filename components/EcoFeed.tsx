@@ -7,7 +7,6 @@ import {
  Share2,
  Heart,
  MapPin,
- Filter,
  Menu,
  Bell,
  ListFilter
