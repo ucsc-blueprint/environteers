@@ -48,7 +48,7 @@ export default function TabsLayout() {
         options={{
           title: 'Volunteer View',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="bar-chart"></Ionicons>
+            <Ionicons name="bar-chart" size = {size} color = {color}></Ionicons>
           ),
         }}
       />
