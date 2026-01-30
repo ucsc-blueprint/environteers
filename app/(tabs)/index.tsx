@@ -1,7 +1,9 @@
-import { View } from "react-native";
-import LandingPage from "@/components/LandingPage";
+import { View, Text } from "react-native";
+import { LogoutButton } from "@/components/LogoutButton";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Index() {
+  const { profile } = useAuth()
   return (
     <View
       style={{
@@ -10,7 +12,9 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-      <LandingPage />
+      <Text>Home</Text>
+      <Text>You are: {profile?.username}</Text>
+      <LogoutButton/>
     </View>
   );
 }

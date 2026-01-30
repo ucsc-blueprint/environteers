@@ -1,18 +1,39 @@
 import { View } from 'react-native';
 import SignupForm from '@/components/SignupForm';
 import { supabase } from '@/constants/supabase';
+import Toast from 'react-native-toast-message';
 
 export default function SignupScreen() {
   async function onSubmit(username: string, email: string, password: string, isAdmin: boolean) {
     const { data, error } = await supabase.auth.signUp({email, password});
-    if (error) throw error;
-    const success = await supabase.from('users').insert({
+    if (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Signup failed',
+        text2: error.message
+      })
+      return;
+    };
+    const {error: insertError} = await supabase.from('users').insert({
       user_id: data.user!.id,
       username,
       email,
       is_admin: isAdmin
     })
-    console.log(success)
+    if (insertError) {
+      Toast.show({
+        type: 'error',
+        text1: 'Signup failed',
+        text2: insertError.message
+      })
+      return;
+    };
+
+    Toast.show({
+      type: 'success',
+      text1: 'You are now signed up',
+    })
+    
   }
   return (
     <View style={{flex: 1}}>

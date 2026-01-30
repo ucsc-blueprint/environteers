@@ -3,6 +3,8 @@ import LoginForm from '@/components/LoginForm';
 import { supabase } from '@/constants/supabase';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
+import Toast from 'react-native-toast-message';
+
 import React from 'react';
 export default function LoginScreen() {
   const router = useRouter();
@@ -13,18 +15,24 @@ export default function LoginScreen() {
       router.push('/(tabs)')
     }
   }, [user, router])
-  
+
   async function onSubmit(email: string, password: string) {
-    const {data, error} = await supabase.auth.signInWithPassword({
+    const {error} = await supabase.auth.signInWithPassword({
       email: email,
       password: password
     });
     if (error) {
-      alert(error.message);
-      console.log(data)
-      return null
+      Toast.show({
+        type: 'error',
+        text1: 'Login failed',
+        text2: error.message
+      })
+      return;
     }
-    console.log('login success')
+    Toast.show({
+      type: 'success',
+      text1: 'You are now logged in',
+    })
   }
   return (
     <View style={{flex: 1}}>
