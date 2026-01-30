@@ -17,10 +17,11 @@
     "@expo/vector-icons": "^15.0.3",
     "@mdi/js": "^7.4.47",
     "@mdi/react": "^1.6.1",
+    "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
-    "@supabase/supabase-js": "^2.89.0",
+    "@supabase/supabase-js": "^2.93.3",
     "expo": "~54.0.23",
     "expo-checkbox": "~5.0.8",
     "expo-constants": "~18.0.10",
@@ -53,12 +54,13 @@
     "@storybook/react-native": "^10.1.11",
     "@storybook/react-native-web-vite": "^10.1.11",
     "@types/react": "~19.1.0",
+    "baseline-browser-mapping": "^2.9.19",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
+    "eslint-plugin-storybook": "10.1.11",
     "prettier": "3.6.2",
     "storybook": "^10.1.11",
-    "typescript": "~5.9.2",
-    "eslint-plugin-storybook": "10.1.11"
+    "typescript": "~5.9.2"
   },
   "private": true
 }
