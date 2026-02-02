@@ -1,10 +1,8 @@
 import {Pressable, Text, Alert} from 'react-native';
 import { supabase } from '@/constants/supabase';
-import { useRouter } from 'expo-router';
 import React from 'react';
 
 export const LogoutButton: React.FC = () => {
-  const router = useRouter();
 
   const handleLogout = async (): Promise<void> => {
     Alert.alert(
@@ -22,8 +20,6 @@ export const LogoutButton: React.FC = () => {
 
           if (error) {
             Alert.alert('Error', error.message);
-          } else {
-            router.replace('/login')
           }
         }
        }

@@ -1,21 +1,11 @@
 import { View } from 'react-native';
 import LoginForm from '@/components/LoginForm';
 import { supabase } from '@/constants/supabase';
-import { useRouter } from 'expo-router';
-import { useAuth } from '@/context/AuthContext';
 import Toast from 'react-native-toast-message';
 
 import React from 'react';
 export default function LoginScreen() {
-  const router = useRouter();
-  const {user} = useAuth();
   
-  React.useEffect(() => {
-    if (user) {
-      router.push('/(tabs)')
-    }
-  }, [user, router])
-
   async function onSubmit(email: string, password: string) {
     const {error} = await supabase.auth.signInWithPassword({
       email: email,

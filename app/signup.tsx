@@ -2,10 +2,24 @@ import { View } from 'react-native';
 import SignupForm from '@/components/SignupForm';
 import { supabase } from '@/constants/supabase';
 import Toast from 'react-native-toast-message';
+import { useRouter } from 'expo-router';
+import { useAuth } from '@/context/AuthContext';
+import React from 'react';
 
 export default function SignupScreen() {
+  const router = useRouter();
+    const {user, profile} = useAuth();
+    
+    React.useEffect(() => {
+      if (user && profile) {
+        router.push('/(tabs)/home')
+      }
+    }, [user, profile, router])
   async function onSubmit(username: string, email: string, password: string, isAdmin: boolean) {
-    const { data, error } = await supabase.auth.signUp({email, password});
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
     if (error) {
       Toast.show({
         type: 'error',
@@ -28,12 +42,12 @@ export default function SignupScreen() {
       })
       return;
     };
+    await supabase.auth.signInWithPassword({ email, password });
 
     Toast.show({
       type: 'success',
       text1: 'You are now signed up',
-    })
-    
+    })    
   }
   return (
     <View style={{flex: 1}}>

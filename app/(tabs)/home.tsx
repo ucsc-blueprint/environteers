@@ -2,7 +2,7 @@ import { View, Text } from "react-native";
 import { LogoutButton } from "@/components/LogoutButton";
 import { useAuth } from "@/context/AuthContext";
 
-export default function Index() {
+export default function Home() {
   const { profile } = useAuth()
   return (
     <View
