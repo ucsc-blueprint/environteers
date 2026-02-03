@@ -50,6 +50,15 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="admin-analytics"
+        options={{
+          title: 'Analytics',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="chart-bar" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
@@ -58,6 +67,16 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="VolunteerView"
+        options={{
+          title: 'Volunteer View',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="bar-chart" size = {size} color = {color}></Ionicons>
+          ),
+        }}
+      />
+
     </Tabs>
-  )
+  );
 }
