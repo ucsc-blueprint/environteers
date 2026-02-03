@@ -1,3 +1,4 @@
+import React from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
