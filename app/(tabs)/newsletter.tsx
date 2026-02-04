@@ -34,7 +34,7 @@ export default function Newsletter() {
   const filteredNewsletters = NEWSLETTERS.filter((n) =>
     includesText(n.title, searchText)
   );
-  //displaying webview of newsletter
+  //displaying webview of a newsletter
   if (activeUrl) {
     return (
       <View style={{ flex: 1 }}>
@@ -48,13 +48,7 @@ export default function Newsletter() {
         <WebView
           source={{ uri: activeUrl }}
           style={{ flex: 1 }}
-          startInLoadingState
-          injectedJavaScript={`
-            const meta = document.createElement('meta');
-            meta.name = 'viewport';
-            meta.content = 'width=device-width, initial-scale=1.0';
-            document.head.appendChild(meta);
-          `}
+          startInLoadingState = {true}
         />
       </View>
     );
@@ -62,6 +56,7 @@ export default function Newsletter() {
   //displaying list of newsletters
   return (
     <View style={{ flex: 1 }}>
+      <Text style = {{marginBottom :8, fontWeight: "bold"}}> Weekly Updates</Text>
       <TextInput
         placeholder="Search newsletters"
         placeholderTextColor="#999"

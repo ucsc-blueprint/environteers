@@ -12,6 +12,7 @@ export interface NewsUpdateProps {
   onPress: () => void;
 }
 
+
 export const NewsUpdate = ({
   title,
   date,
