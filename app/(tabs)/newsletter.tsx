@@ -2,6 +2,8 @@ import { Text, TextInput, FlatList, Pressable, View, StyleSheet } from "react-na
 import React, { useState } from "react";
 import { NewsUpdate } from "../../components/NewsUpdate";
 import { WebView } from "react-native-webview";
+import {Dropdown} from 'react-native-element-dropdown';
+import { Ionicons } from "@expo/vector-icons"; // for "filter-outline" on dropdown
 
 const NEWSLETTERS = [
   {
@@ -56,7 +58,7 @@ export default function Newsletter() {
   //displaying list of newsletters
   return (
     <View style={{ flex: 1 }}>
-      <Text style = {{marginBottom :8, fontWeight: "bold"}}> Weekly Updates</Text>
+      <Text style = {{marginTop: 12, marginBottom :10 , fontWeight: "bold", fontSize: 30, alignSelf: 'center'}}> Weekly Updates</Text>
       <TextInput
         placeholder="Search newsletters"
         placeholderTextColor="#999"
@@ -64,6 +66,9 @@ export default function Newsletter() {
         value={searchText}
         onChangeText={setSearchText}
       />
+      {/* dropdown filter */}
+      
+
 
       <FlatList
         data={filteredNewsletters}
