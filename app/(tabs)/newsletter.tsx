@@ -61,7 +61,7 @@ export default function Newsletter() {
   //displaying list of newsletters
   return (
     <View>
-      <Text style = {{marginTop: 20, marginBottom :14, marginLeft : 12, fontWeight: "bold", fontSize: 30}}> Weekly Updates</Text>
+      <Text style = {{marginTop: 20, marginBottom :16, marginLeft : 12, fontWeight: "bold", fontSize: 30}}> Weekly Updates</Text>
       
         <TextInput
           placeholder="Search newsletters"
@@ -73,7 +73,7 @@ export default function Newsletter() {
 
       {/* dropdown filter */}
       <View style = {{flexDirection: 'row'}}>
-        <Ionicons style = {{marginTop: 14, marginRight: 4}}name = "filter-outline" size = {24}/>
+        <Ionicons style = {{marginTop: 14, marginRight: 4, marginLeft: 4}}name = "filter-outline" size = {24}/>
         <DropDownPicker
           open={filterOpen}
           setOpen = {setFilterOpen}
@@ -121,13 +121,13 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    marginBottom: 24,
+    marginBottom: 12,
   },
   dropDownContainerStyle: {
+    width: "50%",
     borderRadius: 24,
     borderWidth: 1,
     borderColor: "#151414",
-    backgroundColor: "transparent",
     maxHeight: 160,
   },
    filter: {
