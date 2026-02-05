@@ -2,7 +2,7 @@ import { Text, TextInput, FlatList, Pressable, View, StyleSheet } from "react-na
 import React, { useState } from "react";
 import { NewsUpdate } from "../../components/NewsUpdate";
 import { WebView } from "react-native-webview";
-import {Dropdown} from 'react-native-element-dropdown';
+import DropDownPicker from 'react-native-dropdown-picker'
 import { Ionicons } from "@expo/vector-icons"; // for "filter-outline" on dropdown
 
 const NEWSLETTERS = [
@@ -13,7 +13,7 @@ const NEWSLETTERS = [
     date: "01/12/2026",
     link: "https://mailchi.mp/f61e915c4e8e/environteers-weekly-update?e=298d639b33",
     previewImage:
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=60",
+      "https://mcusercontent.com/37708d1720fdc287c7e9795e8/images/26f6c4d7-a555-2c70-cc48-17dbcf267087.jpeg",
   },
   {
     id: "6",
@@ -22,7 +22,7 @@ const NEWSLETTERS = [
     date: "01/13/2026",
     link: "https://mailchi.mp/f61e915c4e8e/environteers-weekly-update?e=298d639b33",
     previewImage:
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=60",
+      "https://mcusercontent.com/37708d1720fdc287c7e9795e8/images/544c89e1-15ec-67ef-b4fb-940556e00cbf.jpg",
   },
 ];
 
@@ -32,6 +32,9 @@ const includesText = (str: string, search: string) =>
 export default function Newsletter() {
   const [activeUrl, setActiveUrl] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filterDateLength, setFilterDateLength] = useState< 'week' | '2weeks' | 'month' | 'all' >('all');
+
 
   const filteredNewsletters = NEWSLETTERS.filter((n) =>
     includesText(n.title, searchText)
@@ -57,18 +60,39 @@ export default function Newsletter() {
   }
   //displaying list of newsletters
   return (
-    <View style={{ flex: 1 }}>
-      <Text style = {{marginTop: 12, marginBottom :10 , fontWeight: "bold", fontSize: 30, alignSelf: 'center'}}> Weekly Updates</Text>
-      <TextInput
-        placeholder="Search newsletters"
-        placeholderTextColor="#999"
-        style={styles.search}
-        value={searchText}
-        onChangeText={setSearchText}
-      />
-      {/* dropdown filter */}
+    <View>
+      <Text style = {{marginTop: 20, marginBottom :14, marginLeft : 12, fontWeight: "bold", fontSize: 30}}> Weekly Updates</Text>
       
+        <TextInput
+          placeholder="Search newsletters"
+          placeholderTextColor="#999"
+          style={styles.search}
+          value={searchText}
+          onChangeText={setSearchText}
+        />
 
+      {/* dropdown filter */}
+      <View style = {{flexDirection: 'row'}}>
+        <Ionicons style = {{marginTop: 14, marginRight: 4}}name = "filter-outline" size = {24}/>
+        <DropDownPicker
+          open={filterOpen}
+          setOpen = {setFilterOpen}
+          value={filterDateLength}
+          setValue={setFilterDateLength}
+          items={[
+            { label: 'Past Week', value: 'week' },
+            { label: 'Past 2 Weeks', value: '2weeks' },
+            { label: 'Past Month', value: 'month' },
+            { label: 'Any', value: 'all' },
+
+          ]}
+          style={styles.filter}
+          dropDownContainerStyle= {styles.dropDownContainerStyle}
+          
+          >
+
+          </DropDownPicker>
+      </View>
 
       <FlatList
         data={filteredNewsletters}
@@ -91,13 +115,28 @@ export default function Newsletter() {
 const styles = StyleSheet.create({
   search: {
     borderWidth: 1,
-    width: "85%",
+    width: "95%",
     alignSelf: "center",
     borderColor: "#151414",
     borderRadius: 24,
     paddingHorizontal: 16,
     paddingVertical: 10,
     marginBottom: 24,
-    marginTop: 24,
   },
-});
+  dropDownContainerStyle: {
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "#151414",
+    backgroundColor: "transparent",
+    maxHeight: 160,
+  },
+   filter: {
+      width: "50%",
+      borderRadius: 24,
+      borderWidth: 1,
+      borderColor: "#151414",
+      backgroundColor: "transparent",
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+    }}
+);
