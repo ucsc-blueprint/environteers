@@ -9,7 +9,7 @@ import {
   mdiOpenInNew,
 } from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { MaterialIcons } from '@expo/vector-icons';
 
 type EcoFeedProps = {
   type: string;
