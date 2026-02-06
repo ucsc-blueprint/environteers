@@ -1,52 +1,67 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {View, Text, TextInput, FlatList, Pressable, StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+
+import { supabase } from "@/constants/supabase";
 
 type Volunteer = {
   id: string;
   name: string;
   years: number;
-  status: 'approved' | 'pending';
 };
 
-const MOCK_VOLUNTEERS: Volunteer[] = [
-  { id: '1', name: 'A Name', years: 3, status: 'approved' },
-  { id: '2', name: 'B Name', years: 2, status: 'approved' },
-  { id: '3', name: 'C Name', years: 1, status: 'pending' },
-  { id: '4', name: 'D Name', years: 4, status: 'pending' },
-  { id: '5', name: 'E Name', years: 2, status: 'approved' },
-  { id: '6', name: 'F Name', years: 2, status: 'approved' },
-  { id: '7', name: 'G Name', years: 2, status: 'approved' },
-  { id: '8', name: 'H Name', years: 2, status: 'approved' },
-  { id: '9', name: 'I Name', years: 2, status: 'approved' },
-  { id: '10', name: 'J Name', years: 2, status: 'approved' },
-  { id: '11', name: 'K Name', years: 2, status: 'approved' },
-  { id: '12', name: 'L Name', years: 2, status: 'approved' },
-  { id: '13', name: 'M Name', years: 2, status: 'approved' },
-];
-
 const includesText = (str: string, search: string) => 
+  {
+    if (str.toLowerCase().includes(search.toLowerCase()))
     {
-        if (str.toLowerCase().includes(search.toLowerCase()))
-        {
-          return true;
-        }
-        else
-          return false;
-
+      return true;
     }
+    else
+      return false;
+  }
 
 export const AdminVolunteersView = () => {
-  const [tab, setTab] = useState<'approved' | 'pending'>('approved');
+  const [users, setUsers] = useState<Volunteer[]>([]);
   const [searchText, setSearchText] = useState('');
 
-  // Filter volunteers by tab and search text
-  const filteredVolunteers = MOCK_VOLUNTEERS.filter(
-    (v) =>
-      v.status === tab &&
-      (includesText(v.name, searchText))
-  );
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('user_id, username, created_at')
+          .eq("is_admin", false);
+        
+        if (error) {
+          console.error("Error fetching users:", error);
+          return;
+        }
+
+        const volunteers: Volunteer[] = (data ?? []).map(user => {
+          const created = new Date(user.created_at);
+          const now = new Date();
+
+          const years = Math.floor(
+            (now.getTime() - created.getTime()) /
+            (1000 * 60 * 60 * 24 * 365)
+          );
+
+          return {
+            id: user.user_id,
+            name: user.username,
+            years
+          };
+        });
+        
+        setUsers(volunteers);
+      } catch(error) {
+        console.error("Unexpected error:", error);
+      }
+    };
+
+    fetchUsers();
+  }, [])
 
   return (
     <View style = {styles.container}>
@@ -58,7 +73,7 @@ export const AdminVolunteersView = () => {
         <TextInput
           placeholderTextColor='#999'
           
-          placeholder="Search for a name (or email??)"
+          placeholder="Search for a username"
           
 
           style={styles.search}
@@ -66,24 +81,9 @@ export const AdminVolunteersView = () => {
           onChangeText={setSearchText}
         />
 
-        {/* Tabs */}
-        <View style={styles.tabs}>
-          <Pressable onPress={() => setTab('approved')}>
-            <Text style={[styles.tabText, tab === 'approved' && styles.activeTab]}>
-              Approved
-            </Text>
-          </Pressable>
-
-          <Pressable onPress={() => setTab('pending')}>
-            <Text style={[styles.tabText, tab === 'pending' && styles.activeTab]}>
-              Pending Approval
-            </Text>
-          </Pressable>
-        </View>
-
         {/* volunteer list */}
         <FlatList
-          data={filteredVolunteers}
+          data={users}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ paddingBottom: 24, paddingInline: 24}}
           renderItem={({ item }) => (
@@ -94,12 +94,6 @@ export const AdminVolunteersView = () => {
                 <Text style={styles.name}>{item.name}</Text>
                 <Text style={styles.subtext}>Member for {item.years} years</Text>
               </View>
-
-              {item.status === 'pending' && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>Pending</Text>
-                </View>
-              )}
             </View>
           )}
         />
