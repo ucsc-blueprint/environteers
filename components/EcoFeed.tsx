@@ -1,5 +1,9 @@
 import { useAuth } from "@/context/AuthContext";
+<<<<<<< HEAD
 import { View, Text, StyleSheet, Pressable } from 'react-native';
+=======
+import { View, Image, Text, StyleSheet, Pressable, Linking } from 'react-native';
+>>>>>>> d668240 (added sign up link property to ecofeed)
 import Svg, { Path } from 'react-native-svg';
 import { useState } from "react";
 import { Image } from 'expo-image';
@@ -12,12 +16,14 @@ import {
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
 
+
 type EcoFeedProps = {
   type: string;
   title: string;
   liked: boolean;
   cover_photo: string;
   description: string,
+  sign_up_link: string, 
   date?: string;
   location?: string;
   spotsLeft?: number;
@@ -86,10 +92,10 @@ const renderLocation = (props: EcoFeedProps) => {
   }
 }
 
-const renderExpandedContent = (description: string) => {
+const renderExpandedContent = (props) => {
   return (
     <>
-      <Text>{description}</Text>
+      <Text>{props.description}</Text>
       <View style={styles.signUpContainer}>
       <Pressable style={styles.signUp} onPress={() => {}}>
         <Text style={styles.signUpText}>Sign Up</Text>
@@ -101,6 +107,11 @@ const renderExpandedContent = (description: string) => {
     </>
   );
 }
+
+const openSignUpLink = () => {
+
+}
+
 
 export const Header = ({ resultsCount }: HeaderProps) => {
   const { profile } = useAuth();
@@ -165,7 +176,7 @@ export const EcoFeed = (props: EcoFeedProps) => {
           </View>
         </View>
         {/* Expanded Card Content */}
-        { expanded ? renderExpandedContent(props.description) : <></>}
+        { expanded ? renderExpandedContent(props) : <></>}
       </View>
   </Pressable>
   );
