@@ -1,7 +1,6 @@
-import { ScrollView, ActivityIndicator, StyleSheet } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { EcoFeed, Header } from "@/components/EcoFeed";
 import { useEffect, useState } from "react";
-import { View } from 'react-native';
 import { supabase } from "@/constants/supabase";
 import { LinearGradient } from 'expo-linear-gradient';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
@@ -45,11 +44,9 @@ function formatEventDate(start: string, end: string) {
 
 export default function Volunteer() {
   const [items, setItems] = useState<VolunteerItem[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchVolunteerData = async () => {
-      setLoading(true);
 
     // EVENTS
     const { data: events } = await supabase
@@ -83,7 +80,7 @@ export default function Volunteer() {
     })) ?? [];
 
       setItems([...eventItems, ...otherItems]);
-      setLoading(false);
+      // setLoading(false);
     };
 
     fetchVolunteerData();
