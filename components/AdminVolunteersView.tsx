@@ -7,7 +7,7 @@ import { supabase } from "@/constants/supabase";
 
 type Volunteer = {
   id: string;
-  name: string;
+  username: string;
   years: number;
 };
 
@@ -22,7 +22,7 @@ const includesText = (str: string, search: string) =>
   }
 
 export const AdminVolunteersView = () => {
-  const [users, setUsers] = useState<Volunteer[]>([]);
+  const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [searchText, setSearchText] = useState('');
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export const AdminVolunteersView = () => {
           return;
         }
 
-        const volunteers: Volunteer[] = (data ?? []).map(user => {
+        const users: Volunteer[] = (data ?? []).map(user => {
           const created = new Date(user.created_at);
           const now = new Date();
 
@@ -49,19 +49,23 @@ export const AdminVolunteersView = () => {
 
           return {
             id: user.user_id,
-            name: user.username,
+            username: user.username,
             years
           };
         });
         
-        setUsers(volunteers);
+        const filteredVolunteers = users.filter(
+          (user) => includesText(user.username, searchText)
+        );
+
+        setVolunteers(filteredVolunteers);
       } catch(error) {
         console.error("Unexpected error:", error);
       }
     };
 
     fetchUsers();
-  }, [])
+  }, [volunteers])
 
   return (
     <View style = {styles.container}>
@@ -83,7 +87,7 @@ export const AdminVolunteersView = () => {
 
         {/* volunteer list */}
         <FlatList
-          data={users}
+          data={volunteers}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ paddingBottom: 24, paddingInline: 24}}
           renderItem={({ item }) => (
@@ -91,7 +95,7 @@ export const AdminVolunteersView = () => {
               <View style={styles.avatar} />
 
               <View style={{ flex: 1 }}>
-                <Text style={styles.name}>{item.name}</Text>
+                <Text style={styles.name}>{item.username}</Text>
                 <Text style={styles.subtext}>Member for {item.years} years</Text>
               </View>
             </View>
