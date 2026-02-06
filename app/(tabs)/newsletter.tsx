@@ -27,6 +27,7 @@ const NEWSLETTERS = [
 ];
 
 const includesText = (str: string, search: string) =>
+
   str.toLowerCase().includes(search.toLowerCase());
 
 const parseDate = (dateStr: string) =>{
@@ -54,7 +55,7 @@ export default function Newsletter() {
 
 
   const filteredNewsletters = NEWSLETTERS.filter((n) =>
-    (includesText(n.title, searchText) || includesText(n.editionNumber.toString(), searchText))&& (includesDate(n.date, filterDateLength))
+    (includesText(n.title + ": " + n.editionNumber + "th Edition", searchText))&& (includesDate(n.date, filterDateLength))
   );
   //displaying webview of a newsletter
   if (activeUrl) {
