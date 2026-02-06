@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {View, Text, TextInput, FlatList, Pressable, StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,17 +12,10 @@ type Volunteer = {
 };
 
 const includesText = (str: string, search: string) => 
-  {
-    if (str.toLowerCase().includes(search.toLowerCase()))
-    {
-      return true;
-    }
-    else
-      return false;
-  }
+  str.toLowerCase().includes(search.toLowerCase());
 
 export const AdminVolunteersView = () => {
-  const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
+  const [allVolunteers, setAllVolunteers] = useState<Volunteer[]>([]);
   const [searchText, setSearchText] = useState('');
 
   useEffect(() => {
@@ -53,19 +46,23 @@ export const AdminVolunteersView = () => {
             years
           };
         });
-        
-        const filteredVolunteers = users.filter(
-          (user) => includesText(user.username, searchText)
-        );
 
-        setVolunteers(filteredVolunteers);
-      } catch(error) {
+        setAllVolunteers(users);
+      } catch (error) {
         console.error("Unexpected error:", error);
       }
     };
 
     fetchUsers();
-  }, [volunteers])
+  }, [])
+
+  const volunteers = useMemo(() => {
+    if (!searchText.trim()) return allVolunteers;
+
+    return allVolunteers.filter(user => 
+      includesText(user.username, searchText)
+    );
+  }, [allVolunteers, searchText]);
 
   return (
     <View style = {styles.container}>
