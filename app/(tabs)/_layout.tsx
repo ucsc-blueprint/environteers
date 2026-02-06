@@ -1,14 +1,29 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { Ionicons } from '@expo/vector-icons';
-import Octicons from '@expo/vector-icons/Octicons';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Tabs, useRouter } from 'expo-router'
+import React, { useEffect } from 'react'
+import { Ionicons } from '@expo/vector-icons'
+import Octicons from '@expo/vector-icons/Octicons'
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
+import { useAuth } from '@/context/AuthContext'
+import { Text } from 'react-native'
 
 export default function TabsLayout() {
+  const router = useRouter();
+  const { user, loading, profile } = useAuth()
+
+  useEffect(() => {
+    if (!loading && !user && !profile) {
+      router.replace('/')
+    }
+  }, [user, loading, profile, router])
+  
+  if (loading) {
+    return <Text>Loading...</Text>
+  }
+
   return (
     <Tabs>
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
@@ -35,6 +50,15 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="admin-analytics"
+        options={{
+          title: 'Analytics',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="chart-bar" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
@@ -54,6 +78,5 @@ export default function TabsLayout() {
       />
 
     </Tabs>
-      
   );
 }

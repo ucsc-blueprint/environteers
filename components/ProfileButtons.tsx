@@ -1,6 +1,6 @@
 import React from 'react';
 import { useRouter } from 'expo-router';
-import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle, View } from 'react-native';
+import { TouchableOpacity, Text, ViewStyle, TextStyle, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
 interface ProfileButtonProps {
