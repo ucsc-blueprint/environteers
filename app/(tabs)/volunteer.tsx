@@ -12,6 +12,7 @@ type VolunteerItem = {
   liked: boolean;
   cover_photo: string;
   description: string;
+  sign_up_link: string;
   time_taken?: string;
   date?: string;
   location?: string;
@@ -51,12 +52,12 @@ export default function Volunteer() {
     // EVENTS
     const { data: events } = await supabase
       .from("events")
-      .select("event_id, event_name, start_time, end_time, location, type, cover_photo, liked, description");
+      .select("event_id, event_name, start_time, end_time, location, type, cover_photo, liked, description, sign_up_link");
 
     // PETITIONS / CAMPAIGNS
     const { data: petitions } = await supabase
       .from("petitions_campaigns")
-      .select("id, title, time_taken, type, cover_photo, liked, description");
+      .select("id, title, time_taken, type, cover_photo, liked, description, sign_up_link");
     
     const eventItems: VolunteerItem[] = events?.map((e) => ({
       id: e.event_id,
@@ -67,6 +68,7 @@ export default function Volunteer() {
       cover_photo: e.cover_photo,
       liked: e.liked ?? false,
       description: e.description,
+      sign_up_link: e.sign_up_link,
     })) ?? [];
 
     const otherItems: VolunteerItem[] = petitions?.map((p) => ({
@@ -77,6 +79,7 @@ export default function Volunteer() {
       cover_photo: p.cover_photo,
       liked: p.liked ?? false,
       description: p.description,
+      sign_up_link: p.sign_up_link,
     })) ?? [];
 
       setItems([...eventItems, ...otherItems]);
