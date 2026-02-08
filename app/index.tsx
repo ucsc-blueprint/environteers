@@ -1,6 +1,18 @@
-import { Text, View } from "react-native";
+import { View } from "react-native";
+import LandingPage from "@/components/LandingPage";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "expo-router";
+import React from "react";
 
-export default function Index() {
+export default function LandingIndex() {
+  const router = useRouter();
+  const {user, profile} = useAuth();
+  
+  React.useEffect(() => {
+    if (user && profile) {
+      router.push('/(tabs)/home')
+    }
+  }, [user, profile, router])
   return (
     <View
       style={{
@@ -9,7 +21,7 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-      <Text>Edit app/index.tsx to edit this screen.</Text>
+      <LandingPage />
     </View>
   );
 }
