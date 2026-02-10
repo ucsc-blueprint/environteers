@@ -61,7 +61,7 @@ export default function Newsletter() {
     }, []);
 
   const filteredNewsletters = newsLetters.filter((n) =>
-    (includesText(n.title + ": ", searchText))&& (includesDate(n.date, filterDateLength))
+    (includesText(n.title, searchText))&& (includesDate(n.date, filterDateLength))
   );
   //displaying webview of a newsletter
   if (activeUrl) {
