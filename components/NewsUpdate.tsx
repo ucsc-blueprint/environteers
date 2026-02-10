@@ -27,7 +27,7 @@ export const NewsUpdate = ({
       </View>
 
       <Text style={styles.title} numberOfLines={2}>
-        {title}: {editionNumber}th Edition
+        {title}: {editionNumber? `\Edition ${editionNumber}` : ""}
       </Text>
 
       <View style={styles.meta}>

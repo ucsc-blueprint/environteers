@@ -1,61 +1,67 @@
 import { Text, TextInput, FlatList, Pressable, View, StyleSheet } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect} from "react";
 import { NewsUpdate } from "../../components/NewsUpdate";
 import { WebView } from "react-native-webview";
 import DropDownPicker from 'react-native-dropdown-picker'
+import {supabase} from "@/constants/supabase";
 import { Ionicons } from "@expo/vector-icons"; //"filter-outline" dropdown and "menu-outline" menu icon
 
-const NEWSLETTERS = [
-  {
-    id: "5",
-    title: "Environteers Weekly Update",
-    editionNumber: 5,
-    date: "02/04/2026",
-    link: "https://mailchi.mp/f61e915c4e8e/environteers-weekly-update?e=298d639b33",
-    previewImage:
-      "https://mcusercontent.com/37708d1720fdc287c7e9795e8/images/26f6c4d7-a555-2c70-cc48-17dbcf267087.jpeg",
-  },
-  {
-    id: "6",
-    title: "Environteers Weekly Update",
-    editionNumber: 6,
-    date: "01/13/2026",
-    link: "https://mailchi.mp/f61e915c4e8e/environteers-weekly-update?e=298d639b33",
-    previewImage:
-      "https://mcusercontent.com/37708d1720fdc287c7e9795e8/images/544c89e1-15ec-67ef-b4fb-940556e00cbf.jpg",
-  },
-];
 
 const includesText = (str: string, search: string) =>
 
   str.toLowerCase().includes(search.toLowerCase());
 
-const parseDate = (dateStr: string) =>{
-  const [month, day, year] = dateStr.split('/').map(Number);
-  return new Date(year, month - 1, day);
-}
+const parseDate = (dateStr: string) => new Date(dateStr);
+
 const includesDate = (dateStr: string, filter: 'week' | '2weeks' | 'month' | 'all') => {
   if (filter === 'all') return true;
   const date = parseDate(dateStr);
   const now = new Date();
   const diffTime = Math.abs(now.getTime() - date.getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
   if (filter === 'week') return diffDays <= 7;
   if (filter === '2weeks') return diffDays <= 14;
   if (filter === 'month') return diffDays <= 30;
   return false;
 }
 
+export interface newsLetterItem{
+  newsletter_id: string;
+  title: string;
+  date: string;
+  preview_image: string;
+  link: string;
+}
+
 
 export default function Newsletter() {
+  const [newsLetters, setNewsLetters] = useState<newsLetterItem[]>([]);
   const [activeUrl, setActiveUrl] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
   const [filterDateLength, setFilterDateLength] = useState< 'week' | '2weeks' | 'month' | 'all' >('all');
 
 
-  const filteredNewsletters = NEWSLETTERS.filter((n) =>
-    (includesText(n.title + ": " + n.editionNumber + "th Edition", searchText))&& (includesDate(n.date, filterDateLength))
+  useEffect(() => {
+    const fetchNewsletters = async () => {
+      const { data, error } = await supabase
+        .from('news')
+        .select('*');
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      setNewsLetters(data ?? []);
+      console.log("Fetched newsletters:", data);
+    };
+
+    fetchNewsletters();
+    }, []);
+
+  const filteredNewsletters = newsLetters.filter((n) =>
+    (includesText(n.title + ": ", searchText))&& (includesDate(n.date, filterDateLength))
   );
   //displaying webview of a newsletter
   if (activeUrl) {
@@ -79,6 +85,7 @@ export default function Newsletter() {
   //displaying list of newsletters
   return (
     <View style={{ flex: 1 }}>
+
       <Ionicons name = "menu-outline" size = {30} style = {{marginTop: 8, marginLeft: 8}} />
       <Text style = {{marginTop: 8, marginBottom :12, marginLeft : 12, fontWeight: "bold", fontSize: 30}}> Weekly Updates</Text>
       
@@ -115,14 +122,13 @@ export default function Newsletter() {
 
       <FlatList
         data={filteredNewsletters}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.newsletter_id}
         contentContainerStyle={{ padding: 16 }}
         renderItem={({ item }) => (
           <NewsUpdate
             title={item.title}
-            editionNumber={item.editionNumber}
             date={item.date}
-            previewImage={item.previewImage}
+            previewImage={item.preview_image}
             onPress={() => setActiveUrl(item.link)}
           />
         )}
