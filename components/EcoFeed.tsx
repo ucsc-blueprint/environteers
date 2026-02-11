@@ -92,27 +92,6 @@ const renderLocation = (props: EcoFeedProps) => {
   }
 }
 
-const renderExpandedContent = (props) => {
-  return (
-    <>
-      <Text>{props.description}</Text>
-      <View style={styles.signUpContainer}>
-      <Pressable style={styles.signUp} onPress={() => {}}>
-        <Text style={styles.signUpText}>Sign Up</Text>
-          <Svg width={20} height={20} viewBox="0 0 24 24">
-            <Path d={mdiOpenInNew} fill={'white'} />
-          </Svg>
-      </Pressable>       
-      </View>
-    </>
-  );
-}
-
-const openSignUpLink = () => {
-
-}
-
-
 export const Header = ({ resultsCount }: HeaderProps) => {
   const { profile } = useAuth();
 
@@ -144,10 +123,21 @@ export const Header = ({ resultsCount }: HeaderProps) => {
 
 export const EcoFeed = (props: EcoFeedProps) => {
   const [expanded, setExpanded] = useState(false);
+  const [signUpClicked, setSignUpClicked] = useState(false);
 
   const toggleExpanded = () => {
     setExpanded(prev => !prev);
   };
+
+  const openSignUpLink = (link: string) => {
+    Linking.openURL(link);
+    setSignUpClicked(true);
+  }
+
+  const handleSignUp = () => {
+    setSignUpClicked(false);
+  }
+
   return (
     <Pressable
       onPress={toggleExpanded}
@@ -176,7 +166,35 @@ export const EcoFeed = (props: EcoFeedProps) => {
           </View>
         </View>
         {/* Expanded Card Content */}
-        { expanded ? renderExpandedContent(props) : <></>}
+        { expanded ?
+          <>
+            <Text>{props.description}</Text>
+            <View style={styles.signUpContainer}>
+            {/* Sign up confirmation popup */}
+            { signUpClicked ? 
+              <View style={styles.signUpPopup}>
+                <Text style={styles.signUpPrompt}>Did you sign up through the external site?</Text>
+                <View style={styles.signUpButtons}>
+                  <Pressable style={styles.signUpButton} onPress={() => handleSignUp()}><Text style={styles.signUpPrompt}>yes</Text></Pressable>
+                  <Pressable style={styles.signUpButton} onPress={() => handleSignUp()}><Text style={styles.signUpPrompt}>no</Text></Pressable>
+                </View>
+              </View>
+              : 
+              <></>
+            }
+            <View style={styles.signedUp}>
+              <Pressable style={styles.signUp} onPress={() => openSignUpLink(props.sign_up_link)}>
+                <Text style={styles.signUpText}>Sign Up</Text>
+                  <Svg width={20} height={20} viewBox="0 0 24 24">
+                    <Path d={mdiOpenInNew} fill={'white'} />
+                  </Svg>
+              </Pressable>               
+              </View>
+            </View>
+          </> : 
+
+        <></>
+        }
       </View>
   </Pressable>
   );
@@ -329,7 +347,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-
   button: {
     borderWidth: 1,
     borderColor: '#0282D3',
@@ -345,8 +362,6 @@ const styles = StyleSheet.create({
 
   signUpContainer: {
     display: 'flex',
-    alignItems: 'center',
-    paddingVertical: 10,
   },
 
   signUp: {
@@ -366,4 +381,38 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
+  signUpPopup: {
+    backgroundColor: '#EAF2F6',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 15,
+    borderRadius: 10,
+    marginVertical: 10,
+  },
+  
+  signUpPrompt: {
+    color: '#0282D3',
+    fontSize: 12,
+  },
+
+  signUpButtons: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+
+  signUpButton: {
+    color: '#0282D3',
+    backgroundColor: 'white',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+  },
+
+  signedUp: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginVertical: 10,
+  }
 });
