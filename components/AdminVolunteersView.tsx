@@ -9,11 +9,33 @@ import { supabase } from "@/constants/supabase";
 type Volunteer = {
   id: string;
   username: string;
-  years: number;
+  membership: string;
 };
 
 const includesText = (str: string, search: string) => 
   str.toLowerCase().includes(search.toLowerCase());
+
+const formatMembership = (created_at: string) => {
+  const created = new Date(created_at);
+  const now = new Date();
+
+  const diffMs = now.getTime() - created.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+  if (diffDays === 0) return "Joined today";
+  if (diffDays < 30) return `Member for ${diffDays} day${diffDays === 1 ? "" : "s"}`;
+  
+  const months = Math.floor(diffDays / 30);
+  if (months < 12) return `Member for ${months} month${months === 1 ? "" : "s"}`; 
+
+  const years = Math.floor(months / 12);
+  const remainingMonths = months % 12;
+
+  if (remainingMonths === 0) return `Member for ${years} year${years === 1 ? "" : "s"}`;
+
+  return `Member for ${years} year${years === 1 ? "" : "s"} and ` +
+         `${remainingMonths} month${remainingMonths === 1 ? "" : "s"}`;
+}
 
 export const AdminVolunteersView = () => {
   const router = useRouter();
@@ -34,18 +56,10 @@ export const AdminVolunteersView = () => {
         }
 
         const users: Volunteer[] = (data ?? []).map(user => {
-          const created = new Date(user.created_at);
-          const now = new Date();
-
-          const years = Math.floor(
-            (now.getTime() - created.getTime()) /
-            (1000 * 60 * 60 * 24 * 365)
-          );
-
           return {
             id: user.user_id,
             username: user.username,
-            years
+            membership: formatMembership(user.created_at)
           };
         });
 
@@ -94,14 +108,15 @@ export const AdminVolunteersView = () => {
               style={styles.row}
               onPress={() => router.push({
                 pathname: '/(tabs)/admin-analytics',
-                params: { volunteerName: item.username }
+                params: { volunteerName: item.username, membershipStatus: item.membership }
               })}
             >
               <View style={styles.avatar} />
 
               <View style={{ flex: 1 }}>
                 <Text style={styles.name}>{item.username}</Text>
-                <Text style={styles.subtext}>Member for {item.years} years</Text>
+                <Text style={styles.subtext}>{item.membership}
+                </Text>
               </View>
             </Pressable>
           )}

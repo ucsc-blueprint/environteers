@@ -6,7 +6,7 @@ import { Divider } from 'react-native-paper';
 import { useLocalSearchParams } from 'expo-router';
 
 export default function AdminAnalytics() {
-  const { volunteerName } = useLocalSearchParams();
+  const { volunteerName, membershipStatus } = useLocalSearchParams();
 
   return (
     <ScrollView 
@@ -18,7 +18,7 @@ export default function AdminAnalytics() {
         <View style={styles.profileCircle} />
         {/* default if no actual volunteer name */} 
         <Text style={styles.profileName}>{volunteerName || 'Volunteer Name'}</Text>
-        <Text style={styles.membershipText}>Member for 3 years</Text>
+        <Text style={styles.membershipText}>{membershipStatus}</Text>
       </View>
       
       <View style={styles.row}>
