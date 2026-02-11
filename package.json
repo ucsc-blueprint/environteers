@@ -14,6 +14,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "@d11/react-native-fast-image": "^8.13.0",
     "@expo/vector-icons": "^15.0.3",
     "@mdi/js": "^7.4.47",
     "@mdi/react": "^1.6.1",
@@ -27,7 +28,7 @@
     "expo-constants": "~18.0.10",
     "expo-font": "~14.0.9",
     "expo-haptics": "~15.0.7",
-    "expo-image": "~3.0.10",
+    "expo-image": "~3.0.11",
     "expo-linear-gradient": "~15.0.8",
     "expo-linking": "~8.0.8",
     "expo-router": "~6.0.14",

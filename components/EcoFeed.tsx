@@ -1,7 +1,8 @@
 import { useAuth } from "@/context/AuthContext";
-import { View, Image, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { useState } from "react";
+import { Image } from 'expo-image';
 import { 
   mdiMenu,
   mdiBell,

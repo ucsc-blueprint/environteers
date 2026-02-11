@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { StyleSheet, Text, View, Pressable, Image} from 'react-native';
+import { StyleSheet, Text, View, Pressable} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
-
+import { Image } from 'expo-image';
 
 export interface NewsUpdateProps {
   title: string;
