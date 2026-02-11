@@ -41,9 +41,6 @@ export default function AdminAnalytics() {
       
       <View style={styles.bottomButton}>
         <View style={styles.buttonContent}>
-          <View style={styles.statusContainer}>
-            <Text style={styles.statusText}>Status: Pending</Text>
-          </View>
           <View style={styles.detailsContainer}>
             <Text style={styles.detailsText}>View Eco-Action Details</Text>
           </View>
