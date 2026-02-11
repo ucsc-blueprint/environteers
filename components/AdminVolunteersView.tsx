@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {View, Text, TextInput, FlatList, Pressable, StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 import { supabase } from "@/constants/supabase";
 
@@ -15,6 +16,7 @@ const includesText = (str: string, search: string) =>
   str.toLowerCase().includes(search.toLowerCase());
 
 export const AdminVolunteersView = () => {
+  const router = useRouter();
   const [allVolunteers, setAllVolunteers] = useState<Volunteer[]>([]);
   const [searchText, setSearchText] = useState('');
 
@@ -88,14 +90,20 @@ export const AdminVolunteersView = () => {
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ paddingBottom: 24, paddingInline: 24}}
           renderItem={({ item }) => (
-            <View style={styles.row}>
+            <Pressable 
+              style={styles.row}
+              onPress={() => router.push({
+                pathname: '/(tabs)/admin-analytics',
+                params: { volunteerName: item.username }
+              })}
+            >
               <View style={styles.avatar} />
 
               <View style={{ flex: 1 }}>
                 <Text style={styles.name}>{item.username}</Text>
                 <Text style={styles.subtext}>Member for {item.years} years</Text>
               </View>
-            </View>
+            </Pressable>
           )}
         />
       </View>

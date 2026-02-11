@@ -3,8 +3,11 @@ import { View, ScrollView, Text, TextInput } from 'react-native';
 import { Hourglass, Leaf, Calendar, ChevronRight, Pencil } from 'lucide-react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { Divider } from 'react-native-paper';
+import { useLocalSearchParams } from 'expo-router';
 
 export default function AdminAnalytics() {
+  const { volunteerName } = useLocalSearchParams();
+
   return (
     <ScrollView 
       style={styles.container} 
@@ -13,7 +16,8 @@ export default function AdminAnalytics() {
     >
       <View style={styles.profileContainer}>
         <View style={styles.profileCircle} />
-        <Text style={styles.profileName}>Volunteer Name</Text>
+        {/* default if no actual volunteer name */} 
+        <Text style={styles.profileName}>{volunteerName || 'Volunteer Name'}</Text>
         <Text style={styles.membershipText}>Member for 3 years</Text>
       </View>
       
