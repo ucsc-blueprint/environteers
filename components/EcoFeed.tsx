@@ -134,28 +134,31 @@ export const EcoFeed = (props: EcoFeedProps) => {
   /*const handleSignUp = () => {
     setSignUpClicked(false);
   }*/
-  const handleSignUp = async () => {
-    setSignUpClicked(false);
+    const handleSignUp = async () => {
+      setShowSignupConfirm(false);
   
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
   
-    if (!user) return;
+      if (!user) return;
   
-    const { error } = await supabase
-      .from('user_analytics')
-      .insert({
+      const { error } = await supabase.from("user_analytics").insert({
         user_id: user.id,
-        interaction_type: 'signup',
+        interaction_type: "signup",
         interaction_date: new Date().toISOString(),
         interaction_id: props.event_id ?? null,
       });
   
-    if (error) {
-      console.error('Failed to log signup analytics:', error);
-    }
-  };
+      if (error) {
+        console.error("Failed to log signup analytics:", error);
+      }
+    };
+  
+    /* ❌ NO → just close popup */
+    const handleDeclineSignup = () => {
+      setShowSignupConfirm(false);
+    };
 
   return (
     <Pressable
