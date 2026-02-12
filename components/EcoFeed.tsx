@@ -1,12 +1,8 @@
 import { useAuth } from "@/context/AuthContext";
-<<<<<<< HEAD
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-=======
 import { View, Image, Text, StyleSheet, Pressable, Linking } from 'react-native';
->>>>>>> d668240 (added sign up link property to ecofeed)
 import Svg, { Path } from 'react-native-svg';
 import { useState } from "react";
-import { Image } from 'expo-image';
+import { supabase } from "@/constants/supabase";
 import { 
   mdiMenu,
   mdiBell,
@@ -18,6 +14,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 
 
 type EcoFeedProps = {
+  event_id?: number;
   type: string;
   title: string;
   liked: boolean;
@@ -123,7 +120,7 @@ export const Header = ({ resultsCount }: HeaderProps) => {
 
 export const EcoFeed = (props: EcoFeedProps) => {
   const [expanded, setExpanded] = useState(false);
-  const [signUpClicked, setSignUpClicked] = useState(false);
+  const [signUpClicked, setShowSignupConfirm] = useState(false);
 
   const toggleExpanded = () => {
     setExpanded(prev => !prev);
@@ -131,12 +128,34 @@ export const EcoFeed = (props: EcoFeedProps) => {
 
   const openSignUpLink = (link: string) => {
     Linking.openURL(link);
-    setSignUpClicked(true);
+    setShowSignupConfirm(true);
   }
 
-  const handleSignUp = () => {
+  /*const handleSignUp = () => {
     setSignUpClicked(false);
-  }
+  }*/
+  const handleSignUp = async () => {
+    setSignUpClicked(false);
+  
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+  
+    if (!user) return;
+  
+    const { error } = await supabase
+      .from('user_analytics')
+      .insert({
+        user_id: user.id,
+        interaction_type: 'signup',
+        interaction_date: new Date().toISOString(),
+        interaction_id: props.event_id ?? null,
+      });
+  
+    if (error) {
+      console.error('Failed to log signup analytics:', error);
+    }
+  };
 
   return (
     <Pressable
@@ -175,8 +194,19 @@ export const EcoFeed = (props: EcoFeedProps) => {
               <View style={styles.signUpPopup}>
                 <Text style={styles.signUpPrompt}>Did you sign up through the external site?</Text>
                 <View style={styles.signUpButtons}>
-                  <Pressable style={styles.signUpButton} onPress={() => handleSignUp()}><Text style={styles.signUpPrompt}>yes</Text></Pressable>
-                  <Pressable style={styles.signUpButton} onPress={() => handleSignUp()}><Text style={styles.signUpPrompt}>no</Text></Pressable>
+                  <Pressable
+                    style={styles.signUpButton}
+                    onPress={handleSignUp}   // YES → log to Supabase
+                  >
+                    <Text style={styles.signUpPrompt}>yes</Text>
+                  </Pressable>
+
+                  <Pressable
+                    style={styles.signUpButton}
+                    onPress={handleDeclineSignup}  // NO → just close popup
+                  >
+                    <Text style={styles.signUpPrompt}>no</Text>
+                  </Pressable>
                 </View>
               </View>
               : 
