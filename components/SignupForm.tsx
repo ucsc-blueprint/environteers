@@ -46,8 +46,9 @@ const SignupForm = ({ onSubmit }: SignupFormProps) => {
       setError('Please enter a valid email address!');
       return;
     }
-
+ 
     onSubmit(username, email, password, isAdmin);
+    router.push('/accountmade')
   };
 
   return (
