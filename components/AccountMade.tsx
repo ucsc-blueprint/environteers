@@ -9,10 +9,15 @@ const AccountMade = () => {
     return(
         <View style={styles.container}>
             <View style={styles.content}>
-              <Text style={styles.label}>
-                <View style={styles.actions}><ChevronLeft size={24} /></View>
-                <Pressable onPress={() => router.push('/signup')}><Text style={styles.label}>Back to registration info</Text></Pressable>
-              </Text>
+              <View style={styles.backContainer}>
+                <Pressable 
+                  style={styles.backButton}
+                  onPress={() => router.push('/signup')}
+                  >
+                <ChevronLeft size={20} />
+                <Text style={styles.label}>Back to registration info</Text>
+              </Pressable>
+              </View>
               <Text style={styles.title}>Account Made!</Text>
               <Text style={styles.subtitle}>
               Thank you for helping us
@@ -68,9 +73,8 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    fontSize: 14,
-    marginTop: 10,
-    marginBottom: 6,
+    fontSize: 10,
+    marginLeft: 4,
   },
 
   image: {
@@ -100,9 +104,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   
-  actions: {
-    flexDirection: 'row',
+  backContainer: {
     marginTop: 10,
-    gap: 5,
+    marginBottom: 6,
+  },
+
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
   }
 })
