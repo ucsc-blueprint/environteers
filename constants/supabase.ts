@@ -52,34 +52,11 @@ if (!supabaseUrl || !supabasePublishableKey) {
     );
 }
 
-function removeUserMetaData(itemValue: string) {
-    let parsedItemValue = JSON.parse(itemValue);
-
-    if (parsedItemValue) {
-        delete parsedItemValue.user?.identities;
-        delete parsedItemValue.user?.user_metadata;
-    }
-
-    return JSON.stringify(parsedItemValue);
-}
-
-const ExpoSecureStoreAdapter = {
-    getItem: (key: string) => {
-        return SecureStore.getItemAsync(key);
-    },
-    setItem: (key: string, value: string) => {
-        return SecureStore.setItemAsync(key, removeUserMetaData(value));
-    },
-    removeItem: (key: string) => {
-        return SecureStore.deleteItemAsync(key);
-    },
-};
-
 export const supabase = createClient(
     supabaseUrl,
     supabasePublishableKey, {
         auth: {
-            storage: ExpoSecureStoreAdapter,
+            storage: new LargeSecureStore,
             autoRefreshToken: true,
             persistSession: true,
             detectSessionInUrl: false,
