@@ -3,8 +3,11 @@ import { View, ScrollView, Text, TextInput } from 'react-native';
 import { Hourglass, Leaf, Calendar, ChevronRight, Pencil } from 'lucide-react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { Divider } from 'react-native-paper';
+import { useLocalSearchParams } from 'expo-router';
 
 export default function AdminAnalytics() {
+  const { volunteerName, membershipStatus } = useLocalSearchParams();
+
   return (
     <ScrollView 
       style={styles.container} 
@@ -13,8 +16,9 @@ export default function AdminAnalytics() {
     >
       <View style={styles.profileContainer}>
         <View style={styles.profileCircle} />
-        <Text style={styles.profileName}>Volunteer Name</Text>
-        <Text style={styles.membershipText}>Member for 3 years</Text>
+        {/* default if no actual volunteer name */} 
+        <Text style={styles.profileName}>{volunteerName || 'Volunteer Name'}</Text>
+        <Text style={styles.membershipText}>{membershipStatus}</Text>
       </View>
       
       <View style={styles.row}>
@@ -37,9 +41,6 @@ export default function AdminAnalytics() {
       
       <View style={styles.bottomButton}>
         <View style={styles.buttonContent}>
-          <View style={styles.statusContainer}>
-            <Text style={styles.statusText}>Status: Pending</Text>
-          </View>
           <View style={styles.detailsContainer}>
             <Text style={styles.detailsText}>View Eco-Action Details</Text>
           </View>
