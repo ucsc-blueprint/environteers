@@ -48,6 +48,7 @@ const SignupForm = ({ onSubmit }: SignupFormProps) => {
     }
 
     onSubmit(username, email, password, isAdmin);
+    router.push({pathname:'/verify-email', params: { isAdmin: isAdmin.toString()}}); //line added to navigate to verify email page  };
   };
 
   return (
@@ -121,6 +122,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#E5E5E5',
+    paddingTop: 60,
     justifyContent: 'center',
   },
 
