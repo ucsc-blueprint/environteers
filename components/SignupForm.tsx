@@ -46,13 +46,8 @@ const SignupForm = ({ onSubmit }: SignupFormProps) => {
       setError('Please enter a valid email address!');
       return;
     }
- 
+
     onSubmit(username, email, password, isAdmin);
-<<<<<<< HEAD
-    router.push('/accountmade')
-=======
-    router.push({pathname:'/verify-email', params: { isAdmin: isAdmin.toString()}}); //line added to navigate to verify email page
->>>>>>> 0ce9b9f77379dfb0216fb6b70123f1992ab12c91
   };
 
   return (
@@ -126,7 +121,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#E5E5E5',
-    paddingTop: 60,
+    justifyContent: 'center',
   },
 
   content: {
