@@ -48,7 +48,7 @@ const SignupForm = ({ onSubmit }: SignupFormProps) => {
     }
 
     onSubmit(username, email, password, isAdmin);
-    router.push({pathname:'/verify-email', params: { isAdmin: isAdmin.toString()}}); //line added to navigate to verify email page  };
+    router.push({pathname:'/verify-email', params: { isAdmin: isAdmin.toString()}});
   };
 
   return (
