@@ -48,7 +48,6 @@ const SignupForm = ({ onSubmit }: SignupFormProps) => {
     }
 
     onSubmit(username, email, password, isAdmin);
-    router.push({pathname:'/verify-email', params: { isAdmin: isAdmin.toString()}});
   };
 
   return (
@@ -122,7 +121,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#E5E5E5',
-    paddingTop: 60,
     justifyContent: 'center',
   },
 
