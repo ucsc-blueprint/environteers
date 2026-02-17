@@ -26,7 +26,7 @@ const VerifyEmailPage = () => {
             />
 
         <Text style={styles.instructionText}>
-          Click the confirmation link in that email&apos;'s inbox to continue.
+          Click the confirmation link in that email&apos;s inbox to continue.
         </Text>
 
         <Pressable
