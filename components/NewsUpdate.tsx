@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Pressable, Image, Linking} from 'react-native';
+import { StyleSheet, Text, View, Pressable} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
-
+import { Image } from 'expo-image';
 
 export interface NewsUpdateProps {
   title: string;
@@ -27,7 +27,7 @@ export const NewsUpdate = ({
       </View>
 
       <Text style={styles.title} numberOfLines={2}>
-        {title}: {editionNumber}th Edition
+        {title}
       </Text>
 
       <View style={styles.meta}>
