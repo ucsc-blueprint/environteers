@@ -1,5 +1,3 @@
-
-import React, { useState } from 'react';
 import {View, Text, Pressable, Image, StyleSheet} from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
