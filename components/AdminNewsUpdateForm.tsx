@@ -1,8 +1,49 @@
 import React, {useState} from 'react';
-import { StyleSheet, Text, View, Pressable, TextInput, Image} from 'react-native';
+import { StyleSheet, Text, View, Pressable, TextInput, Alert, Image} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
+import { supabase } from '@/constants/supabase';
 export const AdminNewsUpdateForm = () => {
+    const [editionNumber, setEditionNumber] = React.useState("");
+    const [link, setLink] = React.useState("");
+    const router = useRouter();
+
+    const handleInsert = async () => {
+      if (!editionNumber) {
+        Alert.alert("Edition number required");
+        return;
+      }
+
+      const date = new Date();
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+
+      const dateString = `${year}-${month}-${day}`;
+
+      const { error } = await supabase.from("news").insert({
+        edition_number: editionNumber,
+        link: link,
+        date: dateString
+      });
+
+      if (error) {
+        Alert.alert(error.message)
+      } else {
+        Alert.alert("Newsletter created successfully")
+      }
+
+      setEditionNumber("")
+      setLink("")
+    }
+
+    const handleCancel = () => {
+      setEditionNumber("")
+      setLink("")
+      router.push("/(tabs)/newsletter")
+    }
+
 
 
     const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
@@ -26,7 +67,7 @@ export const AdminNewsUpdateForm = () => {
 
     return (
         <View style = {styles.container}>
-            <TextInput style = {styles.title} placeholder = "Article Title..." placeholderTextColor={"#4b4747"} />
+            <TextInput style = {styles.title} placeholder = "Article Title..." placeholderTextColor={"#4b4747"}/>
             <View style= {styles.photoUpload}>
               {image? <Image source = {{uri: image}} style = {{height: "100%", width: "100%"}} resizeMode='cover'/>
               : 
@@ -38,22 +79,20 @@ export const AdminNewsUpdateForm = () => {
             </View>
             <View style = {styles.input}>
                 <Ionicons name = "people-outline" size={24} color="#3E4657" />
-                <TextInput style = {styles.textInput} placeholder = "NewsLetter Edition Number..." placeholderTextColor= {"#4b4747"}/>
+                <TextInput style = {styles.textInput} value={editionNumber} placeholder = "NewsLetter Edition Number..." placeholderTextColor= {"#4b4747"} keyboardType="numeric" onChangeText={setEditionNumber}/>
             </View>
             <View style = {styles.input}>
                 <Ionicons name = "link-outline" size={24} color="#3E4657" style = {{marginTop: 12}}/>
-                <TextInput style = {styles.textInput} placeholder = "Link to newsLetter..." placeholderTextColor= {"#4b4747"}/>
+                <TextInput style = {styles.textInput} value={link} placeholder = "Link to newsLetter..." placeholderTextColor= {"#4b4747"} onChangeText={setLink}/>
             </View>
             <View style = {styles.buttonRow}>
-                <Pressable style = {styles.cancelButton}>
+                <Pressable style = {styles.cancelButton} onPress={handleCancel}>
                     <Text style = {styles.cancelText}>Cancel</Text>
                 </Pressable>
-                <Pressable style = {styles.publishButton}>
+                <Pressable style = {styles.publishButton} onPress={handleInsert}>
                     <Text style = {styles.publishText}>Publish</Text>
                 </Pressable>
                 
-
-
             </View>
         </View>
     )
