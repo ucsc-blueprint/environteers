@@ -1,16 +1,40 @@
-import React from 'react';
-import { StyleSheet, Text, View, Pressable, TextInput} from 'react-native';
+import React, {useState} from 'react';
+import { StyleSheet, Text, View, Pressable, TextInput, Image} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 export const AdminNewsUpdateForm = () => {
+
+
+    const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
+    const [image, setImage] = useState('');
+
+    const getImage = async() => 
+    {
+        if (!status?.granted) 
+        {
+          await requestPermission();
+          return;
+        }
+        const result = await ImagePicker.launchImageLibraryAsync()
+        
+        if (!result.canceled)
+        {
+          setImage(result.assets[0].uri);
+          console.log(result.assets[0].uri);
+        }
+    }
+
     return (
         <View style = {styles.container}>
             <TextInput style = {styles.title} placeholder = "Article Title..." placeholderTextColor={"#4b4747"} />
             <View style= {styles.photoUpload}>
-            <Pressable>
-                <Ionicons name = "add-circle-outline" size={24} color="#3E4657" />
-                <Text style = {{color : '#4b4747'}}>Upload Photo</Text>
-            </Pressable>
+              {image? <Image source = {{uri: image}} style = {{height: "100%", width: "100%"}} resizeMode='cover'/>
+              : 
+              <Pressable onPress = {getImage}>
+                  <Ionicons style = {{alignSelf: "center"}} name = "add-circle-outline" size={24} color="#3E4657" />
+                  <Text style = {{color : '#4b4747'}}>Upload Photo</Text>
+              </Pressable>
+              }
             </View>
             <View style = {styles.input}>
                 <Ionicons name = "people-outline" size={24} color="#3E4657" />
