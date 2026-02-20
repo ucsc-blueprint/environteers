@@ -2,6 +2,7 @@ import { useAuth } from "@/context/AuthContext";
 import { View, Image, Text, StyleSheet, Pressable, Linking, Alert } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { useState } from "react";
+import { supabase } from "@/constants/supabase";
 import { 
   mdiMenu,
   mdiBell,
@@ -10,7 +11,6 @@ import {
 } from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
-import { supabase } from "@/constants/supabase";
 
 
 type EcoFeedProps = {
@@ -395,6 +395,40 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
+  signUpPopup: {
+    backgroundColor: '#EAF2F6',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 15,
+    borderRadius: 10,
+    marginVertical: 10,
+  },
+  
+  signUpPrompt: {
+    color: '#0282D3',
+    fontSize: 12,
+  },
+
+  signUpButtons: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+
+  signUpButton: {
+    color: '#0282D3',
+    backgroundColor: 'white',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+  },
+
+  signedUp: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginVertical: 10,
+  }
   signUpPopup: {
     backgroundColor: '#EAF2F6',
     flexDirection: 'row',
