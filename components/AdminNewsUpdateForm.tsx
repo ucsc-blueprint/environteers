@@ -44,6 +44,7 @@ export const AdminNewsUpdateForm = () => {
     const handleCancel = () => {
       setEditionNumber("")
       setLink("")
+      setPreviewImage("")
       router.push("/(tabs)/newsletter")
     }
 
