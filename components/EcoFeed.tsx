@@ -1,5 +1,5 @@
 import { useAuth } from "@/context/AuthContext";
-import { View, Image, Text, StyleSheet, Pressable, Linking } from 'react-native';
+import { View, Image, Text, StyleSheet, Pressable, Linking, Alert } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { useState } from "react";
 import { 
@@ -10,9 +10,11 @@ import {
 } from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
+import { supabase } from "@/constants/supabase";
 
 
 type EcoFeedProps = {
+  id: string,
   type: string;
   title: string;
   liked: boolean;
@@ -119,6 +121,8 @@ export const Header = ({ resultsCount }: HeaderProps) => {
 export const EcoFeed = (props: EcoFeedProps) => {
   const [expanded, setExpanded] = useState(false);
   const [signUpClicked, setSignUpClicked] = useState(false);
+  // NEED TO GRAB USERID
+  const { user } = useAuth();
 
   const toggleExpanded = () => {
     setExpanded(prev => !prev);
@@ -129,8 +133,23 @@ export const EcoFeed = (props: EcoFeedProps) => {
     setSignUpClicked(true);
   }
 
-  const handleSignUp = () => {
+  const handleSignUp = async (props: EcoFeedProps) => {
     setSignUpClicked(false);
+    
+    const { data, error } = await supabase
+      .from('user_analytics')
+        .insert([{ 
+            user_id: user?.id,
+            item_type: props.type,
+            item_id: props.id,
+            interaction_type: 'signup'
+        }])
+      if (error) {
+        Alert.alert('Error', error.message)
+      } else {
+        Alert.alert('Success', 'Thanks for signing up!')
+        setSignUpClicked(false);
+      }
   }
 
   return (
@@ -170,8 +189,8 @@ export const EcoFeed = (props: EcoFeedProps) => {
               <View style={styles.signUpPopup}>
                 <Text style={styles.signUpPrompt}>Did you sign up through the external site?</Text>
                 <View style={styles.signUpButtons}>
-                  <Pressable style={styles.signUpButton} onPress={() => handleSignUp()}><Text style={styles.signUpPrompt}>yes</Text></Pressable>
-                  <Pressable style={styles.signUpButton} onPress={() => handleSignUp()}><Text style={styles.signUpPrompt}>no</Text></Pressable>
+                  <Pressable style={styles.signUpButton} onPress={() => handleSignUp(props)}><Text style={styles.signUpPrompt}>yes</Text></Pressable>
+                  <Pressable style={styles.signUpButton} onPress={() => setSignUpClicked(false)}><Text style={styles.signUpPrompt}>no</Text></Pressable>
                 </View>
               </View>
               : 
