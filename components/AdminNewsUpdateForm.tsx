@@ -70,7 +70,6 @@ export const AdminNewsUpdateForm = () => {
 
     return (
         <View style = {styles.container}>
-            <TextInput style = {styles.title} placeholder = "Article Title..." placeholderTextColor={"#4b4747"}/>
             <View style= {styles.photoUpload}>
               {previewImage? <Image source = {{uri: previewImage}} style = {{height: "100%", width: "100%"}} resizeMode='cover'/>
               : 
@@ -108,20 +107,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
 
-  title: {
-    marginTop: 60,
-    fontSize: 22,
-    fontWeight: "600",
-    color: "#4b4747",
-  },
 
   photoUpload: {
     backgroundColor: "#FFFFFF",
     borderRadius: 12,
-    marginTop: 20,
+    marginTop: "20%",
     alignItems: "center",
     justifyContent: "center",
-    height: 180,
+    height: "30%",
     borderWidth: 1,
     borderColor: "#E5E5E5",
   },
