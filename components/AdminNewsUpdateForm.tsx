@@ -7,6 +7,7 @@ import { supabase } from '@/constants/supabase';
 export const AdminNewsUpdateForm = () => {
     const [editionNumber, setEditionNumber] = React.useState("");
     const [link, setLink] = React.useState("");
+    const [previewImage, setPreviewImage] = useState("");
     const router = useRouter();
 
     const handleInsert = async () => {
@@ -25,7 +26,8 @@ export const AdminNewsUpdateForm = () => {
       const { error } = await supabase.from("news").insert({
         edition_number: editionNumber,
         link: link,
-        date: dateString
+        date: dateString,
+        preview_image: previewImage
       });
 
       if (error) {
@@ -36,6 +38,7 @@ export const AdminNewsUpdateForm = () => {
 
       setEditionNumber("")
       setLink("")
+      setPreviewImage("")
     }
 
     const handleCancel = () => {
@@ -47,7 +50,6 @@ export const AdminNewsUpdateForm = () => {
 
 
     const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
-    const [image, setImage] = useState('');
 
     const getImage = async() => 
     {
@@ -60,7 +62,7 @@ export const AdminNewsUpdateForm = () => {
         
         if (!result.canceled)
         {
-          setImage(result.assets[0].uri);
+          setPreviewImage(result.assets[0].uri);
           console.log(result.assets[0].uri);
         }
     }
@@ -69,7 +71,7 @@ export const AdminNewsUpdateForm = () => {
         <View style = {styles.container}>
             <TextInput style = {styles.title} placeholder = "Article Title..." placeholderTextColor={"#4b4747"}/>
             <View style= {styles.photoUpload}>
-              {image? <Image source = {{uri: image}} style = {{height: "100%", width: "100%"}} resizeMode='cover'/>
+              {previewImage? <Image source = {{uri: previewImage}} style = {{height: "100%", width: "100%"}} resizeMode='cover'/>
               : 
               <Pressable onPress = {getImage}>
                   <Ionicons style = {{alignSelf: "center"}} name = "add-circle-outline" size={24} color="#3E4657" />
