@@ -76,6 +76,13 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: 'Account',
+          href: null,
+        }}
+      />
 
     </Tabs>
   );

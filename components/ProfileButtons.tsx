@@ -83,6 +83,12 @@ export function ProfileButtons() {
         eventText="• Nov 31: SC Mountains Trail Stewardship: Hike & Help at Arana Gulch..."
         onPress={() => router.push('/upcoming')}
       />
+      <ProfileButton
+      label="Account"
+      header="Options:"
+      eventText="Change username & password"
+      onPress={() => router.push('/settings')}
+      />
     </View>
   );
 }
