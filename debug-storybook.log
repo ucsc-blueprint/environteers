@@ -1,33 +1,33 @@
-[18:26:32.561] [INFO] storybook v10.2.0
-[18:26:35.548] [DEBUG] Getting package.json info for C:/Users/vibhi/blueprint/environteers/package.json...
-[18:26:37.820] [INFO] Starting...
-[18:26:37.850] [WARN] No story files found for the specified pattern: [34mstories\**\*.mdx[39m
-[18:26:38.170] [DEBUG] Starting preview..
-[18:26:38.180] [WARN] 🚨 Unable to index ./stories/AccountMade.stories.tsx:
-  NoMetaError: CSF: missing default export C:/Users/vibhi/blueprint/environteers/stories/AccountMade.stories.tsx (line 1, col 0)
+[16:57:58.832] [INFO] storybook v10.2.10
+[16:58:01.378] [DEBUG] Getting package.json info for C:/Users/vibhi/blueprint/environteers/package.json...
+[16:58:03.907] [INFO] Starting...
+[16:58:03.943] [WARN] No story files found for the specified pattern: [34mstories\**\*.mdx[39m
+[16:58:04.250] [DEBUG] Starting preview..
+[16:58:04.261] [WARN] 🚨 Unable to index ./stories/ProfileSettings.stories.tsx:
+  NoMetaError: CSF: missing default export C:/Users/vibhi/blueprint/environteers/stories/ProfileSettings.stories.tsx (line 1, col 0)
 
 More info: https://storybook.js.org/docs/writing-stories?ref=error#default-export
-    at CsfFile.parse (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/_node-chunks/chunk-VYJ27OHZ.js:455:13)
-    at Object.createIndex (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/core-server/presets/common-preset.js:1787:81)
-    at async _StoryIndexGenerator.extractStories (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/core-server/index.js:5909:23)
-    at async file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/core-server/index.js:5830:39
-    at async Promise.all (index 0)
+    at CsfFile.parse (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/_node-chunks/chunk-3GE4RMQP.js:456:13)
+    at Object.createIndex (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/core-server/presets/common-preset.js:1802:81)
+    at async _StoryIndexGenerator.extractStories (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/core-server/index.js:5912:23)
+    at async file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/core-server/index.js:5833:39
+    at async Promise.all (index 9)
     at async Promise.all (index 1)
-    at async _StoryIndexGenerator.updateExtracted (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/core-server/index.js:5818:5)
-    at async _StoryIndexGenerator.ensureExtracted (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/core-server/index.js:5853:5)
-    at async _StoryIndexGenerator.initialize (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/core-server/index.js:5814:5)
-    at async file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/core-server/presets/common-preset.js:1827:10
-[18:26:38.185] [ERROR] Failed to build the preview
-[18:26:38.186] [ERROR] Error: Unable to index ./stories/AccountMade.stories.tsx
-    at _StoryIndexGenerator.getIndexAndStats (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/core-server/index.js:6082:15)
-    at async _StoryIndexGenerator.getIndex (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/core-server/index.js:6071:13)
-    at async getOptimizeDeps (file:///C:/Users/vibhi/blueprint/environteers/node_modules/@storybook/builder-vite/dist/index.js:1845:15)
-    at async createViteServer (file:///C:/Users/vibhi/blueprint/environteers/node_modules/@storybook/builder-vite/dist/index.js:1871:19)
-    at async Module.start (file:///C:/Users/vibhi/blueprint/environteers/node_modules/@storybook/builder-vite/dist/index.js:1906:17)
-    at async storybookDevServer (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/core-server/index.js:7207:83)
+    at async _StoryIndexGenerator.updateExtracted (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/core-server/index.js:5821:5)
+    at async _StoryIndexGenerator.ensureExtracted (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/core-server/index.js:5856:5)
+    at async _StoryIndexGenerator.initialize (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/core-server/index.js:5817:5)
+    at async file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/core-server/presets/common-preset.js:1842:10
+[16:58:04.266] [ERROR] Failed to build the preview
+[16:58:04.267] [ERROR] Error: Unable to index ./stories/ProfileSettings.stories.tsx
+    at _StoryIndexGenerator.getIndexAndStats (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/core-server/index.js:6085:15)
+    at async _StoryIndexGenerator.getIndex (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/core-server/index.js:6074:13)
+    at async getOptimizeDeps (file:///C:/Users/vibhi/blueprint/environteers/node_modules/@storybook/builder-vite/dist/index.js:1862:15)
+    at async createViteServer (file:///C:/Users/vibhi/blueprint/environteers/node_modules/@storybook/builder-vite/dist/index.js:1888:19)
+    at async Module.start (file:///C:/Users/vibhi/blueprint/environteers/node_modules/@storybook/builder-vite/dist/index.js:1923:17)
+    at async storybookDevServer (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/core-server/index.js:7241:83)
     at async buildOrThrow (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/core-server/index.js:4504:12)
-    at async buildDevStandalone (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/core-server/index.js:7577:66)
-    at async withTelemetry (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/_node-chunks/chunk-5T2PCIM6.js:218:12)
+    at async buildDevStandalone (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/core-server/index.js:7611:66)
+    at async withTelemetry (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/_node-chunks/chunk-S3MWHNYJ.js:218:12)
     at async dev (file:///C:/Users/vibhi/blueprint/environteers/node_modules/storybook/dist/bin/core.js:2734:3)
-[18:26:38.188] [WARN] Broken build, fix the error above.
+[16:58:04.270] [WARN] Broken build, fix the error above.
 You may need to refresh the browser.
