@@ -1,7 +1,7 @@
 import { useAuth } from "@/context/AuthContext";
 import { View, Image, Text, StyleSheet, Pressable, Linking, Alert } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { useState } from "react";
+import { useState, useEffect} from "react";
 import { supabase } from "@/constants/supabase";
 import { 
   mdiMenu,
@@ -11,38 +11,86 @@ import {
 } from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
+import { styled } from "storybook/theming";
+// import { EventCardProps } from "./EventCard";
 
-
-type EcoFeedProps = {
+type OnlineEcoAction = {
+  type: "online",
   id: string,
-  type: string;
-  title: string;
-  liked: boolean;
-  cover_photo: string;
-  description: string,
-  sign_up_link: string, 
-  date?: string;
-  location?: string;
-  spotsLeft?: number;
-  time_taken?: string;
-  onLearnMore?: () => void;
-  onSignUp?: () => void;
-};
+  created_at: string,
+  cover_photo?: string,
+  title: string,
+  end_date?: Date,
+  campaign_type?: string,
+  email_link?: string,
+  summary?: string,
+}
+
+type InPersonEcoAction = {
+  type: "inperson",
+  id: string,
+  created_at: string,
+  cover_photo?: string,
+  title: string,
+  location?: string,
+  start_date: Date,
+  end_date: Date,
+  sign_up_link: string,
+  summary?: string,
+}
+
+type Event = {
+  type: "event",
+  id: string,
+  title: string,
+  start_time?: Date,
+  end_time?: Date,
+  location?: string,
+  cover_photo?: string,
+  google_calendar_link?: string,
+  description?: string,
+  sign_up_link?: string,
+}
+
+type VolunteerItem = OnlineEcoAction | InPersonEcoAction | Event
 
 type HeaderProps = {
   resultsCount: number;
 };
 
 // HEADER HELPER FUNCTIONS
-const renderIcon = (iconName: string, color: string) => {
+const renderIcon = (size: number ,iconName: string, color: string) => {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24">
+    <Svg width={size} height={size} viewBox="0 0 24 24">
       <Path d={iconName} fill={color} />
     </Svg>
   );
 }
 
 // ECO-FEED CARD HELPER FUNCTIONS
+function formatEventDate(start: string, end: string) {
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+
+  // Format day
+  const day = startDate.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+
+  // Format time range
+  const startTime = startDate.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: undefined,
+  });
+  const endTime = endDate.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: undefined,
+  });
+
+  return `${day} | ${startTime}–${endTime}`;
+}
+
 const renderCoverPhoto = (coverPhoto: string) => {
   return (
     <Image
@@ -52,42 +100,44 @@ const renderCoverPhoto = (coverPhoto: string) => {
   );
 }
 
-const renderDateOrTime = (props: EcoFeedProps) => {
-  if ("date" in props) {
-    return (
-      <View style={[styles.formatRow, styles.date]}>
-        <Image
-          source={require("../assets/images/google-calendar.png")}
-          style={{ width: 18, height: 18 }}
-        />
-        <Text>{props.date}</Text>
-      </View>
-  );
-  } else if (props.type.toLowerCase().includes("petition") || props.type.toLowerCase().includes("campaign")) {
-    return (
-      <View style={styles.formatRow}>
-        {renderIcon(mdiListBoxOutline, 'black')}
-        <Text>{props.type}</Text>
-        {props.time_taken ? <Text>| {props.time_taken}</Text> : null}
-      </View>
-    );
-  } else {
-    return null;
-  }
-}
+// const renderDateOrTime = (props: EcoFeedProps) => {
+//   if ("date" in props) {
+//     return (
+//       <View style={[styles.formatRow, styles.date]}>
+//         <Image
+//           source={require("../assets/images/google-calendar.png")}
+//           style={{ width: 18, height: 18 }}
+//         />
+//         <Text>{props.date}</Text>
+//       </View>
+//   );
+//   } else if (props.type.toLowerCase().includes("petition") || props.type.toLowerCase().includes("campaign")) {
+//     return (
+//       <View style={styles.formatRow}>
+//         {renderIcon(mdiListBoxOutline, 'black')}
+//         <Text>{props.type}</Text>
+//         {props.time_taken ? <Text>| {props.time_taken}</Text> : null}
+//       </View>
+//     );
+//   } else {
+//     return null;
+//   }
+// }
 
-const renderLocation = (props: EcoFeedProps) => {
-  if ("location" in props) {
-    return (
-      <View style={styles.formatRow}>
-        <View><MaterialIcons name="location-on" size={18} color={'black'} /></View>
-        <Text style={styles.location} numberOfLines={2} ellipsizeMode="tail">{props.location}</Text>
-      </View>
-    );
-  } else {
-    return null;
-  }
-}
+// const renderLocation = (props: EcoFeedProps) => {
+//   if ("location" in props) {
+//     return (
+//       <View style={styles.formatRow}>
+//         <View><MaterialIcons name="location-on" size={18} color={'black'} /></View>
+//         <Text style={styles.location} numberOfLines={2} ellipsizeMode="tail">{props.location}</Text>
+//       </View>
+//     );
+//   } else {
+//     return null;
+//   }
+// }
+
+
 
 export const Header = ({ resultsCount }: HeaderProps) => {
   const { profile } = useAuth();
@@ -96,8 +146,8 @@ export const Header = ({ resultsCount }: HeaderProps) => {
     <View style={styles.feedHeader}>
       {/* Navbar (Top)*/}
       <View style={styles.formatBetween}>
-        {renderIcon(mdiMenu, 'black')}
-        {renderIcon(mdiBell, 'black')}
+        {renderIcon(24, mdiMenu, 'black')}
+        {renderIcon(24, mdiBell, 'black')}
       </View>
       <Text style={styles.userText}>Ready to take action 
         <Text style={ styles.userName}> {profile?.username}?</Text>
@@ -111,17 +161,182 @@ export const Header = ({ resultsCount }: HeaderProps) => {
         <Pressable style={styles.button} onPress={() => {}}><Text style={styles.buttonText}>Events</Text></Pressable>
         <Pressable style={styles.button} onPress={() => {}}><Text style={styles.buttonText}>Eco Actions: In-person</Text></Pressable>
         <Pressable style={styles.button} onPress={() => {}}><Text style={styles.buttonText}>Eco Actions: Online</Text></Pressable>
-        {/* TO-DO: Dynamically show # of results */}
         <Text style={styles.results}>{resultsCount} results</Text>
       </View>
     </View>
     );
 };
 
-export const EcoFeed = (props: EcoFeedProps) => {
+export const EventCard = (props: Event) => {
+// export const EventCard = (props: Event) => {
+//   console.log('render event');
+  
+//   return (
+//     <View style={styles.card}>
+//       <Text>{props.title}</Text>
+//       { props.cover_photo ? renderCoverPhoto(props.cover_photo) : <></>}
+//       {/* { props.start_time ? <Text>{props.start_time}</Text> : <></>} */}
+//       {/* { props.end_time ? <Text>{props.end_time}</Text> : <></>} */}
+//       { props.location ? <Text>{props.location}</Text> : <></>}
+//       { props.google_calendar_link ? <Text>{props.google_calendar_link}</Text> : <></>}
+//       { props.description ? <Text>{props.description}</Text> : <></>}
+//       { props.sign_up_link ? <Text>{props.sign_up_link}</Text> : <></>}
+//     </View>
+//   );
+// }
   const [expanded, setExpanded] = useState(false);
-  const [signUpClicked, setSignUpClicked] = useState(false);
-  // NEED TO GRAB USERID
+  const [signUpClick, setSignUpClicked] = useState(false);
+  const { user } = useAuth();
+
+  const toggleExpanded = () => {
+    setExpanded(prev => !prev);
+  };
+
+  const openSignUpLink = (link: string) => {
+    Linking.openURL(link);
+    setSignUpClicked(true);
+  }  
+
+  async function addInteraction(props: Event, interaction: string) {
+    console.log('here');
+    const { data, error } = await supabase
+      .from('event_interactions')
+      .insert([{
+        interaction_type: interaction,
+        event_id: props.id,
+        user_id: user?.id,
+      }]);
+    if (error) {
+      Alert.alert('Error', error.message);
+    } else {
+      Alert.alert('Success', 'Thanks for signing up!');
+      setSignUpClicked(false);
+    }
+  }
+
+
+  console.log('render online eco actions');
+  // RENDER END DATE
+  // const endDate = props.end_date ? 
+  //   new Date(props.end_date).toLocaleTimeString("en-US", {
+  //     hour: "numeric",
+  //   }) : undefined;
+  
+  //   return (
+//     <View style={styles.card}>
+//       <Text>{props.title}</Text>
+//       { props.cover_photo ? renderCoverPhoto(props.cover_photo) : <></>}
+//       {/* { props.start_time ? <Text>{props.start_time}</Text> : <></>} */}
+//       {/* { props.end_time ? <Text>{props.end_time}</Text> : <></>} */}
+//       { props.location ? <Text>{props.location}</Text> : <></>}
+//       { props.google_calendar_link ? <Text>{props.google_calendar_link}</Text> : <></>}
+//       { props.description ? <Text>{props.description}</Text> : <></>}
+//       { props.sign_up_link ? <Text>{props.sign_up_link}</Text> : <></>}
+//     </View>
+//   );
+// }
+  return (
+    <View style={styles.card}>
+      <Pressable onPress={toggleExpanded} style={{ flex: 1 }}>
+        <View style={styles.cardInfo}>
+          {/* Cover Photo */}
+          <View style={styles.imageColumn}>
+            { props.cover_photo ? renderCoverPhoto(props.cover_photo) : null }
+          </View>
+          {/* Main Content */}
+          <View style={styles.contentColumn}>
+            <Text>{props.title}</Text>
+            {/* {endDate && <Text>{endDate}</Text>} */}
+          </View>
+          {/* Like/Share Icons */}
+          <View style={styles.iconsColumn}>
+            <View style={styles.iconBackgrounds}><MaterialCommunityIcons name="cards-heart-outline" size={25} color={'#0282D3'} onPress={() => addInteraction(props, 'like')}/></View>
+            <View style={styles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>
+          </View>
+        </View>
+        {/* Expanded Content */}
+        { expanded && 
+          <View style={styles.signUpContainer}>
+            { props.description && <Text style={{ marginTop: 20 }}>{props.description}</Text>}
+            {/* Verify If User Signed-up */}
+            { signUpClick &&
+              <View style={styles.confirmationContainer}>
+                <Text style={{color: '#3A5513'}}>Did you complete the online eco action?</Text>
+                <View style={styles.confirmationButtons}>
+                  <Pressable style={styles.confirmationButton} onPress={() => setSignUpClicked(false)}>
+                    <Text style={styles.confirmationText}>No</Text>
+                    <MaterialCommunityIcons name="close" size={20} color={'black'} />
+                  </Pressable>
+                  <Pressable style={styles.confirmationButton} onPress={() => addInteraction(props, 'signup')}>
+                    <Text style={styles.confirmationText}>Yes</Text>
+                    <MaterialCommunityIcons name="check" size={20} color={'black'} />
+                  </Pressable>
+                </View>
+              </View>
+            }
+            {/* Sign Up Button */}
+            { props.sign_up_link &&
+              <View style={styles.signUpButtonContainer}>
+                <Pressable style={[styles.signUpButton, styles.formatRow]} onPress={() => openSignUpLink(props.email_link!)}> 
+                  <Text style={styles.signUpText}>Sign Up</Text>
+                  {renderIcon(15, mdiOpenInNew, 'white')}
+                </Pressable>
+              </View>
+            }
+          </View>
+          }
+        </Pressable>
+    </View>
+  );
+}
+// export const EventCard = (props: Event) => {
+//   console.log('render event');
+  
+//   return (
+//     <View style={styles.card}>
+//       <Text>{props.title}</Text>
+//       { props.cover_photo ? renderCoverPhoto(props.cover_photo) : <></>}
+//       {/* { props.start_time ? <Text>{props.start_time}</Text> : <></>} */}
+//       {/* { props.end_time ? <Text>{props.end_time}</Text> : <></>} */}
+//       { props.location ? <Text>{props.location}</Text> : <></>}
+//       { props.google_calendar_link ? <Text>{props.google_calendar_link}</Text> : <></>}
+//       { props.description ? <Text>{props.description}</Text> : <></>}
+//       { props.sign_up_link ? <Text>{props.sign_up_link}</Text> : <></>}
+//     </View>
+//   );
+// }
+
+export const InPersonCard = (props: InPersonEcoAction) => {
+  console.log('render in-person card');
+  return (
+    <View style={styles.card}>
+      <View style={styles.imageColumn}>
+        { props.cover_photo && renderCoverPhoto(props.cover_photo)}
+      </View>
+      <View style={styles.contentColumn}>
+        
+
+      </View>
+      <View style={styles.iconsColumn}>
+
+      </View>
+      <View style={styles.contentColumn}>
+        <Text>{props.title}</Text>
+        {/* {endDate && <Text>{endDate}</Text>} */}
+      </View>
+      <Text>{props.title}</Text>
+      {/* { props.start_date ? <Text>{props.start_date}</Text> : <></>}
+      { props.end_date ? <Text>{props.end_date}</Text> : <></>} */}
+      { props.location && <Text>{props.location}</Text>}
+      { props.sign_up_link && <Text>{props.sign_up_link}</Text>}
+      { props.summary && <Text>{props.summary}</Text>}
+    </View>
+  );
+}
+
+export const OnlineCard = (props: OnlineEcoAction) => {
+  const [expanded, setExpanded] = useState(false);
+  const [signUpClick, setSignUpClicked] = useState(false);
   const { user } = useAuth();
 
   const toggleExpanded = () => {
@@ -132,34 +347,35 @@ export const EcoFeed = (props: EcoFeedProps) => {
     Linking.openURL(link);
     setSignUpClicked(true);
   }
-
-  const handleSignUp = async (props: EcoFeedProps) => {
-    setSignUpClicked(false);
-    
+  
+  async function addInteraction(props: OnlineEcoAction, interaction: string) {
+    console.log('here');
     const { data, error } = await supabase
-      .from('user_analytics')
-        .insert([{ 
-            user_id: user?.id,
-            item_type: props.type,
-            item_id: props.id,
-            interaction_type: 'signup'
-        }])
-      if (error) {
-        Alert.alert('Error', error.message)
-      } else {
-        Alert.alert('Success', 'Thanks for signing up!')
-        setSignUpClicked(false);
-      }
+      .from('interactions_eco_online')
+      .insert([{
+        interaction_type: interaction,
+        action_id: props.id,
+        user_id: user?.id,
+      }]);
+    if (error) {
+      Alert.alert('Error', error.message);
+    } else {
+      Alert.alert('Success', 'Thanks for signing up!');
+      setSignUpClicked(false);
+    }
   }
 
+
+  console.log('render online eco actions');
+  // RENDER END DATE
+  // const endDate = props.end_date ? 
+  //   new Date(props.end_date).toLocaleTimeString("en-US", {
+  //     hour: "numeric",
+  //   }) : undefined;
+  
   return (
-    <Pressable
-      onPress={toggleExpanded}
-      style={({ pressed }) => [
-        pressed && { opacity: 0.95 },
-      ]}
-    >
-      <View style={styles.card}>
+    <View style={styles.card}>
+      <Pressable onPress={toggleExpanded} style={{ flex: 1 }}>
         <View style={styles.cardInfo}>
           {/* Cover Photo */}
           <View style={styles.imageColumn}>
@@ -167,52 +383,215 @@ export const EcoFeed = (props: EcoFeedProps) => {
           </View>
           {/* Main Content */}
           <View style={styles.contentColumn}>
-            <View>
-              <Text numberOfLines={3} ellipsizeMode="tail" style={styles.title}>{props.title}</Text>
-              { renderDateOrTime(props) }
+            <Text>{props.title}</Text>
+            {/* {endDate && <Text>{endDate}</Text>} */}
+            <View style={styles.formatRow}>
+              {renderIcon(24, mdiListBoxOutline, 'black')}
+              {props.campaign_type && <Text>{props.campaign_type}</Text>}
             </View>
-            { renderLocation (props) }        
           </View>
           {/* Like/Share Icons */}
           <View style={styles.iconsColumn}>
-            <View style={styles.iconBackgrounds}><MaterialCommunityIcons name="cards-heart-outline" size={25} color={'#0282D3'} /></View>
+            <View style={styles.iconBackgrounds}><MaterialCommunityIcons name="cards-heart-outline" size={25} color={'#0282D3'} onPress={() => addInteraction(props, 'like')}/></View>
             <View style={styles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>
           </View>
         </View>
-        {/* Expanded Card Content */}
-        { expanded ?
-          <>
-            <Text>{props.description}</Text>
-            <View style={styles.signUpContainer}>
-            {/* Sign up confirmation popup */}
-            { signUpClicked ? 
-              <View style={styles.signUpPopup}>
-                <Text style={styles.signUpPrompt}>Did you sign up through the external site?</Text>
-                <View style={styles.signUpButtons}>
-                  <Pressable style={styles.signUpButton} onPress={() => handleSignUp(props)}><Text style={styles.signUpPrompt}>yes</Text></Pressable>
-                  <Pressable style={styles.signUpButton} onPress={() => setSignUpClicked(false)}><Text style={styles.signUpPrompt}>no</Text></Pressable>
+        {/* Expanded Content */}
+        { expanded && 
+          <View style={styles.signUpContainer}>
+            <Text style={{ marginTop: 20 }}>{props.summary}</Text>
+            {/* Verify If User Signed-up */}
+            { signUpClick &&
+              <View style={styles.confirmationContainer}>
+                <Text style={{color: '#3A5513'}}>Did you complete the online eco action?</Text>
+                <View style={styles.confirmationButtons}>
+                  <Pressable style={styles.confirmationButton} onPress={() => setSignUpClicked(false)}>
+                    <Text style={styles.confirmationText}>No</Text>
+                    <MaterialCommunityIcons name="close" size={20} color={'black'} />
+                  </Pressable>
+                  <Pressable style={styles.confirmationButton} onPress={() => addInteraction(props, 'signup')}>
+                    <Text style={styles.confirmationText}>Yes</Text>
+                    <MaterialCommunityIcons name="check" size={20} color={'black'} />
+                  </Pressable>
                 </View>
               </View>
-              : 
-              <></>
             }
-            <View style={styles.signedUp}>
-              <Pressable style={styles.signUp} onPress={() => openSignUpLink(props.sign_up_link)}>
-                <Text style={styles.signUpText}>Sign Up</Text>
-                  <Svg width={20} height={20} viewBox="0 0 24 24">
-                    <Path d={mdiOpenInNew} fill={'white'} />
-                  </Svg>
-              </Pressable>               
+            {/* Sign Up Button */}
+            { props.email_link &&
+              <View style={styles.signUpButtonContainer}>
+                <Pressable style={[styles.signUpButton, styles.formatRow]} onPress={() => openSignUpLink(props.email_link!)}> 
+                  <Text style={styles.signUpText}>Sign Up</Text>
+                  {renderIcon(15, mdiOpenInNew, 'white')}
+                </Pressable>
               </View>
-            </View>
-          </> : 
-
-        <></>
-        }
-      </View>
-  </Pressable>
+            }
+          </View>
+          }
+        </Pressable>
+    </View>
   );
+}
+
+export const EcoFeed = (props: VolunteerItem) => {
+  switch (props.type) {
+    case "event":
+      return <EventCard {...props} />
+
+    case "inperson":
+      return <InPersonCard {...props} />
+
+    case "online":
+      return <OnlineCard {...props} />
+    default:
+      return null;
+  }
 };
+
+
+// export const EcoFeed = (props: VolunteerItem) => {
+//   const [expanded, setExpanded] = useState(false);
+//   console.log(props);
+
+//   const toggleExpanded = () => {
+//     setExpanded(prev => !prev);
+//   };
+
+
+
+//   return (
+//     <Pressable
+//       onPress={toggleExpanded}
+//       style={({ pressed }) => [
+//         pressed && { opacity: 0.95 },
+//       ]}
+//     >
+//     <View style={styles.card}>
+//       <Text>{props.title}</Text>
+//         {props.type === "event" && (
+//           <>
+//             <Text>{props.location}</Text>
+//             <Text>{props.start_time}</Text>
+//           </>
+//         )}
+
+//         {props.type === "inperson" && (
+//           <>
+//             <Text>{props.location}</Text>
+//             <Text>{props.start_date} - {props.end_date}</Text>
+//           </>
+//         )}
+
+//         {props.type === "online" && (
+//           <>
+//             <Text>{props.campaign_type}</Text>
+//             <Text>{props.end_date}</Text>
+//           </>
+//         )}
+//     </View>
+
+//     </Pressable>
+//   )
+
+
+// }
+
+
+
+// export const test = (props: VolunteerItem) => {
+//   const [expanded, setExpanded] = useState(false);
+//   const [signUpClicked, setSignUpClicked] = useState(false);
+//   // NEED TO GRAB USERID
+//   const { user } = useAuth();
+
+//   const toggleExpanded = () => {
+//     setExpanded(prev => !prev);
+//   };
+
+//   const openSignUpLink = (link: string) => {
+//     Linking.openURL(link);
+//     setSignUpClicked(true);
+//   }
+
+//   const handleSignUp = async (props: EcoFeedProps) => {
+//     setSignUpClicked(false);
+    
+//     const { data, error } = await supabase
+//       .from('user_analytics')
+//         .insert([{ 
+//             user_id: user?.id,
+//             item_type: props.type,
+//             item_id: props.id,
+//             interaction_type: 'signup'
+//         }])
+//       if (error) {
+//         Alert.alert('Error', error.message)
+//       } else {
+//         Alert.alert('Success', 'Thanks for signing up!')
+//         setSignUpClicked(false);
+//       }
+//   }
+
+//   return (
+//     <Pressable
+//       onPress={toggleExpanded}
+//       style={({ pressed }) => [
+//         pressed && { opacity: 0.95 },
+//       ]}
+//     >
+//       <View style={styles.card}>
+//         <View style={styles.cardInfo}>
+//           {/* Cover Photo */}
+//           <View style={styles.imageColumn}>
+//             { props.cover_photo ? renderCoverPhoto(props.cover_photo) : null }
+//           </View>
+//           {/* Main Content */}
+//           <View style={styles.contentColumn}>
+//             <View>
+//               <Text numberOfLines={3} ellipsizeMode="tail" style={styles.title}>{props.title}</Text>
+//               { renderDateOrTime(props) }
+//             </View>
+//             { renderLocation (props) }        
+//           </View>
+//           {/* Like/Share Icons */}
+//           <View style={styles.iconsColumn}>
+//             <View style={styles.iconBackgrounds}><MaterialCommunityIcons name="cards-heart-outline" size={25} color={'#0282D3'} /></View>
+//             <View style={styles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>
+//           </View>
+//         </View>
+//         {/* Expanded Card Content */}
+//         { expanded ?
+//           <>
+//             <Text>{props.description}</Text>
+//             <View style={styles.signUpContainer}>
+//             {/* Sign up confirmation popup */}
+//             { signUpClicked ? 
+//               <View style={styles.signUpPopup}>
+//                 <Text style={styles.signUpPrompt}>Did you sign up through the external site?</Text>
+//                 <View style={styles.signUpButtons}>
+//                   <Pressable style={styles.signUpButton} onPress={() => handleSignUp(props)}><Text style={styles.signUpPrompt}>yes</Text></Pressable>
+//                   <Pressable style={styles.signUpButton} onPress={() => setSignUpClicked(false)}><Text style={styles.signUpPrompt}>no</Text></Pressable>
+//                 </View>
+//               </View>
+//               : 
+//               <></>
+//             }
+//             <View style={styles.signedUp}>
+//               <Pressable style={styles.signUp} onPress={() => openSignUpLink(props.sign_up_link)}>
+//                 <Text style={styles.signUpText}>Sign Up</Text>
+//                   <Svg width={20} height={20} viewBox="0 0 24 24">
+//                     <Path d={mdiOpenInNew} fill={'white'} />
+//                   </Svg>
+//               </Pressable>               
+//               </View>
+//             </View>
+//           </> : 
+
+//         <></>
+//         }
+//       </View>
+//   </Pressable>
+//   );
+// };
 
 
 const styles = StyleSheet.create({
@@ -245,7 +624,7 @@ const styles = StyleSheet.create({
 
   formatRow: {
     flexDirection: 'row',
-    gap: 5,
+    gap: 8,
     alignItems: 'center',
     minWidth: 0,
   },
@@ -301,7 +680,12 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 16,
     gap: 15,
-    boxShadow: '0px 0px 10px 0px rgb(207, 207, 207)',
+    // boxShadow: '0px 0px 10px 0px rgb(207, 207, 207)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
     backgroundColor: 'white',
   },
 
@@ -378,6 +762,12 @@ const styles = StyleSheet.create({
     display: 'flex',
   },
 
+  signUpButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    backgroundColor: 'white',
+  },
+
   signUp: {
     backgroundColor: '#0282D3',
     color: 'white',
@@ -395,17 +785,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
-  signUpPopup: {
-    backgroundColor: '#EAF2F6',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 15,
-    borderRadius: 10,
-    marginVertical: 10,
-  },
-  
   signUpPrompt: {
     color: '#0282D3',
     fontSize: 12,
@@ -417,18 +796,20 @@ const styles = StyleSheet.create({
   },
 
   signUpButton: {
-    color: '#0282D3',
-    backgroundColor: 'white',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 10,
+    backgroundColor: '#437CA1',
+    paddingHorizontal: 40,
+    paddingVertical: 15,
+    borderRadius: 20,
+    marginTop: 20,
+    marginBottom: 10,
   },
 
   signedUp: {
     flexDirection: 'row',
     justifyContent: 'center',
     marginVertical: 10,
-  }
+  },
+
   signUpPopup: {
     backgroundColor: '#EAF2F6',
     flexDirection: 'row',
@@ -439,28 +820,41 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginVertical: 10,
   },
-  
-  signUpPrompt: {
-    color: '#0282D3',
-    fontSize: 12,
-  },
 
-  signUpButtons: {
-    flexDirection: 'row',
+  confirmationContainer: {
+    flexDirection: 'column',
+    backgroundColor: '#F6FBF2',
+    alignItems: 'center',
+    borderRadius: 5,
+    marginTop: 20,
+    paddingVertical: 5,
     gap: 10,
   },
 
-  signUpButton: {
-    color: '#0282D3',
-    backgroundColor: 'white',
-    paddingHorizontal: 10,
+  confirmationButtons: {
+    flexDirection: 'row',
     paddingVertical: 5,
-    borderRadius: 10,
+    gap: 20,
   },
 
-  signedUp: {
+  confirmationButton: {
     flexDirection: 'row',
+    alignItems: 'center',
+    borderColor: '#3A5513',
+    borderWidth: 1,
+    padding: 5,
+    backgroundColor: 'white',
+    paddingHorizontal: 25,
+    borderRadius: 20,
+    paddingVertical: 12,
+    width: 150,
     justifyContent: 'center',
-    marginVertical: 10,
-  }
+    gap: 5,
+
+  },
+  confirmationText: {
+    fontSize: 15,
+    color: '#3A5513',
+  },
+
 });
