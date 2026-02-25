@@ -1,0 +1,296 @@
+import React, {useState} from 'react';
+import { StyleSheet, Text, View, Pressable, TextInput, Alert, Image} from 'react-native';
+import {Ionicons} from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
+import { supabase } from '@/constants/supabase';
+import DateTimePicker from '@react-native-community/datetimepicker';
+
+
+export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => {
+  
+    const [title, setTitle] = React.useState("");
+    const [description, setDescription] = React.useState("");
+    const [date, setDate] = React.useState(new Date());
+    const [showDatePicker, setShowDatePicker] = React.useState(false);
+    const [mode, setMode] = React.useState<'date' | 'time'>("date");
+    const [host, setHost] = React.useState("");
+    const [guestLimit, setGuestLimit] = React.useState("");
+    const [coverPhoto, setCoverPhoto] = useState("");
+    const [location, setLocation] = React.useState("");
+    
+    const router = useRouter();
+    const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
+
+      const getImage = async() => 
+          {
+              if (!status?.granted) 
+              {
+                await requestPermission();
+                return;
+              }
+              const result = await ImagePicker.launchImageLibraryAsync()
+              
+              if (!result.canceled)
+              {
+                setCoverPhoto(result.assets[0].uri);
+                console.log(result.assets[0].uri);
+              }
+          }
+      const handleCancel = () => {
+        setLocation("")
+        setGuestLimit("")
+        setHost("")
+        setDate(new Date())
+        setDescription("")
+        setTitle("")
+        setCoverPhoto("")
+        router.push("/(tabs)/volunteer")
+    }
+    const onChange = (event: any, selectedDate?: Date) => {
+      if (selectedDate) {
+        setDate(selectedDate);
+      }
+      setShowDatePicker(false);
+    };
+
+
+    return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Pressable onPress={() => router.push("/(tabs)/volunteer")}>
+          <Ionicons name="close" size={28} color="black" />
+        </Pressable>
+
+        <Text style={styles.headerTitle}>Add Event</Text>
+
+        <Pressable style={styles.saveButton}>
+          <Text style={styles.saveText}>Save</Text>
+        </Pressable>
+      </View>
+      <View>
+        <View style={styles.photoCard}>
+          {coverPhoto ? (
+            <Image
+              source={{ uri: coverPhoto }}
+              style={styles.photo}
+              resizeMode="cover"
+            />
+          ) : (
+            <Pressable style={styles.photoPlaceholder} onPress={getImage}>
+              <Ionicons name="add-circle-outline" size={50} color="#8A8A8A" />
+              <Text style={styles.addPhotoText}>Add cover photo</Text>
+
+              <View style={styles.uploadButton}>
+                <Text style={styles.uploadText}>Upload a picture</Text>
+                <Ionicons name="cloud-upload-outline" size={18} color="#fff" />
+              </View>
+            </Pressable>
+          )}
+        </View>
+        <View style={styles.section}>
+            <Text style={styles.label}>
+              Set a date<Text style={{ color: "red" }}> *</Text>
+            </Text>
+
+            <View style={styles.dateRow}>
+              <Pressable
+                style={styles.datePill}
+                onPress={() => {
+                  setMode("date");
+                  setShowDatePicker(true);
+                }}
+              >
+                <Text>{date.toLocaleDateString()}</Text>
+              </Pressable>
+
+              <Pressable
+                style={styles.datePill}
+                onPress={() => {
+                  setMode("time");
+                  setShowDatePicker(true);
+                }}
+              >
+                <Text>
+                  {date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </Text>
+              </Pressable>
+            </View>
+
+            {showDatePicker && (
+              <DateTimePicker
+                value={date}
+                mode={mode}
+                display="default"
+                onChange= {onChange}
+              />
+            )}
+          </View>
+
+
+        <View style={styles.section}>
+          <Text style={styles.label}>Event Title</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Assembly Member Gail Pellerin"
+            value={title}
+            onChangeText={setTitle}
+          />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.label}>Host organization</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Assembly Member Gail Pellerin"
+            value={host}
+            onChangeText={setHost}
+          />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.label}>Location</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Felton Community Hall"
+            value={location}
+            onChangeText={setLocation}
+          />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.label}>Guest limit</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter number or N/A"
+            value={guestLimit}
+            onChangeText={setGuestLimit}
+          />
+        </View>
+
+        <View style={styles.section}>
+          <TextInput
+            style={styles.description}
+            placeholder="Event description..."
+            value={description}
+            onChangeText={setDescription}
+            multiline = {true}
+          />
+        </View>
+    </View>
+  </View>
+  );
+};
+        
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#DCE3E8",
+    paddingHorizontal: 20,
+    paddingTop: 10,
+  },
+
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    alignSelf: "center",
+  },
+
+  saveButton: {
+    backgroundColor: "#86AE42",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+
+  saveText: {
+    color: "white",
+    fontWeight: "600",
+  },
+
+  photoCard: {
+    backgroundColor: "#F2F2F2",
+    borderRadius: 14,
+    height: 220,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 25,
+  },
+
+  photoPlaceholder: {
+    alignItems: "center",
+  },
+
+  addPhotoText: {
+    marginTop: 10,
+    color: "#555",
+    fontSize: 15,
+  },
+
+  uploadButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 15,
+    backgroundColor: "#1F2A37",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+
+  uploadText: {
+    color: "white",
+    fontSize: 14,
+  },
+
+  photo: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 14,
+  },
+
+  section: {
+    marginBottom: 18,
+  },
+
+  label: {
+    marginBottom: 6,
+    fontWeight: "500",
+    fontSize: 14,
+  },
+
+  input: {
+    backgroundColor: "#F2F2F2",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+  },
+
+  description: {
+    backgroundColor: "#F2F2F2",
+    borderRadius: 12,
+    padding: 14,
+    height: 150,
+    textAlignVertical: "top",
+  },
+
+  dateRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+
+  datePill: {
+    backgroundColor: "#F2F2F2",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+});
