@@ -68,7 +68,7 @@ const renderIcon = (size: number ,iconName: string, color: string) => {
 }
 
 // ECO-FEED CARD HELPER FUNCTIONS
-function formatEventDate(start: string, end: string) {
+function formatEventDate(start: Date, end: Date) {
   const startDate = new Date(start);
   const endDate = new Date(end);
 
@@ -141,7 +141,6 @@ const renderCoverPhoto = (coverPhoto: string) => {
 
 export const Header = ({ resultsCount }: HeaderProps) => {
   const { profile } = useAuth();
-
   return (
     <View style={styles.feedHeader}>
       {/* Navbar (Top)*/}
@@ -168,22 +167,6 @@ export const Header = ({ resultsCount }: HeaderProps) => {
 };
 
 export const EventCard = (props: Event) => {
-// export const EventCard = (props: Event) => {
-//   console.log('render event');
-  
-//   return (
-//     <View style={styles.card}>
-//       <Text>{props.title}</Text>
-//       { props.cover_photo ? renderCoverPhoto(props.cover_photo) : <></>}
-//       {/* { props.start_time ? <Text>{props.start_time}</Text> : <></>} */}
-//       {/* { props.end_time ? <Text>{props.end_time}</Text> : <></>} */}
-//       { props.location ? <Text>{props.location}</Text> : <></>}
-//       { props.google_calendar_link ? <Text>{props.google_calendar_link}</Text> : <></>}
-//       { props.description ? <Text>{props.description}</Text> : <></>}
-//       { props.sign_up_link ? <Text>{props.sign_up_link}</Text> : <></>}
-//     </View>
-//   );
-// }
   const [expanded, setExpanded] = useState(false);
   const [signUpClick, setSignUpClicked] = useState(false);
   const { user } = useAuth();
@@ -198,9 +181,8 @@ export const EventCard = (props: Event) => {
   }  
 
   async function addInteraction(props: Event, interaction: string) {
-    console.log('here');
     const { data, error } = await supabase
-      .from('event_interactions')
+      .from('interactions_events')
       .insert([{
         interaction_type: interaction,
         event_id: props.id,
@@ -214,27 +196,6 @@ export const EventCard = (props: Event) => {
     }
   }
 
-
-  console.log('render online eco actions');
-  // RENDER END DATE
-  // const endDate = props.end_date ? 
-  //   new Date(props.end_date).toLocaleTimeString("en-US", {
-  //     hour: "numeric",
-  //   }) : undefined;
-  
-  //   return (
-//     <View style={styles.card}>
-//       <Text>{props.title}</Text>
-//       { props.cover_photo ? renderCoverPhoto(props.cover_photo) : <></>}
-//       {/* { props.start_time ? <Text>{props.start_time}</Text> : <></>} */}
-//       {/* { props.end_time ? <Text>{props.end_time}</Text> : <></>} */}
-//       { props.location ? <Text>{props.location}</Text> : <></>}
-//       { props.google_calendar_link ? <Text>{props.google_calendar_link}</Text> : <></>}
-//       { props.description ? <Text>{props.description}</Text> : <></>}
-//       { props.sign_up_link ? <Text>{props.sign_up_link}</Text> : <></>}
-//     </View>
-//   );
-// }
   return (
     <View style={styles.card}>
       <Pressable onPress={toggleExpanded} style={{ flex: 1 }}>
@@ -246,7 +207,21 @@ export const EventCard = (props: Event) => {
           {/* Main Content */}
           <View style={styles.contentColumn}>
             <Text>{props.title}</Text>
-            {/* {endDate && <Text>{endDate}</Text>} */}
+            { props.start_time && props.end_time &&
+              <View style={[styles.formatRow, styles.date]}>
+                <Image
+                  source={require("../assets/images/google-calendar.png")}
+                  style={{ width: 18, height: 18 }}
+                />
+                <Text>{formatEventDate(props.start_time, props.end_time)}</Text>
+              </View>
+            }
+            { props.location &&
+              <View style={styles.formatRow}>
+                <MaterialIcons name="location-on" size={25} color={'black'} />
+                <Text>{props.location}</Text>
+              </View>
+            }
           </View>
           {/* Like/Share Icons */}
           <View style={styles.iconsColumn}>
@@ -277,7 +252,7 @@ export const EventCard = (props: Event) => {
             {/* Sign Up Button */}
             { props.sign_up_link &&
               <View style={styles.signUpButtonContainer}>
-                <Pressable style={[styles.signUpButton, styles.formatRow]} onPress={() => openSignUpLink(props.email_link!)}> 
+                <Pressable style={[styles.signUpButton, styles.formatRow]} onPress={() => openSignUpLink(props.sign_up_link!)}> 
                   <Text style={styles.signUpText}>Sign Up</Text>
                   {renderIcon(15, mdiOpenInNew, 'white')}
                 </Pressable>
@@ -289,50 +264,106 @@ export const EventCard = (props: Event) => {
     </View>
   );
 }
-// export const EventCard = (props: Event) => {
-//   console.log('render event');
-  
-//   return (
-//     <View style={styles.card}>
-//       <Text>{props.title}</Text>
-//       { props.cover_photo ? renderCoverPhoto(props.cover_photo) : <></>}
-//       {/* { props.start_time ? <Text>{props.start_time}</Text> : <></>} */}
-//       {/* { props.end_time ? <Text>{props.end_time}</Text> : <></>} */}
-//       { props.location ? <Text>{props.location}</Text> : <></>}
-//       { props.google_calendar_link ? <Text>{props.google_calendar_link}</Text> : <></>}
-//       { props.description ? <Text>{props.description}</Text> : <></>}
-//       { props.sign_up_link ? <Text>{props.sign_up_link}</Text> : <></>}
-//     </View>
-//   );
-// }
 
 export const InPersonCard = (props: InPersonEcoAction) => {
-  console.log('render in-person card');
+  const [expanded, setExpanded] = useState(false);
+  const [signUpClick, setSignUpClicked] = useState(false);
+  const { user } = useAuth();
+
+  const toggleExpanded = () => {
+    setExpanded(prev => !prev);
+  };
+
+  const openSignUpLink = (link: string) => {
+    Linking.openURL(link);
+    setSignUpClicked(true);
+  }  
+
+  async function addInteraction(props: InPersonEcoAction, interaction: string) {
+    const { data, error } = await supabase
+      .from('interactions_eco_inperson')
+      .insert([{
+        interaction_type: interaction,
+        action_id: props.id,
+        user_id: user?.id,
+      }]);
+    if (error) {
+      Alert.alert('Error', error.message);
+    } else {
+      Alert.alert('Success', 'Thanks for signing up!');
+      setSignUpClicked(false);
+    }
+  }
+
   return (
     <View style={styles.card}>
-      <View style={styles.imageColumn}>
-        { props.cover_photo && renderCoverPhoto(props.cover_photo)}
-      </View>
-      <View style={styles.contentColumn}>
-        
-
-      </View>
-      <View style={styles.iconsColumn}>
-
-      </View>
-      <View style={styles.contentColumn}>
-        <Text>{props.title}</Text>
-        {/* {endDate && <Text>{endDate}</Text>} */}
-      </View>
-      <Text>{props.title}</Text>
-      {/* { props.start_date ? <Text>{props.start_date}</Text> : <></>}
-      { props.end_date ? <Text>{props.end_date}</Text> : <></>} */}
-      { props.location && <Text>{props.location}</Text>}
-      { props.sign_up_link && <Text>{props.sign_up_link}</Text>}
-      { props.summary && <Text>{props.summary}</Text>}
+      <Pressable onPress={toggleExpanded} style={{ flex: 1 }}>
+        <View style={styles.cardInfo}>
+          {/* Cover Photo */}
+          <View style={styles.imageColumn}>
+            { props.cover_photo ? renderCoverPhoto(props.cover_photo) : null }
+          </View>
+          {/* Main Content */}
+          <View style={styles.contentColumn}>
+            <Text>{props.title}</Text>
+            { props.start_date && props.end_date &&
+              <View style={[styles.formatRow, styles.date]}>
+                <Image
+                  source={require("../assets/images/google-calendar.png")}
+                  style={{ width: 18, height: 18 }}
+                />
+                <Text>{formatEventDate(props.start_date, props.end_date)}</Text>
+              </View>
+            }
+            { props.location &&
+              <View style={styles.formatRow}>
+                <MaterialIcons name="location-on" size={25} color={'black'} />
+                <Text>{props.location}</Text>
+              </View>
+            }
+          </View>
+          {/* Like/Share Icons */}
+          <View style={styles.iconsColumn}>
+            <View style={styles.iconBackgrounds}><MaterialCommunityIcons name="cards-heart-outline" size={25} color={'#0282D3'} onPress={() => addInteraction(props, 'like')}/></View>
+            <View style={styles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>
+          </View>
+        </View>
+        {/* Expanded Content */}
+        { expanded && 
+          <View style={styles.signUpContainer}>
+            { props.summary && <Text style={{ marginTop: 20 }}>{props.summary}</Text>}
+            {/* Verify If User Signed-up */}
+            { signUpClick &&
+              <View style={styles.confirmationContainer}>
+                <Text style={{color: '#3A5513'}}>Did you complete the online eco action?</Text>
+                <View style={styles.confirmationButtons}>
+                  <Pressable style={styles.confirmationButton} onPress={() => setSignUpClicked(false)}>
+                    <Text style={styles.confirmationText}>No</Text>
+                    <MaterialCommunityIcons name="close" size={20} color={'black'} />
+                  </Pressable>
+                  <Pressable style={styles.confirmationButton} onPress={() => addInteraction(props, 'signup')}>
+                    <Text style={styles.confirmationText}>Yes</Text>
+                    <MaterialCommunityIcons name="check" size={20} color={'black'} />
+                  </Pressable>
+                </View>
+              </View>
+            }
+            {/* Sign Up Button */}
+            { props.sign_up_link &&
+              <View style={styles.signUpButtonContainer}>
+                <Pressable style={[styles.signUpButton, styles.formatRow]} onPress={() => openSignUpLink(props.sign_up_link!)}> 
+                  <Text style={styles.signUpText}>Sign Up</Text>
+                  {renderIcon(15, mdiOpenInNew, 'white')}
+                </Pressable>
+              </View>
+            }
+          </View>
+          }
+        </Pressable>
     </View>
   );
 }
+
 
 export const OnlineCard = (props: OnlineEcoAction) => {
   const [expanded, setExpanded] = useState(false);
@@ -365,14 +396,7 @@ export const OnlineCard = (props: OnlineEcoAction) => {
     }
   }
 
-
-  console.log('render online eco actions');
   // RENDER END DATE
-  // const endDate = props.end_date ? 
-  //   new Date(props.end_date).toLocaleTimeString("en-US", {
-  //     hour: "numeric",
-  //   }) : undefined;
-  
   return (
     <View style={styles.card}>
       <Pressable onPress={toggleExpanded} style={{ flex: 1 }}>
@@ -446,153 +470,6 @@ export const EcoFeed = (props: VolunteerItem) => {
       return null;
   }
 };
-
-
-// export const EcoFeed = (props: VolunteerItem) => {
-//   const [expanded, setExpanded] = useState(false);
-//   console.log(props);
-
-//   const toggleExpanded = () => {
-//     setExpanded(prev => !prev);
-//   };
-
-
-
-//   return (
-//     <Pressable
-//       onPress={toggleExpanded}
-//       style={({ pressed }) => [
-//         pressed && { opacity: 0.95 },
-//       ]}
-//     >
-//     <View style={styles.card}>
-//       <Text>{props.title}</Text>
-//         {props.type === "event" && (
-//           <>
-//             <Text>{props.location}</Text>
-//             <Text>{props.start_time}</Text>
-//           </>
-//         )}
-
-//         {props.type === "inperson" && (
-//           <>
-//             <Text>{props.location}</Text>
-//             <Text>{props.start_date} - {props.end_date}</Text>
-//           </>
-//         )}
-
-//         {props.type === "online" && (
-//           <>
-//             <Text>{props.campaign_type}</Text>
-//             <Text>{props.end_date}</Text>
-//           </>
-//         )}
-//     </View>
-
-//     </Pressable>
-//   )
-
-
-// }
-
-
-
-// export const test = (props: VolunteerItem) => {
-//   const [expanded, setExpanded] = useState(false);
-//   const [signUpClicked, setSignUpClicked] = useState(false);
-//   // NEED TO GRAB USERID
-//   const { user } = useAuth();
-
-//   const toggleExpanded = () => {
-//     setExpanded(prev => !prev);
-//   };
-
-//   const openSignUpLink = (link: string) => {
-//     Linking.openURL(link);
-//     setSignUpClicked(true);
-//   }
-
-//   const handleSignUp = async (props: EcoFeedProps) => {
-//     setSignUpClicked(false);
-    
-//     const { data, error } = await supabase
-//       .from('user_analytics')
-//         .insert([{ 
-//             user_id: user?.id,
-//             item_type: props.type,
-//             item_id: props.id,
-//             interaction_type: 'signup'
-//         }])
-//       if (error) {
-//         Alert.alert('Error', error.message)
-//       } else {
-//         Alert.alert('Success', 'Thanks for signing up!')
-//         setSignUpClicked(false);
-//       }
-//   }
-
-//   return (
-//     <Pressable
-//       onPress={toggleExpanded}
-//       style={({ pressed }) => [
-//         pressed && { opacity: 0.95 },
-//       ]}
-//     >
-//       <View style={styles.card}>
-//         <View style={styles.cardInfo}>
-//           {/* Cover Photo */}
-//           <View style={styles.imageColumn}>
-//             { props.cover_photo ? renderCoverPhoto(props.cover_photo) : null }
-//           </View>
-//           {/* Main Content */}
-//           <View style={styles.contentColumn}>
-//             <View>
-//               <Text numberOfLines={3} ellipsizeMode="tail" style={styles.title}>{props.title}</Text>
-//               { renderDateOrTime(props) }
-//             </View>
-//             { renderLocation (props) }        
-//           </View>
-//           {/* Like/Share Icons */}
-//           <View style={styles.iconsColumn}>
-//             <View style={styles.iconBackgrounds}><MaterialCommunityIcons name="cards-heart-outline" size={25} color={'#0282D3'} /></View>
-//             <View style={styles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>
-//           </View>
-//         </View>
-//         {/* Expanded Card Content */}
-//         { expanded ?
-//           <>
-//             <Text>{props.description}</Text>
-//             <View style={styles.signUpContainer}>
-//             {/* Sign up confirmation popup */}
-//             { signUpClicked ? 
-//               <View style={styles.signUpPopup}>
-//                 <Text style={styles.signUpPrompt}>Did you sign up through the external site?</Text>
-//                 <View style={styles.signUpButtons}>
-//                   <Pressable style={styles.signUpButton} onPress={() => handleSignUp(props)}><Text style={styles.signUpPrompt}>yes</Text></Pressable>
-//                   <Pressable style={styles.signUpButton} onPress={() => setSignUpClicked(false)}><Text style={styles.signUpPrompt}>no</Text></Pressable>
-//                 </View>
-//               </View>
-//               : 
-//               <></>
-//             }
-//             <View style={styles.signedUp}>
-//               <Pressable style={styles.signUp} onPress={() => openSignUpLink(props.sign_up_link)}>
-//                 <Text style={styles.signUpText}>Sign Up</Text>
-//                   <Svg width={20} height={20} viewBox="0 0 24 24">
-//                     <Path d={mdiOpenInNew} fill={'white'} />
-//                   </Svg>
-//               </Pressable>               
-//               </View>
-//             </View>
-//           </> : 
-
-//         <></>
-//         }
-//       </View>
-//   </Pressable>
-//   );
-// };
-
 
 const styles = StyleSheet.create({
   feedHeader: {
@@ -680,7 +557,6 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 16,
     gap: 15,
-    // boxShadow: '0px 0px 10px 0px rgb(207, 207, 207)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,

@@ -11,7 +11,7 @@ type OnlineEcoAction = {
   created_at: string,
   cover_photo?: string,
   title: string,
-  end_date?: string,
+  end_date?: Date,
   campaign_type?: string,
   email_link?: string,
   summary?: string,
@@ -24,8 +24,8 @@ type InPersonEcoAction = {
   cover_photo?: string,
   title: string,
   location?: string,
-  start_date: string,
-  end_date: string,
+  start_date: Date,
+  end_date: Date,
   sign_up_link: string,
   summary?: string,
 }
@@ -34,8 +34,8 @@ type Event = {
   type: "event",
   id: string,
   title: string,
-  start_time?: string,
-  end_time?: string,
+  start_time?: Date,
+  end_time?: Date,
   location?: string,
   cover_photo?: string,
   google_calendar_link?: string,
@@ -104,7 +104,6 @@ export default function Volunteer() {
     })) ?? [];
 
     setItems([...events, ...inPersonEcoItems, ...onlineEcoItems]);
-    // setLoading(false);
     };
 
     fetchVolunteerData();
@@ -124,8 +123,6 @@ export default function Volunteer() {
           <EcoFeed
             key={`${item.id}-${item.type}`}
             {...item}
-            // onLearnMore={() => {}}
-            // onSignUp={() => {}}
           />
         ))}
       </ScrollView>
