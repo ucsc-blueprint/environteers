@@ -1,12 +1,19 @@
 import React from 'react';
-import { View, ScrollView, Text, TextInput } from 'react-native';
+import { View, ScrollView, Text, TextInput, ActivityIndicator } from 'react-native';
 import { Hourglass, Leaf, Calendar, ChevronRight, Pencil } from 'lucide-react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { Divider } from 'react-native-paper';
-import { useLocalSearchParams } from 'expo-router';
-
+import { Redirect, useLocalSearchParams } from 'expo-router';
+import { useAuth } from '@/context/AuthContext';
 export default function AdminAnalytics() {
   const { volunteerName, membershipStatus } = useLocalSearchParams();
+  const { profile, loading } = useAuth();
+  if (loading) {
+    return <ActivityIndicator size="large" color="#000000" />
+  }
+  if (!profile || !profile?.is_admin) {
+    return <Redirect href="/(tabs)/home" />
+  }
 
   return (
     <ScrollView 

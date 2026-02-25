@@ -453,7 +453,7 @@ export const OnlineCard = (props: OnlineEcoAction) => {
             {/* Verify If User Signed-up */}
             { signUpClick &&
               <View style={styles.confirmationContainer}>
-                <Text style={{color: '#3A5513'}}>Did you sign up for this online eco action?</Text>
+                <Text style={{color: '#3A5513'}}>Did you complete this online eco action?</Text>
                 <View style={styles.confirmationButtons}>
                   <Pressable style={styles.confirmationButton} onPress={() => setSignUpClicked(false)}>
                     <Text style={styles.confirmationText}>No</Text>

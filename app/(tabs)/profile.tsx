@@ -1,14 +1,23 @@
 import React from 'react';
 import { Text, View, ScrollView, StyleSheet, Image } from "react-native";
 import { ProfileButtons } from "@/components/ProfileButtons";
-import { LogHours } from '@/components/LogHours';
+import { useAuth } from '@/context/AuthContext';
+import { Redirect } from 'expo-router';
+import { ActivityIndicator } from 'react-native';
 
 export default function Profile() {
+  const { profile, loading } = useAuth();
+  if (loading) {
+    return <ActivityIndicator size="large" color="#000000" />
+  }
+  if (!profile) {
+    return <Redirect href="/(tabs)/home" />
+  }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ justifyContent: "center" }}>
       <Text style={styles.header}>Hello
-        <Text style={{ fontWeight: "bold" }}> Name</Text>
+        <Text style={{ fontWeight: "bold" }}> {profile?.username}</Text>
       </Text>
 
       <View style={styles.profilePicContainer}>
@@ -26,8 +35,6 @@ export default function Profile() {
       <View style={styles.buttonsContainer}>
         <ProfileButtons />
       </View>
-
-      <LogHours onSubmit={() => {}} />
     </ScrollView>
   );
 }
