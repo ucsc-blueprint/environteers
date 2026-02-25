@@ -26,40 +26,44 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // Fetch profile whenever session.user changes
   useEffect(() => {
-    const fetchProfile = async (userId: string) => {
+    if (!session?.user) {
+      setProfile(null);
+      return;
+    }
+
+    const fetchProfile = async () => {
       const { data } = await supabase
         .from('users')
         .select('username, is_admin')
-        .eq('user_id', userId)
-        .single()
+        .eq('user_id', session.user.id)
+        .single();
 
-      setProfile(data ?? null)
-    }
+      setProfile(data ?? null);
+    };
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      if (session?.user) {
-        fetchProfile(session.user.id)
-      }
-      setLoading(false)
-    })
+    fetchProfile();
+  }, [session?.user]);
 
-    const { data } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session)
-        if (session?.user) {
-          await fetchProfile(session.user.id)
-        } else {
-          setProfile(null)
-        }
-      }
-    )
+  // Initialize session and listen for changes
+  useEffect(() => {
+    const init = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      setLoading(false);
+    };
+
+    init();
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session ?? null);
+    });
 
     return () => {
-      data.subscription.unsubscribe()
-    }
-  }, [])
+      listener.subscription.unsubscribe();
+    };
+  }, []);
 
   return (
     <AuthContext.Provider
