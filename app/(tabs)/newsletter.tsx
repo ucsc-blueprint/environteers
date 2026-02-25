@@ -27,7 +27,7 @@ const includesDate = (dateStr: string, filter: 'week' | '2weeks' | 'month' | 'al
 
 export interface newsLetterItem{
   newsletter_id: string;
-  title: string;
+  edition_number: string;
   date: string;
   preview_image: string;
   link: string;
@@ -40,10 +40,9 @@ export default function Newsletter() {
   const [searchText, setSearchText] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
   const [filterDateLength, setFilterDateLength] = useState< 'week' | '2weeks' | 'month' | 'all' >('all');
+  const [refreshing, setRefreshing] = useState(false)
 
-
-  useEffect(() => {
-    const fetchNewsletters = async () => {
+  const fetchNewsletters = async () => {
       const { data, error } = await supabase
         .from('news')
         .select('*');
@@ -55,13 +54,14 @@ export default function Newsletter() {
 
       setNewsLetters(data ?? []);
       console.log("Fetched newsletters:", data);
-    };
+  };
 
+  useEffect(() => {
     fetchNewsletters();
-    }, []);
+  }, []);
 
   const filteredNewsletters = newsLetters.filter((n) =>
-    (includesText(n.title, searchText))&& (includesDate(n.date, filterDateLength))
+    (includesText(`Environteers Weekly Update: ${n.edition_number}th Edition`, searchText))&& (includesDate(n.date, filterDateLength))
   );
   //displaying webview of a newsletter
   if (activeUrl) {
@@ -124,9 +124,11 @@ export default function Newsletter() {
         data={filteredNewsletters}
         keyExtractor={(item) => item.newsletter_id}
         contentContainerStyle={{ padding: 16 }}
+        onRefresh={fetchNewsletters}
+        refreshing={refreshing}
         renderItem={({ item }) => (
           <NewsUpdate
-            title={item.title}
+            title={`Environteers Weekly Update: ${item.edition_number}th Edition`}
             date={item.date}
             previewImage={item.preview_image}
             onPress={() => setActiveUrl(item.link)}
