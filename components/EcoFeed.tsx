@@ -191,7 +191,7 @@ export const EventCard = (props: Event) => {
     if (error) {
       Alert.alert('Error', error.message);
     } else {
-      Alert.alert('Success', 'Thanks for signing up!');
+      // Alert.alert('Success');
       setSignUpClicked(false);
     }
   }
@@ -290,7 +290,7 @@ export const InPersonCard = (props: InPersonEcoAction) => {
     if (error) {
       Alert.alert('Error', error.message);
     } else {
-      Alert.alert('Success', 'Thanks for signing up!');
+      // Alert.alert('Success');
       setSignUpClicked(false);
     }
   }
@@ -391,7 +391,7 @@ export const OnlineCard = (props: OnlineEcoAction) => {
     if (error) {
       Alert.alert('Error', error.message);
     } else {
-      Alert.alert('Success', 'Thanks for signing up!');
+      // Alert.alert('Success');
       setSignUpClicked(false);
     }
   }
