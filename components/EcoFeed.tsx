@@ -188,12 +188,25 @@ export const EventCard = (props: Event) => {
         event_id: props.id,
         user_id: user?.id,
       }]);
-    if (error) {
-      Alert.alert('Error', error.message);
-    } else {
-      // Alert.alert('Success');
+      if (error) {
+        // 23505 = unique constraint violation
+        if (error.code === '23505') {
+          Alert.alert(
+            'Already Recorded',
+            interaction === 'like'
+              ? 'You have already liked this event.'
+              : 'You have already signed up for this event.'
+          );
+        } else {
+          console.log('Supabase error:', error);
+          Alert.alert(
+            'Error',
+            'Something went wrong. Please try again.'
+          );
+        }
+        return;
+      }
       setSignUpClicked(false);
-    }
   }
 
   return (
@@ -288,11 +301,24 @@ export const InPersonCard = (props: InPersonEcoAction) => {
         user_id: user?.id,
       }]);
     if (error) {
-      Alert.alert('Error', error.message);
-    } else {
-      // Alert.alert('Success');
-      setSignUpClicked(false);
+      // 23505 = unique constraint violation
+      if (error.code === '23505') {
+        Alert.alert(
+          'Already Recorded',
+          interaction === 'like'
+            ? 'You have already liked this event.'
+            : 'You have already signed up for this event.'
+        );
+      } else {
+        console.log('Supabase error:', error);
+        Alert.alert(
+          'Error',
+          'Something went wrong. Please try again.'
+        );
+      }
+      return;
     }
+    setSignUpClicked(false);
   }
 
   return (
