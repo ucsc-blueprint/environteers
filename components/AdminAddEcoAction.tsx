@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { StyleSheet, Text, View, Pressable, TextInput, Alert, Image} from 'react-native';
+import { StyleSheet, Text, View, Pressable, TextInput, Alert, Image, ScrollView, Platform} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -12,7 +12,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => {
     const [title, setTitle] = React.useState("");
     const [description, setDescription] = React.useState("");
     const [date, setDate] = React.useState(new Date());
-    const [showDatePicker, setShowDatePicker] = React.useState(false);
+    const [showPicker, setShowPicker] = React.useState(false);
     const [mode, setMode] = React.useState<'date' | 'time'>("date");
     const [host, setHost] = React.useState("");
     const [guestLimit, setGuestLimit] = React.useState("");
@@ -51,11 +51,15 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => {
       if (selectedDate) {
         setDate(selectedDate);
       }
-      setShowDatePicker(false);
+
+      if (Platform.OS === "android") {
+        setShowPicker(false);
+      }
     };
 
 
     return (
+    <ScrollView>
     <View style={styles.container}>
       <View style={styles.header}>
         <Pressable onPress={() => router.push("/(tabs)/volunteer")}>
@@ -88,41 +92,27 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => {
             </Pressable>
           )}
         </View>
-        <View style={styles.section}>
+          <View style={styles.section}>
             <Text style={styles.label}>
               Set a date<Text style={{ color: "red" }}> *</Text>
             </Text>
 
-            <View style={styles.dateRow}>
-              <Pressable
-                style={styles.datePill}
-                onPress={() => {
-                  setMode("date");
-                  setShowDatePicker(true);
-                }}
-              >
-                <Text>{date.toLocaleDateString()}</Text>
-              </Pressable>
+            <Pressable
+              style={styles.input}
+              onPress={() => {
+                setMode("date");
+                setShowPicker(true);
+              }}
+            >
+              <Text>{date.toLocaleString()}</Text>
+            </Pressable>
 
-              <Pressable
-                style={styles.datePill}
-                onPress={() => {
-                  setMode("time");
-                  setShowDatePicker(true);
-                }}
-              >
-                <Text>
-                  {date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                </Text>
-              </Pressable>
-            </View>
-
-            {showDatePicker && (
+            {showPicker && (
               <DateTimePicker
                 value={date}
                 mode={mode}
-                display="default"
-                onChange= {onChange}
+                display= {Platform.OS == "ios" ? 'inline' : 'default'}
+                onChange={onChange}
               />
             )}
           </View>
@@ -169,9 +159,10 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => {
         </View>
 
         <View style={styles.section}>
+          <Text style = {styles.label}>Description</Text>
           <TextInput
             style={styles.description}
-            placeholder="Event description..."
+            placeholder="Desscription"
             value={description}
             onChangeText={setDescription}
             multiline = {true}
@@ -179,6 +170,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => {
         </View>
     </View>
   </View>
+  </ScrollView>
   );
 };
         
