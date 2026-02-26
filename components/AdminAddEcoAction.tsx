@@ -47,32 +47,6 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => {
         setCoverPhoto("")
         router.push("/(tabs)/volunteer")
     }
-    const onChange = (event: any, selectedDate?: Date) => {
-      setShowPicker(false); // hide picker immediately
-
-      if (!selectedDate) return;
-
-      if (mode === 'date') {
-        // set date
-        const currentDate = new Date(selectedDate);
-        const updatedDate = new Date(date);
-        updatedDate.setFullYear(currentDate.getFullYear());
-        updatedDate.setMonth(currentDate.getMonth());
-        updatedDate.setDate(currentDate.getDate());
-        setDate(updatedDate);
-
-        if (Platform.OS === 'android') {
-          setTimeout(() =>  setMode("time"), 50);
-        }
-      } 
-      else if (mode === 'time') {
-        // set time
-        const updatedDate = new Date(date);
-        updatedDate.setHours(selectedDate.getHours());
-        updatedDate.setMinutes(selectedDate.getMinutes());
-        setDate(updatedDate);
-      }
-    };
 
 
     return (
@@ -110,27 +84,59 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => {
           )}
         </View>
           <View style={styles.section}>
-            <Text style={styles.label}>
-              Set a date<Text style={{ color: "red" }}> *</Text>
-            </Text>
+            <Text style={styles.label}>Set a date & time<Text style={{ color: "red" }}> *</Text></Text>
 
-            <Pressable
-              style={styles.input}
-              onPress={() => {
-                setMode("date");
-                setShowPicker(true);
-              }}
-            >
-              <Text>{date.toLocaleString()}</Text>
-            </Pressable>
+            {Platform.OS === 'android' 
+            ? 
+            (
+              <>
+                <Pressable style={styles.input} onPress={() => { setMode('date'); setShowPicker(true); }}>
+                  <Text>{date.toLocaleDateString()}</Text>
+                </Pressable>
 
-            {showPicker && (
+                <Pressable style={styles.input} onPress={() => { setMode('time'); setShowPicker(true); }}>
+                  <Text>{date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+                </Pressable>
+              </>
+            ) 
+            : 
+            (
+              <Pressable style={styles.input} onPress={() => setShowPicker(true)}>
+                <Text>{date.toLocaleString()}</Text>
+              </Pressable>
+            )}
+
+             {showPicker && (
               <DateTimePicker
                 value={date}
-                mode= {Platform.OS == "ios" ? "datetime" : "date"}
-                display= {Platform.OS == "ios" ? 'inline' : 'default'}
-                textColor= {Platform.OS == "ios" ? 'black' : undefined}
-                onChange={onChange}
+                mode={Platform.OS === 'ios' ? 'datetime' : mode} // <-- iOS uses 'datetime', Android uses 'date' or 'time'
+                display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                onChange={(event, selectedDate) => {
+                  setShowPicker(false);
+                  if (!selectedDate) return;
+
+                  const updated = new Date(date);
+                  if (Platform.OS === 'android') {
+                    // separate date/time for Android
+                    if (mode === 'date') {
+                      updated.setFullYear(selectedDate.getFullYear());
+                      updated.setMonth(selectedDate.getMonth());
+                      updated.setDate(selectedDate.getDate());
+                    } else if (mode === 'time') {
+                      updated.setHours(selectedDate.getHours());
+                      updated.setMinutes(selectedDate.getMinutes());
+                    }
+                  } else {
+                    // iOS: datetime picker gives both
+                    updated.setFullYear(selectedDate.getFullYear());
+                    updated.setMonth(selectedDate.getMonth());
+                    updated.setDate(selectedDate.getDate());
+                    updated.setHours(selectedDate.getHours());
+                    updated.setMinutes(selectedDate.getMinutes());
+                  }
+
+                  setDate(updated);
+                }}
               />
             )}
           </View>
@@ -140,7 +146,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => {
           <Text style={styles.label}>Event Title</Text>
           <TextInput
             style={styles.input}
-            placeholder="Assembly Member Gail Pellerin"
+            placeholder="Event"
             value={title}
             onChangeText={setTitle}
           />
@@ -150,7 +156,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => {
           <Text style={styles.label}>Host organization</Text>
           <TextInput
             style={styles.input}
-            placeholder="Assembly Member Gail Pellerin"
+            placeholder="Host Organization"
             value={host}
             onChangeText={setHost}
           />
@@ -160,7 +166,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => {
           <Text style={styles.label}>Location</Text>
           <TextInput
             style={styles.input}
-            placeholder="Felton Community Hall"
+            placeholder="Location"
             value={location}
             onChangeText={setLocation}
           />
