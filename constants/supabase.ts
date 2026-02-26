@@ -19,7 +19,7 @@ class LargeSecureStore {
     private async _decrypt(key: string, value: string) {
         const encryptionKeyHex = await SecureStore.getItemAsync(key);
         if (!encryptionKeyHex) {
-            throw new Error('Encryption key not found in SecureStore');
+            return encryptionKeyHex;
         }
         const cipher = new aesjs.ModeOfOperation.ctr(aesjs.utils.hex.toBytes(encryptionKeyHex), new aesjs.Counter(1));
         const decryptedBytes = cipher.decrypt(aesjs.utils.hex.toBytes(value));
