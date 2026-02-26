@@ -169,6 +169,7 @@ export const Header = ({ resultsCount }: HeaderProps) => {
 export const EventCard = (props: Event) => {
   const [expanded, setExpanded] = useState(false);
   const [signUpClick, setSignUpClicked] = useState(false);
+  const [liked, setLiked] = useState(false);
   const { user } = useAuth();
 
   const toggleExpanded = () => {
@@ -179,6 +180,59 @@ export const EventCard = (props: Event) => {
     Linking.openURL(link);
     setSignUpClicked(true);
   }  
+
+  async function toggleLike() {
+    if (!user?.id) {
+      Alert.alert("Error", "You must be logged in to like.");
+      return;
+    }
+  
+    if (!liked) {
+      // INSERT like
+      const { error } = await supabase
+        .from("interactions_events")
+        .insert([
+          {
+            interaction_type: "like",
+            event_id: Number(props.id),
+            user_id: user.id,
+          },
+        ]);
+  
+      if (error) {
+        console.log(error);
+        Alert.alert("Error", "Could not like this event.");
+        return;
+      }
+  
+      setLiked(true);
+    } else {
+      // DELETE like (unlike)
+      console.log("Attempting delete with:", {
+        event_id: Number(props.id),
+        user_id: user?.id,
+        interaction_type: "like"
+      });
+      
+      const { data, error } = await supabase
+        .from("interactions_events")
+        .delete()
+        .eq("interaction_type", "like")
+        .eq("event_id", Number(props.id))
+        .eq("user_id", user.id)
+        .select();
+
+      console.log("Deleted rows:", data);
+
+      if (error) {
+        console.log(error);
+        Alert.alert("Error", "Could not unlike this event.");
+        return;
+      }
+
+      setLiked(false);
+    }
+  }
 
   async function addInteraction(props: Event, interaction: string) {
     const { data, error } = await supabase
@@ -238,7 +292,14 @@ export const EventCard = (props: Event) => {
           </View>
           {/* Like/Share Icons */}
           <View style={styles.iconsColumn}>
-            <View style={styles.iconBackgrounds}><MaterialCommunityIcons name="cards-heart-outline" size={25} color={'#0282D3'} onPress={() => addInteraction(props, 'like')}/></View>
+            <View style={styles.iconBackgrounds}>
+              <MaterialCommunityIcons
+                name={liked ? "cards-heart" : "cards-heart-outline"}
+                size={25}
+                color={'#0282D3'}
+                onPress={toggleLike}
+              />
+            </View>
             <View style={styles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>
           </View>
         </View>
@@ -281,6 +342,7 @@ export const EventCard = (props: Event) => {
 export const InPersonCard = (props: InPersonEcoAction) => {
   const [expanded, setExpanded] = useState(false);
   const [signUpClick, setSignUpClicked] = useState(false);
+  const [liked, setLiked] = useState(false);
   const { user } = useAuth();
 
   const toggleExpanded = () => {
@@ -291,6 +353,60 @@ export const InPersonCard = (props: InPersonEcoAction) => {
     Linking.openURL(link);
     setSignUpClicked(true);
   }  
+
+  async function toggleLike() {
+    if (!user?.id) {
+      Alert.alert("Error", "You must be logged in to like.");
+      return;
+    }
+    //const eventId = Number(props.id);
+  
+    if (!liked) {
+      // INSERT like
+      const { error } = await supabase
+        .from("interactions_eco_inperson")
+        .insert([
+          {
+            interaction_type: "like",
+            action_id: Number(props.id),
+            user_id: user.id,
+          },
+        ]);
+  
+      if (error) {
+        console.log(error);
+        Alert.alert("Error", "Could not like this event.");
+        return;
+      }
+  
+      setLiked(true);
+    } else {
+      // DELETE like (unlike)
+      console.log("Attempting delete with:", {
+        event_id: Number(props.id),
+        user_id: user?.id,
+        interaction_type: "like"
+      });
+      
+      const { data, error } = await supabase
+        .from("interactions_eco_inperson")
+        .delete()
+        .eq("interaction_type", "like")
+        .eq("action_id", Number(props.id))
+        .eq("user_id", user.id)
+        .select();
+
+      console.log("Deleted rows:", data);
+
+      if (error) {
+        console.log(error);
+        Alert.alert("Error", "Could not unlike this event.");
+        return;
+      }
+
+      setLiked(false);
+    }
+  }
 
   async function addInteraction(props: InPersonEcoAction, interaction: string) {
     const { data, error } = await supabase
@@ -350,7 +466,14 @@ export const InPersonCard = (props: InPersonEcoAction) => {
           </View>
           {/* Like/Share Icons */}
           <View style={styles.iconsColumn}>
-            <View style={styles.iconBackgrounds}><MaterialCommunityIcons name="cards-heart-outline" size={25} color={'#0282D3'} onPress={() => addInteraction(props, 'like')}/></View>
+            <View style={styles.iconBackgrounds}>
+            <MaterialCommunityIcons
+                name={liked ? "cards-heart" : "cards-heart-outline"}
+                size={25}
+                color={'#0282D3'}
+                onPress={toggleLike}
+              />
+            </View>
             <View style={styles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>
           </View>
         </View>
@@ -394,6 +517,7 @@ export const InPersonCard = (props: InPersonEcoAction) => {
 export const OnlineCard = (props: OnlineEcoAction) => {
   const [expanded, setExpanded] = useState(false);
   const [signUpClick, setSignUpClicked] = useState(false);
+  const [liked, setLiked] = useState(false);
   const { user } = useAuth();
 
   const toggleExpanded = () => {
@@ -403,6 +527,61 @@ export const OnlineCard = (props: OnlineEcoAction) => {
   const openSignUpLink = (link: string) => {
     Linking.openURL(link);
     setSignUpClicked(true);
+  }
+
+
+  async function toggleLike() {
+    if (!user?.id) {
+      Alert.alert("Error", "You must be logged in to like.");
+      return;
+    }
+    //const eventId = Number(props.id);
+  
+    if (!liked) {
+      // INSERT like
+      const { error } = await supabase
+        .from("interactions_eco_online")
+        .insert([
+          {
+            interaction_type: "like",
+            action_id: Number(props.id),
+            user_id: user.id,
+          },
+        ]);
+  
+      if (error) {
+        console.log(error);
+        Alert.alert("Error", "Could not like this event.");
+        return;
+      }
+  
+      setLiked(true);
+    } else {
+      // DELETE like (unlike)
+      console.log("Attempting delete with:", {
+        action_id: Number(props.id),
+        user_id: user?.id,
+        interaction_type: "like"
+      });
+      
+      const { data, error } = await supabase
+        .from("interactions_eco_online")
+        .delete()
+        .eq("interaction_type", "like")
+        .eq("action_id", Number(props.id))
+        .eq("user_id", user.id)
+        .select();
+
+      console.log("Deleted rows:", data);
+
+      if (error) {
+        console.log(error);
+        Alert.alert("Error", "Could not unlike this event.");
+        return;
+      }
+
+      setLiked(false);
+    }
   }
   
   async function addInteraction(props: OnlineEcoAction, interaction: string) {
@@ -442,7 +621,14 @@ export const OnlineCard = (props: OnlineEcoAction) => {
           </View>
           {/* Like/Share Icons */}
           <View style={styles.iconsColumn}>
-            <View style={styles.iconBackgrounds}><MaterialCommunityIcons name="cards-heart-outline" size={25} color={'#0282D3'} onPress={() => addInteraction(props, 'like')}/></View>
+            <View style={styles.iconBackgrounds}>
+              <MaterialCommunityIcons
+                  name={liked ? "cards-heart" : "cards-heart-outline"}
+                  size={25}
+                  color={'#0282D3'}
+                  onPress={toggleLike}
+                />
+              </View>
             <View style={styles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>
           </View>
         </View>
