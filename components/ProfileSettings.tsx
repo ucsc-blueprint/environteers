@@ -36,7 +36,7 @@ const ProfileSettings = ({ onSubmit }: ProfileSettingsProps) => {
                 <View style={styles.backContainer}>
                     <Pressable 
                         style={styles.backButton} 
-                        onPress={() => router.push('/login')} 
+                        onPress={() => router.push('//settings.tsx')} 
                         >
                         <ChevronLeft size={24} />
                         <Text style={styles.title}>  Account</Text>
