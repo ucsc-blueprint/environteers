@@ -48,12 +48,29 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => {
         router.push("/(tabs)/volunteer")
     }
     const onChange = (event: any, selectedDate?: Date) => {
-      if (selectedDate) {
-        setDate(selectedDate);
-      }
+      setShowPicker(false); // hide picker immediately
 
-      if (Platform.OS === "android") {
-        setShowPicker(false);
+      if (!selectedDate) return;
+
+      if (mode === 'date') {
+        // set date
+        const currentDate = new Date(selectedDate);
+        const updatedDate = new Date(date);
+        updatedDate.setFullYear(currentDate.getFullYear());
+        updatedDate.setMonth(currentDate.getMonth());
+        updatedDate.setDate(currentDate.getDate());
+        setDate(updatedDate);
+
+        if (Platform.OS === 'android') {
+          setTimeout(() =>  setMode("time"), 50);
+        }
+      } 
+      else if (mode === 'time') {
+        // set time
+        const updatedDate = new Date(date);
+        updatedDate.setHours(selectedDate.getHours());
+        updatedDate.setMinutes(selectedDate.getMinutes());
+        setDate(updatedDate);
       }
     };
 
@@ -110,8 +127,9 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => {
             {showPicker && (
               <DateTimePicker
                 value={date}
-                mode={mode}
+                mode= {Platform.OS == "ios" ? "datetime" : "date"}
                 display= {Platform.OS == "ios" ? 'inline' : 'default'}
+                textColor= {Platform.OS == "ios" ? 'black' : undefined}
                 onChange={onChange}
               />
             )}
