@@ -7,7 +7,7 @@ import { supabase } from '@/constants/supabase';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 
-export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => {
+export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { // in-pesron or online-eco-action
   
     const [title, setTitle] = React.useState("");
     const [description, setDescription] = React.useState("");
@@ -83,13 +83,14 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => {
             </Pressable>
           )}
         </View>
+        { typeOfAction === "in-person" && (
           <View style={styles.section}>
             <Text style={styles.label}>Set a date & time<Text style={{ color: "red" }}> *</Text></Text>
 
             {Platform.OS === 'android' 
             ? 
             (
-              <>
+              <View style={styles.dateRow}>
                 <Pressable style={styles.input} onPress={() => { setMode('date'); setShowPicker(true); }}>
                   <Text>{date.toLocaleDateString()}</Text>
                 </Pressable>
@@ -97,7 +98,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => {
                 <Pressable style={styles.input} onPress={() => { setMode('time'); setShowPicker(true); }}>
                   <Text>{date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
                 </Pressable>
-              </>
+              </View>
             ) 
             : 
             (
@@ -140,10 +141,11 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => {
               />
             )}
           </View>
+        )}
 
 
         <View style={styles.section}>
-          <Text style={styles.label}>Event Title</Text>
+          <Text style={styles.label}>Event Title<Text style={{ color: "red" }}> *</Text></Text>
           <TextInput
             style={styles.input}
             placeholder="Event"
@@ -162,8 +164,10 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => {
           />
         </View>
 
+        {typeOfAction === "in-person" && ( // location for in person
         <View style={styles.section}>
-          <Text style={styles.label}>Location</Text>
+          
+          <Text style={styles.label}>Location<Text style={{ color: "red" }}> *</Text></Text>
           <TextInput
             style={styles.input}
             placeholder="Location"
@@ -171,19 +175,23 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => {
             onChangeText={setLocation}
           />
         </View>
+        )}
 
+        {typeOfAction === "online-eco-action" && ( // link for online eco action}
         <View style={styles.section}>
-          <Text style={styles.label}>Guest limit</Text>
+          
+          <Text style={styles.label}>Link<Text style={{ color: "red" }}> *</Text></Text>
           <TextInput
             style={styles.input}
-            placeholder="Enter number or N/A"
-            value={guestLimit}
-            onChangeText={setGuestLimit}
+            placeholder="Paste Sign up Link"
+            value={location}
+            onChangeText={setLocation}
           />
         </View>
+        )}
 
         <View style={styles.section}>
-          <Text style = {styles.label}>Description</Text>
+          <Text style = {styles.label}>Description<Text style={{ color: "red" }}> *</Text></Text>
           <TextInput
             style={styles.description}
             placeholder="Desscription"
