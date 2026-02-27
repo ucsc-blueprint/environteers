@@ -1,6 +1,5 @@
 import React from 'react';
 import { NewsView } from '@/components/NewsView';
-import { AdminNewsView } from '@/components/AdminNewsView';
 import { useAuth } from '@/context/AuthContext';
 import { Redirect } from 'expo-router';
 import { ActivityIndicator } from 'react-native';
@@ -15,13 +14,7 @@ export default function newsletter(){
       return <Redirect href="/(tabs)/home" />
   }
 
-  if (profile.is_admin) {
-    return (
-      <AdminNewsView />
-    )
-  }
-
   return (
-    <NewsView />
+    <NewsView isAdmin={profile.is_admin}/>
   )
 }

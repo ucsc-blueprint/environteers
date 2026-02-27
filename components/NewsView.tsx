@@ -1,11 +1,14 @@
 import { Text, TextInput, FlatList, Pressable, View, StyleSheet } from "react-native";
-import React, { useState, useEffect} from "react";
+import React, { useState, useCallback } from "react";
 import { NewsUpdate } from "@/components/NewsUpdate";
+import { DeleteNewsConfirmationModal } from "@/components/DeleteNewsConfirmationModal";
 import { WebView } from "react-native-webview";
 import DropDownPicker from 'react-native-dropdown-picker'
 import {supabase} from "@/constants/supabase";
 import { Ionicons } from "@expo/vector-icons"; //"filter-outline" dropdown and "menu-outline" menu icon
-
+import Toast from 'react-native-toast-message';
+import { useRouter } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 
 const includesText = (str: string, search: string) =>
 
@@ -33,13 +36,16 @@ export interface newsLetterItem{
   link: string;
 }
 
-export const NewsView = () => {
+export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
+  const router = useRouter();
   const [newsLetters, setNewsLetters] = useState<newsLetterItem[]>([]);
   const [activeUrl, setActiveUrl] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
   const [filterDateLength, setFilterDateLength] = useState< 'week' | '2weeks' | 'month' | 'all' >('all');
   const [refreshing, setRefreshing] = useState(false)
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [selectedNewsletter, setSelectedNewsletter] = useState<newsLetterItem | null>(null);
 
   const fetchNewsletters = async () => {
       const { data, error } = await supabase
@@ -52,12 +58,61 @@ export const NewsView = () => {
       }
 
       setNewsLetters(data ?? []);
-      console.log("Fetched newsletters:", data);
   };
 
-  useEffect(() => {
-    fetchNewsletters();
-  }, []);
+  const handleOpenDeleteModal = (newsletter: newsLetterItem) => {
+    setSelectedNewsletter(newsletter);
+    setDeleteModalVisible(true);
+  }
+
+  const handleDelete = async () => {
+    if (!selectedNewsletter) return;
+
+    const success = await deleteNewsletter(selectedNewsletter.newsletter_id);
+    setDeleteModalVisible(false);
+    setSelectedNewsletter(null);
+
+    if (success) {
+      Toast.show({
+        type: 'success',
+        text1: 'Newsletter deleted',
+        text2: 'Users can no longer see this newsletter on their feed.'
+      })
+    } else {
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to delete newsletter',
+        text2: 'Please try again later.'
+      })
+    }
+  }
+
+  const deleteNewsletter = async (newsletter_id: string) => {
+    try {
+      const { error } = await supabase
+        .from("news")
+        .delete()
+        .eq("newsletter_id", newsletter_id)
+
+        if (error) {
+            console.error("Error deleting newsletter:", error);
+            return false;
+        }
+
+        setNewsLetters((prev) => prev.filter((n) => n.newsletter_id !== newsletter_id));
+
+        return true;
+    } catch (error) {
+        console.error("Unexpected error:", error);
+        return false;
+    }
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchNewsletters();
+    }, [])
+  );
 
   const filteredNewsletters = newsLetters.filter((n) =>
     (includesText(`Environteers Weekly Update: ${n.edition_number}th Edition`, searchText))&& (includesDate(n.date, filterDateLength))
@@ -86,7 +141,14 @@ export const NewsView = () => {
     <View style={{ flex: 1 }}>
 
       <Ionicons name = "menu-outline" size = {30} style = {{marginTop: 8, marginLeft: 8}} />
-      <Text style = {{marginTop: 8, marginBottom :12, marginLeft : 12, fontWeight: "bold", fontSize: 30}}> Weekly Updates</Text>
+      {isAdmin ? (
+        <>
+          <Text style = {{marginTop: 8, marginBottom: 4, marginLeft: 12, fontWeight: "bold", fontSize: 30}}>Manage Newsletters</Text>
+          <Text style = {{marginBottom: 12, marginLeft: 12, fontSize: 16, color: "#79B128"}}>Add, edit, and delete</Text>
+        </>
+      ) : (
+        <Text style = {{marginTop: 8, marginBottom :12, marginLeft : 12, fontWeight: "bold", fontSize: 30}}> Weekly Updates</Text>
+      )}
       
         <TextInput
           placeholder="Search newsletters"
@@ -120,6 +182,7 @@ export const NewsView = () => {
       </View>
       
       <FlatList
+        style={{ marginVertical: 10 }}
         data={filteredNewsletters}
         keyExtractor={(item) => item.newsletter_id}
         contentContainerStyle={{ padding: 16 }}
@@ -130,11 +193,38 @@ export const NewsView = () => {
             title={`Environteers Weekly Update: ${item.edition_number}th Edition`}
             date={item.date}
             previewImage={item.preview_image}
-            adminView={false}
+            adminView={isAdmin}
             onPress={() => setActiveUrl(item.link)}
+            onDelete={() => handleOpenDeleteModal(item)}
           />
         )}
       />
+
+      {isAdmin  && (
+        <>
+          <Pressable 
+            style={styles.addNewsletterButton} 
+            onPress={() => router.push({
+              pathname: '/(tabs)/AdminNewsUpdateFormView'
+            })}>
+            <Text style={styles.addNewsletterButtonText}>+ Add</Text>
+          </Pressable>
+    
+          <DeleteNewsConfirmationModal 
+            visible={deleteModalVisible} 
+            onCancel={() => {
+              setDeleteModalVisible(false);
+              setSelectedNewsletter(null);
+            }} 
+            onConfirm={handleDelete} 
+            newsletterTitle={
+              selectedNewsletter
+              ? `Environteers Weekly Update: ${selectedNewsletter.edition_number}th Edition`
+              : "Selected newsletter"
+            } 
+          />
+        </>
+      )}
     </View>
   );
 }
@@ -156,11 +246,28 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#151414",
   },
-   filter: {
-      width: "50%",
-      borderRadius: 24,
-      borderWidth: 1,
-      borderColor: "#151414",
-      backgroundColor: "transparent",
-    }}
-);
+  filter: {
+    width: "50%",
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "#151414",
+    backgroundColor: "transparent",
+  },
+  addNewsletterButton: {
+    position: 'absolute',
+    bottom: 15,
+    right: 30,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    backgroundColor: '#94C153',
+    height: 35,
+    width: 80,
+  },
+  addNewsletterButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 16,
+  }
+});
