@@ -1,9 +1,8 @@
-import { View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { AdminVolunteersView } from "@/components/AdminVolunteersView";
 import React from "react";
 import { useAuth } from '@/context/AuthContext';
 import { Redirect } from 'expo-router';
-import { ActivityIndicator } from 'react-native';
 
 export default function VolunteerView() {
   const { profile, loading } = useAuth();

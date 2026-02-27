@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, ScrollView, Text, TextInput, ActivityIndicator } from 'react-native';
-import { Hourglass, Leaf, Calendar, ChevronRight, Pencil } from 'lucide-react-native';
+import { Leaf, Calendar, ChevronRight, Pencil } from 'lucide-react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { Divider } from 'react-native-paper';
 import { Redirect, useLocalSearchParams } from 'expo-router';

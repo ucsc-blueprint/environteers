@@ -1,9 +1,8 @@
 import React from 'react';
-import { Text, View, ScrollView, StyleSheet, Image } from "react-native";
+import { ActivityIndicator, Text, View, ScrollView, StyleSheet, Image } from "react-native";
 import { ProfileButtons } from "@/components/ProfileButtons";
 import { useAuth } from '@/context/AuthContext';
 import { Redirect } from 'expo-router';
-import { ActivityIndicator } from 'react-native';
 
 export default function Profile() {
   const { profile, loading } = useAuth();
