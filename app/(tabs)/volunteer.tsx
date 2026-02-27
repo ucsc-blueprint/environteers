@@ -5,82 +5,105 @@ import { supabase } from "@/constants/supabase";
 import { LinearGradient } from 'expo-linear-gradient';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 
-type VolunteerItem = {
-  id: string;
-  type: "Eco-Action" | "Event";
-  title: string;
-  liked: boolean;
-  cover_photo: string;
-  description: string;
-  time_taken?: string;
-  date?: string;
-  location?: string;
-  spotsLeft?: number;
-};
-
-function formatEventDate(start: string, end: string) {
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-
-  // Format day
-  const day = startDate.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-
-  // Format time range
-  const startTime = startDate.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: undefined,
-  });
-  const endTime = endDate.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: undefined,
-  });
-
-  return `${day} | ${startTime}–${endTime}`;
+type OnlineEcoAction = {
+  type: "online",
+  id: string,
+  created_at: string,
+  cover_photo?: string,
+  title: string,
+  end_date?: Date,
+  campaign_type?: string,
+  email_link?: string,
+  summary?: string,
 }
 
+type InPersonEcoAction = {
+  type: "inperson",
+  id: string,
+  created_at: string,
+  cover_photo?: string,
+  title: string,
+  location?: string,
+  start_date: Date,
+  end_date: Date,
+  sign_up_link: string,
+  summary?: string,
+}
+
+type Event = {
+  type: "event",
+  id: string,
+  title: string,
+  start_time?: Date,
+  end_time?: Date,
+  location?: string,
+  cover_photo?: string,
+  google_calendar_link?: string,
+  description?: string,
+  sign_up_link?: string,
+}
+
+type VolunteerItem = OnlineEcoAction | InPersonEcoAction | Event
 
 export default function Volunteer() {
   const [items, setItems] = useState<VolunteerItem[]>([]);
 
   useEffect(() => {
     const fetchVolunteerData = async () => {
-
-    // EVENTS
-    const { data: events } = await supabase
-      .from("events")
-      .select("event_id, event_name, start_time, end_time, location, type, cover_photo, liked, description");
-
-    // PETITIONS / CAMPAIGNS
-    const { data: petitions } = await supabase
-      .from("petitions_campaigns")
-      .select("id, title, time_taken, type, cover_photo, liked, description");
     
-    const eventItems: VolunteerItem[] = events?.map((e) => ({
-      id: e.event_id,
-      type: e.type,
-      title: e.event_name,
-      date: formatEventDate(e.start_time, e.end_time),
-      location: e.location,
-      cover_photo: e.cover_photo,
-      liked: e.liked ?? false,
-      description: e.description,
+    // EVENTS
+    const { data: event } = await supabase
+      .from("events")
+      .select("id, title, start_time, end_time, location, cover_photo, google_calendar_link, description, sign_up_link");
+
+    // ONLINE ECO-ACTIONS
+    const { data: ecoInPerson } = await supabase
+      .from("inperson_eco-actions")
+      .select("id, created_at, cover_photo, title, end_date, sign_up_link, summary, start_date, location");
+
+    const { data: ecoOnline } = await supabase
+      .from("online_eco-actions")
+      .select("id, created_at, cover_photo, title, end_date, campaign_type, email_link, summary");
+
+    const events: Event[] = event?.map((e) => ({
+      type: "event",
+      id: e.id,
+      title: e.title,
+      start_time: e.start_time ?? undefined,
+      end_time: e.end_time ?? undefined,
+      location: e.location ?? undefined,
+      cover_photo: e.cover_photo ?? undefined,
+      google_calendar_link: e.google_calendar_link ?? undefined,
+      description: e.description ?? undefined,
+      sign_up_link: e.sign_up_link ?? undefined,
     })) ?? [];
 
-    const otherItems: VolunteerItem[] = petitions?.map((p) => ({
-      id: p.id,
-      type: p.type,
-      title: p.title,
-      time_taken: p.time_taken ?? '',
-      cover_photo: p.cover_photo,
-      liked: p.liked ?? false,
-      description: p.description,
+    const inPersonEcoItems: InPersonEcoAction[] = ecoInPerson?.map((e) => ({
+      type: "inperson",
+      id: e.id,
+      created_at: e.created_at,
+      cover_photo: e.cover_photo ?? undefined,
+      title: e.title,
+      location: e.location ?? undefined,
+      start_date: e.start_date,
+      end_date: e.end_date,
+      sign_up_link: e.sign_up_link,
+      summary: e.summary ?? undefined,
     })) ?? [];
 
-      setItems([...eventItems, ...otherItems]);
-      // setLoading(false);
+    const onlineEcoItems: OnlineEcoAction[] = ecoOnline?.map((e) => ({
+      type: "online",
+      id: e.id,
+      created_at: e.created_at,
+      cover_photo: e.cover_photo ?? undefined,
+      title: e.title,
+      end_date: e.end_date ?? undefined,
+      campaign_type: e.campaign_type ?? undefined,
+      email_link: e.email_link ?? undefined,
+      summary: e.summary ?? undefined,
+    })) ?? [];
+
+    setItems([...events, ...inPersonEcoItems, ...onlineEcoItems]);
     };
 
     fetchVolunteerData();
@@ -98,10 +121,8 @@ export default function Volunteer() {
         <Header resultsCount={items.length}/>
         { items.map((item) => (
           <EcoFeed
-            key={`${item.type}-${item.id}`}
+            key={`${item.id}-${item.type}`}
             {...item}
-            onLearnMore={() => {}}
-            onSignUp={() => {}}
           />
         ))}
       </ScrollView>
