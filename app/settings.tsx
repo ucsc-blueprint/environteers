@@ -14,8 +14,9 @@ export default function Settings() {
     if (!user) return "User not logged in";
 
     const trimmedUsername = username.trim();
+    let passwordChanged = false;
 
-    // Handle password update
+    // If user wants to change password, verify current password first
     if (password) {
 
       if (!currentPassword) {
@@ -30,17 +31,9 @@ export default function Settings() {
       if (loginError) {
         return "Current password is incorrect";
       }
-
-      const { error } = await supabase.auth.updateUser({
-        password: password,
-      });
-
-      if (error) {
-        return "Failed to update password";
-      }
     }
 
-    // Handle username update
+    // Update username
     if (trimmedUsername !== "") {
       const { error } = await supabase
         .from("users")
@@ -50,6 +43,25 @@ export default function Settings() {
       if (error) {
         return "Failed to update username";
       }
+    }
+
+    // Update password AFTER username
+    if (password) {
+      const { error } = await supabase.auth.updateUser({
+        password: password,
+      });
+
+      if (error) {
+        return "Failed to update password";
+      }
+
+      passwordChanged = true;
+    }
+
+    // Logout after password change
+    if (passwordChanged) {
+      await supabase.auth.signOut();
+      return "Password updated. Please log in again.";
     }
 
     return null;
