@@ -29,13 +29,6 @@ export default function AdminAnalytics() {
       </View>
       
       <View style={styles.row}>
-        <View style={[styles.button, styles.hoursButton]}>
-          <View style={styles.iconsRow}>
-            <Hourglass size={24} color="#FFFFFF" />
-            <Text style={styles.buttonText}>117</Text>
-          </View>
-          <Text style={styles.buttonSubtext}>Hours tracked</Text>
-        </View>
         
         <View style={[styles.button, styles.actionsButton]}>
           <View style={styles.iconsRow}>
