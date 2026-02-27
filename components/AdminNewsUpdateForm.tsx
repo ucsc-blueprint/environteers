@@ -4,6 +4,7 @@ import {Ionicons} from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/constants/supabase';
+
 export const AdminNewsUpdateForm = () => {
     const [editionNumber, setEditionNumber] = React.useState("");
     const [link, setLink] = React.useState("");
@@ -39,6 +40,8 @@ export const AdminNewsUpdateForm = () => {
       setEditionNumber("")
       setLink("")
       setPreviewImage("")
+
+      router.push("/(tabs)/newsletter")
     }
 
     const handleCancel = () => {
@@ -47,8 +50,6 @@ export const AdminNewsUpdateForm = () => {
       setPreviewImage("")
       router.push("/(tabs)/newsletter")
     }
-
-
 
     const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
 
