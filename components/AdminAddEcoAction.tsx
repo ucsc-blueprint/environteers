@@ -7,17 +7,21 @@ import { supabase } from '@/constants/supabase';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 
-export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { // in-pesron or online-eco-action
+export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { // in-person or online
   
     const [title, setTitle] = React.useState("");
     const [description, setDescription] = React.useState("");
     const [date, setDate] = React.useState(new Date());
-    const [showPicker, setShowPicker] = React.useState(false);
+    const [startTime, setStartTime] = React.useState(new Date());
+    const [endTime, setEndTime] = React.useState(new Date());
     const [mode, setMode] = React.useState<'date' | 'time'>("date");
     const [host, setHost] = React.useState("");
-    const [guestLimit, setGuestLimit] = React.useState("");
     const [coverPhoto, setCoverPhoto] = useState("");
+    const [campaignType, setCampaignType] = React.useState("");
     const [location, setLocation] = React.useState("");
+    const [link, setLink] = React.useState("");
+    const [showPicker, setShowPicker] = React.useState(false);
+    const [pickerMode, setPickerMode] = React.useState<"date" | "start" |"end">("date");
     
     const router = useRouter();
     const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
@@ -39,14 +43,87 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
           }
       const handleCancel = () => {
         setLocation("")
-        setGuestLimit("")
         setHost("")
         setDate(new Date())
         setDescription("")
         setTitle("")
         setCoverPhoto("")
+        setLink("")
         router.push("/(tabs)/volunteer")
     }
+    const handleInsert = async () => {
+        if (!title)
+        {
+          Alert.alert("Title required");
+          return;
+        }
+        if (!description)
+        {
+          Alert.alert("description required");
+          return;
+        }
+        if (typeOfAction === "in-person" && !location)
+        {
+          Alert.alert("Location required for in-person eco actions");
+          return;
+        }
+        if (typeOfAction === "online" && !link)
+        {
+          Alert.alert("Link required for online eco actions");
+          return;
+        }
+        if (typeOfAction === "online" && !campaignType)
+        {
+          Alert.alert("Campaign type required for online eco actions");
+          return;
+        }
+
+        if (typeOfAction === "online")
+        {
+            const { error } = await supabase.from("online_eco-actions").insert({
+              title: title,
+              description: description,
+              date: date.toISOString(),
+              host: host,
+              location: location,
+              cover_photo: coverPhoto
+            
+            });
+            if (error) {
+                Alert.alert(error.message)
+            } 
+            else {
+                Alert.alert("Eco action created successfully")
+            }
+          }
+          else if (typeOfAction === "in-person")
+          {
+            const { error } = await supabase.from("in_person_eco-actions").insert({
+              title: title,
+              summary: description,
+              date: date.toISOString(),
+              location: location,
+              sign_up_link: link,
+              cover_photo: coverPhoto
+            
+            });
+            if (error) {
+                Alert.alert(error.message)
+            } 
+            else {
+                Alert.alert("Eco action created successfully")
+            }
+          }
+    
+        setLocation("")
+        setHost("")
+        setDate(new Date())
+        setDescription("")
+        setTitle("")
+        setCoverPhoto("")
+        setLink("")
+      }
+
 
 
     return (
@@ -59,7 +136,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
 
         <Text style={styles.headerTitle}>Add Event</Text>
 
-        <Pressable style={styles.saveButton}>
+        <Pressable style={styles.saveButton} onPress={handleInsert}>
           <Text style={styles.saveText}>Save</Text>
         </Pressable>
       </View>
@@ -163,7 +240,6 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
             onChangeText={setHost}
           />
         </View>
-
         {typeOfAction === "in-person" && ( // location for in person
         <View style={styles.section}>
           
@@ -176,16 +252,27 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
           />
         </View>
         )}
-
-        {typeOfAction === "online-eco-action" && ( // link for online eco action}
+        
         <View style={styles.section}>
           
           <Text style={styles.label}>Link<Text style={{ color: "red" }}> *</Text></Text>
           <TextInput
             style={styles.input}
-            placeholder="Paste Sign up Link"
-            value={location}
-            onChangeText={setLocation}
+            placeholder= {typeOfAction === "in-person" ? "Sign up Link" : "Add link or email"}
+            value={link}
+            onChangeText={setLink}
+          />
+        </View>
+
+        {typeOfAction === "online" && (
+        <View style={styles.section}>
+          
+          <Text style={styles.label}>Campaign Type<Text style={{ color: "red" }}> *</Text></Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Add campaign type"
+            value={campaignType}
+            onChangeText={setCampaignType}
           />
         </View>
         )}
