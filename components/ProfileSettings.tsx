@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {View, Text, Pressable, Image, StyleSheet, TextInput, GestureResponderEvent} from 'react-native';
+import {View, Text, Pressable, Image, Switch, StyleSheet, TextInput, GestureResponderEvent} from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, FileX } from 'lucide-react-native';
 
@@ -7,8 +7,9 @@ export interface ProfileSettingsProps{
     onSubmit: (
         username: string,
         email: string,
-        password: string
-    ) => void;
+        password: string,
+        isToggled: boolean
+    )  => void;
 }
 
 const ProfileSettings = ({ onSubmit }: ProfileSettingsProps) => {
@@ -18,6 +19,8 @@ const ProfileSettings = ({ onSubmit }: ProfileSettingsProps) => {
     const [newPassword, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
+    const [isToggled, setIsToggled] = useState(false);
+    const toggleSwitch = () => setIsToggled(previousState => !previousState);
     
     const handleSubmit = (_event: GestureResponderEvent) => {
         setError('');
@@ -27,7 +30,7 @@ const ProfileSettings = ({ onSubmit }: ProfileSettingsProps) => {
         return;
         }
 
-        onSubmit(username, email, newPassword);
+        onSubmit(username, email, newPassword, isToggled);
     };
     
     return(
@@ -43,6 +46,20 @@ const ProfileSettings = ({ onSubmit }: ProfileSettingsProps) => {
                     </Pressable>
                 </View>
                 <Text style={styles.header}>Profile</Text>
+                <View style={styles.toggleContainer}>
+                    <Image 
+                        source={require('../assets/images/PFP.png')} 
+                        style={styles.image}
+                    />
+                    <Pressable
+                        style={({ pressed }) => [
+                        styles.profileButton,
+                        pressed && styles.saveButtonPressed,
+                        ]}
+                        onPress={handleSubmit}>
+                        <Text style={styles.customButtonText}>Change Profile Photo</Text>
+                    </Pressable>
+                </View>
                 <Text style={styles.subtitle2}>Name</Text>
                 <TextInput
                     value={username}
@@ -60,11 +77,14 @@ const ProfileSettings = ({ onSubmit }: ProfileSettingsProps) => {
                     <Text>Profile Visibility: </Text>
                     <Text style={{ color: '#0282D3' }}>Private</Text>
                 </Text>
-                <Text style={styles.label}>
-                    Your default profile visibility is set to 
-                    <Text style={{ color: '#0282D3' }}> Private</Text>
-                    . When your profile is set to public, others will be able see your name, achievements, and activity.
-                </Text>
+                <View style={styles.toggleContainer}>
+                    <Text style={styles.label}>
+                        Your default profile visibility is set to 
+                        <Text style={{ color: '#0282D3' }}> Private</Text>
+                        . When your profile is set to public, others will be able see your name, achievements, and activity.
+                    </Text>
+                    <Switch trackColor={{ false: '#CCD0D8', true: '#0282D3'}} thumbColor={isToggled ? '#ffffff': '#FFFFFF'} onValueChange={toggleSwitch} value={isToggled}/>
+                </View>
                 <Text style={[styles.subtitle, {color: '#172A36'}]}>Reset Password</Text>
                 <View style={{ marginLeft: 40 }}>
                     <Text style={styles.subtitle2}>Current Password</Text>
@@ -94,14 +114,13 @@ const ProfileSettings = ({ onSubmit }: ProfileSettingsProps) => {
                 )}
 
                 <Pressable
-                          style={({ pressed }) => [
-                            styles.customButton,
-                            pressed && styles.customButtonPressed,
-                          ]}
-                          onPress={handleSubmit}
-                        >
-                          <Text style={styles.customButtonText}>Save Changes</Text>
-                        </Pressable>
+                    style={({ pressed }) => [
+                    styles.saveButton,
+                    pressed && styles.saveButtonPressed,
+                    ]}
+                    onPress={handleSubmit}>
+                    <Text style={styles.customButtonText}>Save Changes</Text>
+                </Pressable>
             </View>
         </View>
     )
@@ -145,6 +164,7 @@ const styles = StyleSheet.create({
     header: {
         fontSize: 16,
         fontWeight: 'bold',
+        marginBottom: 12,
     },
 
     label: {
@@ -154,7 +174,7 @@ const styles = StyleSheet.create({
         marginBottom: 18,
     },
 
-    customButton: {
+    saveButton: {
         backgroundColor: '#0282D3',
         paddingVertical: 10,
         borderRadius: 20,
@@ -166,7 +186,21 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
     },
 
-    customButtonPressed: {
+    profileButton: {
+        backgroundColor: '#0282D3',
+        paddingVertical: 10,
+        borderRadius: 20,
+        alignItems: 'center',
+        marginTop: 9,
+        marginBottom: 9,
+        marginRight: 10,
+        marginLeft: 10,
+        width: 147,
+        height: 30,
+        alignSelf: 'center',
+    },
+
+    saveButtonPressed: {
         backgroundColor: '#0282D3',
     },
 
@@ -193,4 +227,26 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
         marginBottom: 18,
     },
+
+    toggleContainer: {
+        flexDirection: 'row',
+        flex: 1,
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'space-between'
+    },
+
+    toggleSwitch: {
+        position: 'relative',
+        width: 60,
+        height: 34
+    },
+
+    image: {
+        borderRadius: 50,
+        marginLeft: 20,
+        width: 70,
+        height: 70,
+        marginBottom: 12,
+    }
 })
