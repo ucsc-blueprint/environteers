@@ -11,7 +11,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
   
     const [title, setTitle] = React.useState("");
     const [description, setDescription] = React.useState("");
-    const [date, setDate] = React.useState(new Date());
+    const [eventDate, setEventDate] = React.useState(new Date());
     const [startTime, setStartTime] = React.useState(new Date());
     const [endTime, setEndTime] = React.useState(new Date());
     const [mode, setMode] = React.useState<'date' | 'time'>("date");
@@ -44,7 +44,6 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
       const handleCancel = () => {
         setLocation("")
         setHost("")
-        setDate(new Date())
         setDescription("")
         setTitle("")
         setCoverPhoto("")
@@ -81,12 +80,12 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         if (typeOfAction === "online")
         {
             const { error } = await supabase.from("online_eco-actions").insert({
+              cover_photo: coverPhoto,
               title: title,
-              description: description,
-              date: date.toISOString(),
-              host: host,
-              location: location,
-              cover_photo: coverPhoto
+              endDate: endTime.toISOString(),
+              campaign_type: campaignType,
+              email_link: link,
+              summary: description,
             
             });
             if (error) {
@@ -98,15 +97,15 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
           }
           else if (typeOfAction === "in-person")
           {
-            const { error } = await supabase.from("in_person_eco-actions").insert({
-              title: title,
-              summary: description,
-              date: date.toISOString(),
-              location: location,
-              sign_up_link: link,
-              cover_photo: coverPhoto
-            
-            });
+            const { error } = await supabase.from("inperson_eco-actions").insert({
+                  title,
+                  summary: description,
+                  start_date: startTime.toISOString(),
+                  end_date: endTime.toISOString(),
+                  location: location,
+                  sign_up_link: link,
+                  cover_photo: coverPhoto,
+                });
             if (error) {
                 Alert.alert(error.message)
             } 
@@ -117,7 +116,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
     
         setLocation("")
         setHost("")
-        setDate(new Date())
+        setEventDate(new Date())
         setDescription("")
         setTitle("")
         setCoverPhoto("")
@@ -160,69 +159,78 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
             </Pressable>
           )}
         </View>
-        { typeOfAction === "in-person" && (
-          <View style={styles.section}>
-            <Text style={styles.label}>Set a date & time<Text style={{ color: "red" }}> *</Text></Text>
-
-            {Platform.OS === 'android' 
-            ? 
-            (
-              <View style={styles.dateRow}>
-                <Pressable style={styles.input} onPress={() => { setMode('date'); setShowPicker(true); }}>
-                  <Text>{date.toLocaleDateString()}</Text>
-                </Pressable>
-
-                <Pressable style={styles.input} onPress={() => { setMode('time'); setShowPicker(true); }}>
-                  <Text>{date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
-                </Pressable>
-              </View>
-            ) 
-            : 
-            (
-              <Pressable style={styles.input} onPress={() => setShowPicker(true)}>
-                <Text>{date.toLocaleString()}</Text>
-              </Pressable>
-            )}
-
-             {showPicker && (
-              <DateTimePicker
-                value={date}
-                mode={Platform.OS === 'ios' ? 'datetime' : mode} // <-- iOS uses 'datetime', Android uses 'date' or 'time'
-                display={Platform.OS === 'ios' ? 'inline' : 'default'}
-                onChange={(event, selectedDate) => {
-                  setShowPicker(false);
-                  if (!selectedDate) return;
-
-                  const updated = new Date(date);
-                  if (Platform.OS === 'android') {
-                    // separate date/time for Android
-                    if (mode === 'date') {
-                      updated.setFullYear(selectedDate.getFullYear());
-                      updated.setMonth(selectedDate.getMonth());
-                      updated.setDate(selectedDate.getDate());
-                    } else if (mode === 'time') {
-                      updated.setHours(selectedDate.getHours());
-                      updated.setMinutes(selectedDate.getMinutes());
-                    }
-                  } else {
-                    // iOS: datetime picker gives both
-                    updated.setFullYear(selectedDate.getFullYear());
-                    updated.setMonth(selectedDate.getMonth());
-                    updated.setDate(selectedDate.getDate());
-                    updated.setHours(selectedDate.getHours());
-                    updated.setMinutes(selectedDate.getMinutes());
-                  }
-
-                  setDate(updated);
-                }}
-              />
-            )}
-          </View>
+      <View style={styles.section}>
+        {typeOfAction === "in-person" ? (
+          <Text style={styles.label}>Event Date, Start & End Time<Text style={{ color: "red" }}> *</Text></Text>
+        ) : (
+          <Text style={styles.label}>End Date {`(optional)`}</Text>
         )}
 
+        <View style={styles.dateRow}>
+          {/* Pick the day */}
+          <Pressable
+            style={styles.input}
+            onPress={() => { setPickerMode("date"); setShowPicker(!showPicker); }}
+          >
+            <Text>{eventDate.toLocaleDateString()}</Text>
+          </Pressable>
+          
+          {typeOfAction === "in-person" && ( // pick start time
+          <Pressable
+            style={styles.input}
+            onPress={() => { setPickerMode("start"); setShowPicker(!showPicker); }}
+          >
+            <Text>{startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</Text>
+          </Pressable>
+          )}
+
+
+          {/* Pick end time */}
+          <Pressable
+            style={styles.input}
+            onPress={() => { setPickerMode("end"); setShowPicker(!showPicker); }}
+          >
+            <Text>{endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</Text>
+          </Pressable>
+        </View>
+
+        {showPicker && (
+          <DateTimePicker
+            value={
+              pickerMode === "date" ? eventDate :
+              pickerMode === "start" ? startTime :
+              endTime
+            }
+            mode={pickerMode === "date" ? "date" : "time"}
+            display={Platform.OS === "ios" ? "spinner" : "default"}
+            onChange={(event, selectedDate) => {
+              if (Platform.OS === "android") setShowPicker(false); // only hide on Android
+              if (!selectedDate) return;
+
+              if (pickerMode === "date") {
+                setEventDate(selectedDate);
+                // adjust start/end times to new date
+                const newStart = new Date(startTime);
+                newStart.setFullYear(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+                setStartTime(newStart);
+
+                const newEnd = new Date(endTime);
+                newEnd.setFullYear(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+                setEndTime(newEnd);
+              } else if (pickerMode === "start") {
+                selectedDate.setFullYear(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+                setStartTime(selectedDate);
+              } else if (pickerMode === "end") {
+                selectedDate.setFullYear(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+                setEndTime(selectedDate);
+              }
+            }}
+          />
+        )}
+      </View>
 
         <View style={styles.section}>
-          <Text style={styles.label}>Event Title<Text style={{ color: "red" }}> *</Text></Text>
+          <Text style={styles.label}>Eco-Action Title<Text style={{ color: "red" }}> *</Text></Text>
           <TextInput
             style={styles.input}
             placeholder="Event"
@@ -307,6 +315,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 20,
+    position: "relative",
   },
 
   headerTitle: {
