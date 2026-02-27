@@ -170,6 +170,7 @@ export const EventCard = (props: Event) => {
   const [expanded, setExpanded] = useState(false);
   const [signUpClick, setSignUpClicked] = useState(false);
   const [liked, setLiked] = useState(false);
+  const [loadingLike, setLoadingLike] = useState(true);
   const { user } = useAuth();
 
   const toggleExpanded = () => {
@@ -180,6 +181,58 @@ export const EventCard = (props: Event) => {
     Linking.openURL(link);
     setSignUpClicked(true);
   }  
+
+  useEffect(() => {
+    async function checkIfLiked() {
+      if (!user?.id) {
+        setLoadingLike(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("interactions_events")
+        .select("id")
+        .eq("event_id", Number(props.id))
+        .eq("user_id", user.id)
+        .eq("interaction_type", "like")
+        .maybeSingle();
+
+      if (error) {
+        console.log("Like check error:", error);
+      }
+
+      if (data) {
+        setLiked(true);
+      }
+
+      setLoadingLike(false);
+    }
+
+    checkIfLiked();
+  }, [user?.id, props.id]);
+  // useEffect(() => {
+  //   const checkIfLiked = async () => {
+  //     const { data, error } = await supabase
+  //       .from("interactions_events")
+  //       .select("id")
+  //       .eq("event_id", props.id)
+  //       .eq("user_id", user?.id)
+  //       .eq("interaction_type", "like")
+  //       .maybeSingle();
+  
+  //     if (error) {
+  //       console.log("Like check error:", error);
+  //       return;
+  //     }
+  
+  //     // 👇 THIS is the key line
+  //     setLiked(!!data);
+  //   };
+  
+  //   if (user) {
+  //     checkIfLiked();
+  //   }
+  // }, [user, props.id]);
 
   async function toggleLike() {
     if (!user?.id) {
@@ -343,6 +396,7 @@ export const InPersonCard = (props: InPersonEcoAction) => {
   const [expanded, setExpanded] = useState(false);
   const [signUpClick, setSignUpClicked] = useState(false);
   const [liked, setLiked] = useState(false);
+  const [loadingLike, setLoadingLike] = useState(true);
   const { user } = useAuth();
 
   const toggleExpanded = () => {
@@ -353,6 +407,35 @@ export const InPersonCard = (props: InPersonEcoAction) => {
     Linking.openURL(link);
     setSignUpClicked(true);
   }  
+
+  useEffect(() => {
+    async function checkIfLiked() {
+      if (!user?.id) {
+        setLoadingLike(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("interactions_eco_inperson")
+        .select("id")
+        .eq("action_id", Number(props.id))
+        .eq("user_id", user.id)
+        .eq("interaction_type", "like")
+        .maybeSingle();
+
+      if (error) {
+        console.log("Like check error:", error);
+      }
+
+      if (data) {
+        setLiked(true);
+      }
+
+      setLoadingLike(false);
+    }
+
+    checkIfLiked();
+  }, [user?.id, props.id]);
 
   async function toggleLike() {
     if (!user?.id) {
@@ -518,6 +601,7 @@ export const OnlineCard = (props: OnlineEcoAction) => {
   const [expanded, setExpanded] = useState(false);
   const [signUpClick, setSignUpClicked] = useState(false);
   const [liked, setLiked] = useState(false);
+  const [loadingLike, setLoadingLike] = useState(true);
   const { user } = useAuth();
 
   const toggleExpanded = () => {
@@ -528,7 +612,34 @@ export const OnlineCard = (props: OnlineEcoAction) => {
     Linking.openURL(link);
     setSignUpClicked(true);
   }
+  useEffect(() => {
+    async function checkIfLiked() {
+      if (!user?.id) {
+        setLoadingLike(false);
+        return;
+      }
 
+      const { data, error } = await supabase
+        .from("interactions_eco_online")
+        .select("id")
+        .eq("action_id", Number(props.id))
+        .eq("user_id", user.id)
+        .eq("interaction_type", "like")
+        .maybeSingle();
+
+      if (error) {
+        console.log("Like check error:", error);
+      }
+
+      if (data) {
+        setLiked(true);
+      }
+
+      setLoadingLike(false);
+    }
+
+    checkIfLiked();
+  }, [user?.id, props.id]);
 
   async function toggleLike() {
     if (!user?.id) {
