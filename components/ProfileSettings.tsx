@@ -4,31 +4,44 @@ import { useRouter } from 'expo-router';
 import { ChevronLeft, FileX } from 'lucide-react-native';
 
 export interface ProfileSettingsProps{
-    onSubmit: (
-        username: string,
-        email: string,
-        password: string
-    ) => void;
+onSubmit: (
+  username: string,
+  email: string,
+  currentPassword: string,
+  password: string
+) => Promise<string | null>; //thanks to this, we can return an error message if the update fails, or null if it succeeds
 }
 
 const ProfileSettings = ({ onSubmit }: ProfileSettingsProps) => {
     const router = useRouter();
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
+
+    const [currentPassword, setCurrentPassword] = useState(''); 
     const [newPassword, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+
     const [error, setError] = useState('');
     
-    const handleSubmit = (_event: GestureResponderEvent) => {
-        setError('');
+const handleSubmit = async (_event: GestureResponderEvent) => {
+  setError("");
 
-        if (newPassword !== confirmPassword) {
-        setError('Passwords do not match!');
-        return;
-        }
+  if (newPassword !== confirmPassword) {
+    setError("Passwords do not match!");
+    return;
+  }
 
-        onSubmit(username, email, newPassword);
-    };
+  const result = await onSubmit(
+    username,
+    email,
+    currentPassword,
+    newPassword
+  );
+
+  if (result) {
+    setError(result);
+  }
+};
     
     return(
         <View style={styles.container}>
@@ -42,38 +55,48 @@ const ProfileSettings = ({ onSubmit }: ProfileSettingsProps) => {
                         <Text style={styles.title}>  Account</Text>
                     </Pressable>
                 </View>
+
                 <Text style={styles.header}>Profile</Text>
+
                 <Text style={styles.subtitle2}>Name</Text>
                 <TextInput
                     value={username}
                     onChangeText={setUsername}
                     style={styles.input}
                 />
+
                 <Text style={styles.subtitle2}>Email</Text>
                 <TextInput
                     value={email}
                     onChangeText={setEmail}
                     style={styles.input}
                 />
+
                 <Text style={styles.header}>Security</Text>
+
                 <Text style={[styles.subtitle, { marginLeft : 4 }]}>
                     <Text>Profile Visibility: </Text>
                     <Text style={{ color: '#0282D3' }}>Private</Text>
                 </Text>
+
                 <Text style={styles.label}>
                     Your default profile visibility is set to 
                     <Text style={{ color: '#0282D3' }}> Private</Text>
                     . When your profile is set to public, others will be able see your name, achievements, and activity.
                 </Text>
+
                 <Text style={[styles.subtitle, {color: '#172A36'}]}>Reset Password</Text>
+
                 <View style={{ marginLeft: 40 }}>
+
                     <Text style={styles.subtitle2}>Current Password</Text>
                     <TextInput
-                        //check if the password typed in is equivalent to old password 
-                        value={newPassword} //change this to actual password value 
+                        value={currentPassword}            
+                        onChangeText={setCurrentPassword}  
                         secureTextEntry
                         style={styles.input}
                     />
+
                     <Text style={styles.subtitle2}>New Password</Text>
                     <TextInput
                         value={newPassword}
@@ -81,6 +104,7 @@ const ProfileSettings = ({ onSubmit }: ProfileSettingsProps) => {
                         onChangeText={setPassword}
                         style={styles.input}
                     />
+
                     <Text style={styles.subtitle2}>Confirm Password</Text>
                     <TextInput
                         value={confirmPassword}
@@ -88,20 +112,23 @@ const ProfileSettings = ({ onSubmit }: ProfileSettingsProps) => {
                         onChangeText={setConfirmPassword}
                         style={styles.input}
                     />
+
                 </View>
+
                 {error !== '' && (
                     <Text style={styles.error}>{error}</Text>
                 )}
 
                 <Pressable
-                          style={({ pressed }) => [
-                            styles.customButton,
-                            pressed && styles.customButtonPressed,
-                          ]}
-                          onPress={handleSubmit}
-                        >
-                          <Text style={styles.customButtonText}>Save Changes</Text>
-                        </Pressable>
+                    style={({ pressed }) => [
+                        styles.customButton,
+                        pressed && styles.customButtonPressed,
+                    ]}
+                    onPress={handleSubmit}
+                >
+                    <Text style={styles.customButtonText}>Save Changes</Text>
+                </Pressable>
+
             </View>
         </View>
     )
@@ -117,7 +144,7 @@ const styles = StyleSheet.create({
     },
 
     content: {
-    paddingHorizontal: 24,
+        paddingHorizontal: 24,
     },
 
     title: {
@@ -138,8 +165,8 @@ const styles = StyleSheet.create({
     },
 
     error: {
-    color: 'red',
-    marginBottom: 12,
+        color: 'red',
+        marginBottom: 12,
     },
 
     header: {
@@ -193,4 +220,4 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
         marginBottom: 18,
     },
-})
+});
