@@ -196,6 +196,7 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
             adminView={isAdmin}
             onPress={() => setActiveUrl(item.link)}
             onDelete={() => handleOpenDeleteModal(item)}
+            onEdit={() => console.log("Edit button pressed")}
           />
         )}
       />
