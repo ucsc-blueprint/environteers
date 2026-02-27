@@ -4,21 +4,12 @@ import { useRouter } from 'expo-router';
 import { ChevronLeft, FileX } from 'lucide-react-native';
 
 export interface ProfileSettingsProps{
-<<<<<<< HEAD
-    onSubmit: (
-        username: string,
-        email: string,
-        password: string,
-        isToggled: boolean
-    )  => void;
-=======
 onSubmit: (
   username: string,
   email: string,
   currentPassword: string,
   password: string
 ) => Promise<string | null>; //thanks to this, we can return an error message if the update fails, or null if it succeeds
->>>>>>> ab4dece93e2ffbf1ad9b91bd326ad20cbe52c9bd
 }
 
 const ProfileSettings = ({ onSubmit }: ProfileSettingsProps) => {
@@ -42,11 +33,7 @@ const handleSubmit = async (_event: GestureResponderEvent) => {
     return;
   }
 
-<<<<<<< HEAD
-        onSubmit(username, email, newPassword, isToggled);
-    };
-=======
-  const result = await onSubmit(
+    const result = await onSubmit(
     username,
     email,
     currentPassword,
@@ -57,8 +44,7 @@ const handleSubmit = async (_event: GestureResponderEvent) => {
     setError(result);
   }
 };
->>>>>>> ab4dece93e2ffbf1ad9b91bd326ad20cbe52c9bd
-    
+
     return(
         <View style={styles.container}>
             <View style={styles.content}>
@@ -73,7 +59,6 @@ const handleSubmit = async (_event: GestureResponderEvent) => {
                 </View>
 
                 <Text style={styles.header}>Profile</Text>
-<<<<<<< HEAD
                 <View style={styles.toggleContainer}>
                     <Image 
                         source={require('../assets/images/PFP.png')} 
@@ -87,10 +72,15 @@ const handleSubmit = async (_event: GestureResponderEvent) => {
                         onPress={handleSubmit}>
                         <Text style={styles.customButtonText}>Change Profile Photo</Text>
                     </Pressable>
+                    <Pressable
+                        style={({ pressed }) => [
+                        styles.deleteButton,
+                        pressed && styles.saveButtonPressed,
+                        ]}
+                        onPress={handleSubmit}>
+                        <Text style={styles.customButtonText}>Remove Profile Photo</Text>
+                    </Pressable>
                 </View>
-=======
-
->>>>>>> ab4dece93e2ffbf1ad9b91bd326ad20cbe52c9bd
                 <Text style={styles.subtitle2}>Name</Text>
                 <TextInput
                     value={username}
@@ -106,29 +96,6 @@ const handleSubmit = async (_event: GestureResponderEvent) => {
                 />
 
                 <Text style={styles.header}>Security</Text>
-
-                <Text style={[styles.subtitle, { marginLeft : 4 }]}>
-                    <Text>Profile Visibility: </Text>
-                    <Text style={{ color: '#0282D3' }}>Private</Text>
-                </Text>
-<<<<<<< HEAD
-                <View style={styles.toggleContainer}>
-                    <Text style={styles.label}>
-                        Your default profile visibility is set to 
-                        <Text style={{ color: '#0282D3' }}> Private</Text>
-                        . When your profile is set to public, others will be able see your name, achievements, and activity.
-                    </Text>
-                    <Switch trackColor={{ false: '#CCD0D8', true: '#0282D3'}} thumbColor={isToggled ? '#ffffff': '#FFFFFF'} onValueChange={toggleSwitch} value={isToggled}/>
-                </View>
-=======
-
-                <Text style={styles.label}>
-                    Your default profile visibility is set to 
-                    <Text style={{ color: '#0282D3' }}> Private</Text>
-                    . When your profile is set to public, others will be able see your name, achievements, and activity.
-                </Text>
-
->>>>>>> ab4dece93e2ffbf1ad9b91bd326ad20cbe52c9bd
                 <Text style={[styles.subtitle, {color: '#172A36'}]}>Reset Password</Text>
 
                 <View style={{ marginLeft: 40 }}>
@@ -165,23 +132,12 @@ const handleSubmit = async (_event: GestureResponderEvent) => {
 
                 <Pressable
                     style={({ pressed }) => [
-<<<<<<< HEAD
                     styles.saveButton,
                     pressed && styles.saveButtonPressed,
                     ]}
                     onPress={handleSubmit}>
                     <Text style={styles.customButtonText}>Save Changes</Text>
                 </Pressable>
-=======
-                        styles.customButton,
-                        pressed && styles.customButtonPressed,
-                    ]}
-                    onPress={handleSubmit}
-                >
-                    <Text style={styles.customButtonText}>Save Changes</Text>
-                </Pressable>
-
->>>>>>> ab4dece93e2ffbf1ad9b91bd326ad20cbe52c9bd
             </View>
         </View>
     )
@@ -261,6 +217,21 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
     },
 
+    deleteButton: {
+        backgroundColor: '#FFECEF',
+        borderColor: '#D8021C',
+        paddingVertical: 10,
+        borderRadius: 20,
+        alignItems: 'center',
+        marginTop: 9,
+        marginBottom: 9,
+        marginRight: 10,
+        marginLeft: 10,
+        width: 147,
+        height: 30,
+        alignSelf: 'center',
+    },
+
     saveButtonPressed: {
         backgroundColor: '#0282D3',
     },
@@ -288,7 +259,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
         marginBottom: 18,
     },
-<<<<<<< HEAD
 
     toggleContainer: {
         flexDirection: 'row',
@@ -312,6 +282,3 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     }
 })
-=======
-});
->>>>>>> ab4dece93e2ffbf1ad9b91bd326ad20cbe52c9bd
