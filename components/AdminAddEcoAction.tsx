@@ -5,6 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/constants/supabase';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import DropDownPicker from 'react-native-dropdown-picker';
 
 
 export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { // in-person or online
@@ -22,6 +23,8 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
     const [link, setLink] = React.useState("");
     const [showPicker, setShowPicker] = React.useState(false);
     const [pickerMode, setPickerMode] = React.useState<"date" | "start" |"end">("date");
+    const [filterOpen, setFilterOpen] = React.useState(false)
+
     
     const router = useRouter();
     const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
@@ -82,7 +85,6 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
             const { error } = await supabase.from("online_eco-actions").insert({
               cover_photo: coverPhoto,
               title: title,
-              endDate: endTime.toISOString(),
               campaign_type: campaignType,
               email_link: link,
               summary: description,
@@ -129,13 +131,13 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
     <ScrollView>
     <View style={styles.container}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.push("/(tabs)/volunteer")}>
+        <Pressable style = {styles.leftButton} onPress={() => router.push("/(tabs)/volunteer")}>
           <Ionicons name="close" size={28} color="black" />
         </Pressable>
 
         <Text style={styles.headerTitle}>Add Event</Text>
 
-        <Pressable style={styles.saveButton} onPress={handleInsert}>
+        <Pressable style={styles.rightButton} onPress={handleInsert}>
           <Text style={styles.saveText}>Save</Text>
         </Pressable>
       </View>
@@ -149,7 +151,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
             />
           ) : (
             <Pressable style={styles.photoPlaceholder} onPress={getImage}>
-              <Ionicons name="add-circle-outline" size={50} color="#8A8A8A" />
+              <Ionicons name="add-circle-outline" size={64} color="#8A8A8A" />
               <Text style={styles.addPhotoText}>Add cover photo</Text>
 
               <View style={styles.uploadButton}>
@@ -169,7 +171,10 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         <View style={styles.dateRow}>
           {/* Pick the day */}
           <Pressable
-            style={styles.input}
+            style={[
+              styles.input,
+              showPicker && pickerMode === "date" && styles.activeInput
+            ]}
             onPress={() => { setPickerMode("date"); setShowPicker(!showPicker); }}
           >
             <Text>{eventDate.toLocaleDateString()}</Text>
@@ -177,7 +182,10 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
           
           {typeOfAction === "in-person" && ( // pick start time
           <Pressable
-            style={styles.input}
+            style={[
+              styles.input,
+              showPicker && pickerMode === "start" && styles.activeInput
+            ]}
             onPress={() => { setPickerMode("start"); setShowPicker(!showPicker); }}
           >
             <Text>{startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</Text>
@@ -187,7 +195,10 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
 
           {/* Pick end time */}
           <Pressable
-            style={styles.input}
+            style={[
+              styles.input,
+              showPicker && pickerMode === "end" && styles.activeInput
+            ]}
             onPress={() => { setPickerMode("end"); setShowPicker(!showPicker); }}
           >
             <Text>{endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</Text>
@@ -203,6 +214,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
             }
             mode={pickerMode === "date" ? "date" : "time"}
             display={Platform.OS === "ios" ? "spinner" : "default"}
+            textColor='black'
             onChange={(event, selectedDate) => {
               if (Platform.OS === "android") setShowPicker(false); // only hide on Android
               if (!selectedDate) return;
@@ -276,11 +288,33 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         <View style={styles.section}>
           
           <Text style={styles.label}>Campaign Type<Text style={{ color: "red" }}> *</Text></Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Add campaign type"
-            value={campaignType}
-            onChangeText={setCampaignType}
+        <DropDownPicker
+          open={filterOpen}
+          setOpen = {setFilterOpen}
+          value={campaignType}
+          setValue={setCampaignType}
+          listMode = "SCROLLVIEW"
+  
+          items={[
+            { label: 'Petition', value: 'Petition' },
+            { label: 'Constituent Advocacy', value: 'Constituent Advocacy' },
+            { label: 'Public Commenting', value: 'Public Commenting' },
+            { label: 'Custom', value: 'Custom' },
+
+          ]}
+          style={{
+            backgroundColor: "#F2F2F2",
+            borderRadius: 10,
+            borderWidth: 0,
+            paddingHorizontal: 12,
+            paddingVertical: 12,
+          }}
+          dropDownContainerStyle={{
+            backgroundColor: "#F2F2F2",
+            borderRadius: 10,
+            borderWidth: 0,
+          }}
+          textStyle={{ color: "#000" }}
           />
         </View>
         )}
@@ -311,9 +345,9 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    flexDirection: "row",
+    height: 50,
+    justifyContent: "center",
     alignItems: "center",
-    justifyContent: "space-between",
     marginBottom: 20,
     position: "relative",
   },
@@ -321,9 +355,21 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "600",
-    alignSelf: "center",
   },
 
+  leftButton: {
+    position: "absolute",
+    left: 0,
+  },
+
+  rightButton: {
+    position: "absolute",
+    right: 0,
+    backgroundColor: "#86AE42",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
   saveButton: {
     backgroundColor: "#86AE42",
     paddingHorizontal: 16,
@@ -406,11 +452,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 10,
   },
-
-  datePill: {
-    backgroundColor: "#F2F2F2",
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
+  activeInput: {
+    backgroundColor: "#CFE8FF",
+    borderWidth: 1,
+    borderColor: "#3B82F6",
   },
-});
+  })
