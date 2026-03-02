@@ -57,29 +57,30 @@ const handleSubmit = async (_event: GestureResponderEvent) => {
                         <Text style={styles.title}>  Account</Text>
                     </Pressable>
                 </View>
-
                 <Text style={styles.header}>Profile</Text>
                 <View style={styles.toggleContainer}>
                     <Image 
                         source={require('../assets/images/PFP.png')} 
                         style={styles.image}
                     />
-                    <Pressable
-                        style={({ pressed }) => [
-                        styles.profileButton,
-                        pressed && styles.saveButtonPressed,
-                        ]}
-                        onPress={handleSubmit}>
-                        <Text style={styles.customButtonText}>Change Profile Photo</Text>
-                    </Pressable>
-                    <Pressable
-                        style={({ pressed }) => [
-                        styles.deleteButton,
-                        pressed && styles.saveButtonPressed,
-                        ]}
-                        onPress={handleSubmit}>
-                        <Text style={styles.customButtonText}>Remove Profile Photo</Text>
-                    </Pressable>
+                    <View style={styles.boxButton}>
+                        <Pressable
+                            style={({ pressed }) => [
+                            styles.profileButton,
+                            pressed && styles.saveButtonPressed,
+                            ]}
+                            onPress={handleSubmit}>
+                            <Text style={styles.customButtonText}>Change Profile Photo</Text>
+                        </Pressable>
+                        <Pressable
+                            style={({ pressed }) => [
+                            styles.deleteButton,
+                            pressed && styles.saveButtonPressed,
+                            ]}
+                            onPress={handleSubmit}>
+                            <Text style={styles.customButtonText}>Remove Profile Photo</Text>
+                        </Pressable>
+                    </View>
                 </View>
                 <Text style={styles.subtitle2}>Name</Text>
                 <TextInput
@@ -201,6 +202,13 @@ const styles = StyleSheet.create({
         width: 113,
         height: 35,
         alignSelf: 'center',
+    },
+
+    boxButton: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+        alignItems: 'center',
     },
 
     profileButton: {
