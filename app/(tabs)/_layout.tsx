@@ -50,15 +50,6 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="admin-analytics"
-        options={{
-          title: 'Analytics',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="chart-bar" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
@@ -67,9 +58,22 @@ export default function TabsLayout() {
           ),
         }}
       />
+
+      {/* Admin only tabs */}
+      <Tabs.Screen
+        name="admin-analytics"
+        options={{
+          href: null,
+          title: 'Analytics',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="chart-bar" size={size} color={color} />
+          ),
+        }}
+      />
       <Tabs.Screen
         name="VolunteerView"
         options={{
+          href: profile?.is_admin ? undefined : null,
           title: 'Volunteer View',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="bar-chart" size = {size} color = {color}></Ionicons>
@@ -77,6 +81,7 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+<<<<<<< HEAD
         name="settings"
         options={{
           title: 'Account',
@@ -84,6 +89,17 @@ export default function TabsLayout() {
         }}
       />
 
+=======
+        name="AdminNewsUpdateFormView"
+        options={{
+          href: profile?.is_admin ? undefined : null,
+          title: 'News Update Form',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="create" size = {size} color = {color}></Ionicons>
+          ),
+        }}
+      />
+>>>>>>> 852cb0ec9226eb1c475e42a91341acb18f61bfb7
     </Tabs>
   );
 }
