@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {View, Text, Pressable, Image, Switch, StyleSheet, TextInput, GestureResponderEvent} from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronLeft, FileX } from 'lucide-react-native';
+import { ChevronLeft } from 'lucide-react-native';
 
 export interface ProfileSettingsProps{
 onSubmit: (
@@ -22,9 +22,7 @@ const ProfileSettings = ({ onSubmit }: ProfileSettingsProps) => {
     const [confirmPassword, setConfirmPassword] = useState('');
 
     const [error, setError] = useState('');
-    const [isToggled, setIsToggled] = useState(false);
-    const toggleSwitch = () => setIsToggled(previousState => !previousState);
-    
+
 const handleSubmit = async (_event: GestureResponderEvent) => {
   setError("");
 
@@ -75,10 +73,10 @@ const handleSubmit = async (_event: GestureResponderEvent) => {
                         <Pressable
                             style={({ pressed }) => [
                             styles.deleteButton,
-                            pressed && styles.saveButtonPressed,
+                            pressed && styles.deleteButtonPressed,
                             ]}
                             onPress={handleSubmit}>
-                            <Text style={styles.customButtonText}>Remove Profile Photo</Text>
+                            <Text style={styles.deleteButtonText}>Remove Profile Photo</Text>
                         </Pressable>
                     </View>
                 </View>
@@ -212,7 +210,7 @@ const styles = StyleSheet.create({
     },
 
     profileButton: {
-        backgroundColor: '#0282D3',
+        backgroundColor: '#76BAE4',
         paddingVertical: 10,
         borderRadius: 20,
         alignItems: 'center',
@@ -223,13 +221,16 @@ const styles = StyleSheet.create({
         width: 147,
         height: 30,
         alignSelf: 'center',
+        display: 'flex',
+        justifyContent: 'center',
     },
 
     deleteButton: {
         backgroundColor: '#FFECEF',
         borderColor: '#D8021C',
+        borderWidth: 2,
         paddingVertical: 10,
-        borderRadius: 20,
+        borderRadius: 300,
         alignItems: 'center',
         marginTop: 9,
         marginBottom: 9,
@@ -238,16 +239,32 @@ const styles = StyleSheet.create({
         width: 147,
         height: 30,
         alignSelf: 'center',
+        display: 'flex',
+        justifyContent: 'center',
     },
 
     saveButtonPressed: {
         backgroundColor: '#0282D3',
     },
 
+    deleteButtonPressed: {
+        backgroundColor: '#d46976',
+    },
+
+    deleteButtonText: {
+        color: '#D8021C',
+        fontSize: 12,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+
     customButtonText: {
         color: 'white',
         fontSize: 12,
-        fontWeight: 'bold',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
     },
     
     backContainer: {
@@ -272,7 +289,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flex: 1,
         display: 'flex',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         justifyContent: 'space-between'
     },
 
@@ -285,8 +302,8 @@ const styles = StyleSheet.create({
     image: {
         borderRadius: 50,
         marginLeft: 20,
-        width: 70,
-        height: 70,
+        width: 102,
+        height: 102,
         marginBottom: 12,
     }
 })
