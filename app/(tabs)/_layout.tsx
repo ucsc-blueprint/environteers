@@ -81,15 +81,6 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-<<<<<<< HEAD
-        name="settings"
-        options={{
-          title: 'Account',
-          href: null,
-        }}
-      />
-
-=======
         name="AdminNewsUpdateFormView"
         options={{
           href: profile?.is_admin ? undefined : null,
@@ -99,7 +90,6 @@ export default function TabsLayout() {
           ),
         }}
       />
->>>>>>> 852cb0ec9226eb1c475e42a91341acb18f61bfb7
     </Tabs>
   );
 }
