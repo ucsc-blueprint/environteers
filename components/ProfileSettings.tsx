@@ -201,6 +201,7 @@ const styles = StyleSheet.create({
         height: 35,
         display: 'flex',
         alignSelf: 'center',
+        justifyContent: 'center'
     },
 
     boxButton: {
