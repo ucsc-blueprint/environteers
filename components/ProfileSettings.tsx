@@ -65,7 +65,7 @@ const handleSubmit = async (_event: GestureResponderEvent) => {
                         <Pressable
                             style={({ pressed }) => [
                             styles.profileButton,
-                            pressed && styles.saveButtonPressed,
+                            pressed && styles.changeButtonPressed,
                             ]}
                             onPress={handleSubmit}>
                             <Text style={styles.customButtonText}>Change Profile Photo</Text>
@@ -198,8 +198,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 10,
         marginBottom: 18,
-        width: 113,
-        height: 35,
+        /*width: 113,
+        height: 35,*/
         alignSelf: 'center',
     },
 
@@ -219,8 +219,8 @@ const styles = StyleSheet.create({
         marginBottom: 9,
         marginRight: 10,
         marginLeft: 10,
-        width: 147,
-        height: 30,
+        /*width: 147,
+        height: 30,*/
         alignSelf: 'center',
         display: 'flex',
         justifyContent: 'center',
@@ -244,8 +244,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
 
-    saveButtonPressed: {
+    changeButtonPressed: {
         backgroundColor: '#0282D3',
+    },
+
+    saveButtonPressed: {
+        backgroundColor: '#76BAE4',
     },
 
     deleteButtonPressed: {
@@ -291,7 +295,7 @@ const styles = StyleSheet.create({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 20,
+        marginBottom: 10,
     },
 
     toggleSwitch: {
