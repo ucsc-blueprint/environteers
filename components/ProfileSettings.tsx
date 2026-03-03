@@ -49,7 +49,7 @@ const handleSubmit = async (_event: GestureResponderEvent) => {
                 <View style={styles.backContainer}>
                     <Pressable 
                         style={styles.backButton} 
-                        onPress={() => router.push('//settings.tsx')} 
+                        onPress={() => router.push('/profilesettings')} 
                         >
                         <ChevronLeft size={24} />
                         <Text style={styles.title}>  Account</Text>
@@ -167,6 +167,7 @@ const styles = StyleSheet.create({
     },
 
     subtitle2: {
+        marginTop: 20,
         fontSize: 14,
         color: '#808080',
         marginBottom: 6,
@@ -287,10 +288,10 @@ const styles = StyleSheet.create({
 
     toggleContainer: {
         flexDirection: 'row',
-        flex: 1,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        marginBottom: 20,
     },
 
     toggleSwitch: {
