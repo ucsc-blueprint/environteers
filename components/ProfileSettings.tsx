@@ -170,7 +170,6 @@ const styles = StyleSheet.create({
         marginTop: 20,
         fontSize: 14,
         color: '#808080',
-        marginBottom: 6,
     },
 
     error: {
@@ -193,7 +192,7 @@ const styles = StyleSheet.create({
 
     saveButton: {
         backgroundColor: '#0282D3',
-        paddingVertical: 10,
+        paddingVertical: 6,
         borderRadius: 20,
         alignItems: 'center',
         marginTop: 10,
@@ -204,7 +203,6 @@ const styles = StyleSheet.create({
     },
 
     boxButton: {
-        display: 'flex',
         flexDirection: 'column',
         gap: 10,
         alignItems: 'center',
@@ -212,7 +210,7 @@ const styles = StyleSheet.create({
 
     profileButton: {
         backgroundColor: '#76BAE4',
-        paddingVertical: 10,
+        paddingVertical: 6,
         borderRadius: 20,
         alignItems: 'center',
         marginTop: 9,
@@ -230,7 +228,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFECEF',
         borderColor: '#D8021C',
         borderWidth: 2,
-        paddingVertical: 10,
+        paddingVertical: 6,
         borderRadius: 300,
         alignItems: 'center',
         marginTop: 9,
@@ -258,7 +256,7 @@ const styles = StyleSheet.create({
 
     deleteButtonText: {
         color: '#D8021C',
-        fontSize: 10,
+        fontSize: 12,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center'
@@ -266,7 +264,7 @@ const styles = StyleSheet.create({
 
     customButtonText: {
         color: 'white',
-        fontSize: 10,
+        fontSize: 12,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center'
@@ -295,7 +293,7 @@ const styles = StyleSheet.create({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 10,
+        marginBottom: 12,
     },
 
     toggleSwitch: {
