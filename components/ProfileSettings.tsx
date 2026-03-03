@@ -49,7 +49,7 @@ const handleSubmit = async (_event: GestureResponderEvent) => {
                 <View style={styles.backContainer}>
                     <Pressable 
                         style={styles.backButton} 
-                        onPress={() => router.push('/profilesettings')} 
+                        onPress={() => router.push('/profile')} 
                         >
                         <ChevronLeft size={24} />
                         <Text style={styles.title}>  Account</Text>
