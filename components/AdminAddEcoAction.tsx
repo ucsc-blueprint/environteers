@@ -1,12 +1,12 @@
 import React, {useState} from 'react';
-import { StyleSheet, Text, View, Pressable, TextInput, Alert, Image, ScrollView, Platform} from 'react-native';
+import { StyleSheet, Text, View, Pressable, TextInput, Alert, Image, ScrollView, Platform, KeyboardAvoidingView, Keyboard} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/constants/supabase';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import DropDownPicker from 'react-native-dropdown-picker';
-
+import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
 
 export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { // in-person or online
   
@@ -128,6 +128,13 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
 
 
     return (
+    <SafeAreaProvider>
+    <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right', 'bottom']}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "position" : undefined}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0} 
+    >
     <ScrollView>
     <View style={styles.container}>
       <View style={styles.header}>
@@ -332,6 +339,9 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
     </View>
   </View>
   </ScrollView>
+  </KeyboardAvoidingView>
+  </SafeAreaView>
+  </SafeAreaProvider>
   );
 };
         
