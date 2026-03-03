@@ -87,10 +87,11 @@ export function ProfileButtons() {
       label="Account"
       header="Options:"
       eventText="Change username & password"
-      onPress={() => router.push('../app/settings.tsx')}
+      onPress={() => router.push('//settings')}
       />
     </View>
   );
+  
 }
 
 const styles = {
