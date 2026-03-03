@@ -87,7 +87,7 @@ export function ProfileButtons() {
       label="Account"
       header="Options:"
       eventText="Change username & password"
-      onPress={() => router.push('//settings')}
+      onPress={() => router.push('/profilesettings')}
       />
     </View>
   );
