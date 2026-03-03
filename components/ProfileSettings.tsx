@@ -198,8 +198,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 10,
         marginBottom: 18,
-        /*width: 113,
-        height: 35,*/
+        width: 113,
+        height: 35,
         alignSelf: 'center',
     },
 
@@ -219,8 +219,8 @@ const styles = StyleSheet.create({
         marginBottom: 9,
         marginRight: 10,
         marginLeft: 10,
-        /*width: 147,
-        height: 30,*/
+        width: 147,
+        height: 30,
         alignSelf: 'center',
         display: 'flex',
         justifyContent: 'center',
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
 
     deleteButtonText: {
         color: '#D8021C',
-        fontSize: 12,
+        fontSize: 10,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center'
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
 
     customButtonText: {
         color: 'white',
-        fontSize: 12,
+        fontSize: 10,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center'
