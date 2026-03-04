@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useRef} from 'react';
 import { StyleSheet, Text, View, Pressable, TextInput, Alert, Image, ScrollView, Platform, KeyboardAvoidingView, Keyboard} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -6,24 +6,38 @@ import { useRouter } from 'expo-router';
 import { supabase } from '@/constants/supabase';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import DropDownPicker from 'react-native-dropdown-picker';
-import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
+import { RichEditor, RichToolbar } from 'react-native-pell-rich-editor';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 
 export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { // in-person or online
-  
-    const [title, setTitle] = React.useState("");
-    const [description, setDescription] = React.useState("");
-    const [eventDate, setEventDate] = React.useState(new Date());
-    const [startTime, setStartTime] = React.useState(new Date());
-    const [endTime, setEndTime] = React.useState(new Date());
-    const [mode, setMode] = React.useState<'date' | 'time'>("date");
-    const [host, setHost] = React.useState("");
+    //values for supabase
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
+    const [eventDate, setEventDate] = useState<Date | null>(
+      typeOfAction === "in-person" ? new Date() : null
+    );
+    const [startTime, setStartTime] = useState<Date | null>(
+      typeOfAction === "in-person" ? new Date() : null
+    );
+    const [endTime, setEndTime] = useState<Date | null>(
+      typeOfAction === "in-person" ? new Date() : null
+    );
     const [coverPhoto, setCoverPhoto] = useState("");
-    const [campaignType, setCampaignType] = React.useState("");
-    const [location, setLocation] = React.useState("");
-    const [link, setLink] = React.useState("");
-    const [showPicker, setShowPicker] = React.useState(false);
-    const [pickerMode, setPickerMode] = React.useState<"date" | "start" |"end">("date");
-    const [filterOpen, setFilterOpen] = React.useState(false)
+    const [campaignType, setCampaignType] = useState("");
+    const [location, setLocation] = useState("");
+    const [link, setLink] = useState("");
+
+    //ui handling
+    const [mode, setMode] = useState<'date' | 'time'>("date");
+    const [host, setHost] = useState("");
+    const [showPicker, setShowPicker] = useState(false);
+    const [pickerMode, setPickerMode] = useState<"date" | "start" |"end">("date");
+    const [filterOpen, setFilterOpen] = useState(false)
+    const richText = useRef<RichEditor>(null);
+    const [customCampaignType, setCustomCampaignType] = useState('')
+
 
     
     const router = useRouter();
@@ -44,13 +58,23 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
                 console.log(result.assets[0].uri);
               }
           }
-      const handleCancel = () => {
+      const resetAll = () => 
+      {
         setLocation("")
         setHost("")
+        setEventDate(new Date())
         setDescription("")
         setTitle("")
         setCoverPhoto("")
         setLink("")
+        setCampaignType("")
+        setCustomCampaignType("")
+        setEventDate(typeOfAction === "in-person" ? new Date() : null);
+        setStartTime(typeOfAction === "in-person" ? new Date() : null);
+        setEndTime(typeOfAction === "in-person" ? new Date() : null);
+      }
+      const handleCancel = () => {
+        resetAll()
         router.push("/(tabs)/volunteer")
     }
     const handleInsert = async () => {
@@ -74,18 +98,24 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
           Alert.alert("Link required for online eco actions");
           return;
         }
-        if (typeOfAction === "online" && !campaignType)
+        if (typeOfAction === "in-person" && (!eventDate || !startTime || !endTime)) 
+          {
+            Alert.alert("Date and times required for in-person eco actions");
+            return;
+          }
+        if (typeOfAction === "online" && (!campaignType || (campaignType === "Custom" && !customCampaignType))) 
         {
           Alert.alert("Campaign type required for online eco actions");
           return;
         }
+        
 
         if (typeOfAction === "online")
         {
-            const { error } = await supabase.from("online_eco-actions").insert({
+            const { error } = await supabase.from("online_ecoactions").insert({
               cover_photo: coverPhoto,
               title: title,
-              campaign_type: campaignType,
+              campaign_type: campaignType === 'Custom' ? customCampaignType : campaignType,
               email_link: link,
               summary: description,
             
@@ -99,11 +129,11 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
           }
           else if (typeOfAction === "in-person")
           {
-            const { error } = await supabase.from("inperson_eco-actions").insert({
+            const { error } = await supabase.from("inperson_ecoactions").insert({
                   title,
                   summary: description,
-                  start_date: startTime.toISOString(),
-                  end_date: endTime.toISOString(),
+                  start_date: startTime!.toISOString(),
+                  end_date: endTime!.toISOString(),
                   location: location,
                   sign_up_link: link,
                   cover_photo: coverPhoto,
@@ -116,29 +146,23 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
             }
           }
     
-        setLocation("")
-        setHost("")
-        setEventDate(new Date())
-        setDescription("")
-        setTitle("")
-        setCoverPhoto("")
-        setLink("")
+        resetAll()
       }
 
 
 
     return (
-    <SafeAreaProvider>
-    <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right', 'bottom']}>
-    <KeyboardAvoidingView
+    <SafeAreaView style={{ flex: 1 }} edges = {['bottom']}>
+    <KeyboardAwareScrollView
       style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "position" : undefined}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0} 
+      contentContainerStyle={{ paddingBottom: 100 }}
+      keyboardShouldPersistTaps="handled"
+      enableOnAndroid={true}
+      extraScrollHeight={40}
     >
-    <ScrollView>
     <View style={styles.container}>
       <View style={styles.header}>
-        <Pressable style = {styles.leftButton} onPress={() => router.push("/(tabs)/volunteer")}>
+        <Pressable style = {styles.leftButton} onPress={() => handleCancel()}>
           <Ionicons name="close" size={28} color="black" />
         </Pressable>
 
@@ -170,7 +194,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         </View>
       <View style={styles.section}>
         {typeOfAction === "in-person" ? (
-          <Text style={styles.label}>Event Date, Start & End Time<Text style={{ color: "red" }}> *</Text></Text>
+          <Text style={styles.label}>Set a Date<Text style={{ color: "red" }}> *</Text></Text>
         ) : (
           <Text style={styles.label}>End Date {`(optional)`}</Text>
         )}
@@ -179,69 +203,106 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
           {/* Pick the day */}
           <Pressable
             style={[
-              styles.input,
+              styles.datePill,
               showPicker && pickerMode === "date" && styles.activeInput
             ]}
             onPress={() => { setPickerMode("date"); setShowPicker(!showPicker); }}
           >
-            <Text>{eventDate.toLocaleDateString()}</Text>
+            <Text>
+              {eventDate ? eventDate.toLocaleDateString() : "Select date"}
+            </Text>
           </Pressable>
           
           {typeOfAction === "in-person" && ( // pick start time
           <Pressable
             style={[
-              styles.input,
+              styles.datePill,
               showPicker && pickerMode === "start" && styles.activeInput
             ]}
             onPress={() => { setPickerMode("start"); setShowPicker(!showPicker); }}
           >
-            <Text>{startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</Text>
+            <Text>{startTime!.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} -</Text>
           </Pressable>
           )}
-
-
+        
+          
           {/* Pick end time */}
           <Pressable
             style={[
-              styles.input,
+              styles.datePill,
               showPicker && pickerMode === "end" && styles.activeInput
             ]}
             onPress={() => { setPickerMode("end"); setShowPicker(!showPicker); }}
           >
-            <Text>{endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</Text>
+            <Text>
+              {endTime
+                ? endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                : "Select end"}
+            </Text>
           </Pressable>
         </View>
 
         {showPicker && (
           <DateTimePicker
             value={
-              pickerMode === "date" ? eventDate :
-              pickerMode === "start" ? startTime :
-              endTime
-            }
+                  pickerMode === "date"
+                    ? eventDate || new Date()
+                    : pickerMode === "start"
+                    ? startTime || new Date()
+                    : endTime || new Date()
+                }
             mode={pickerMode === "date" ? "date" : "time"}
             display={Platform.OS === "ios" ? "spinner" : "default"}
             textColor='black'
             onChange={(event, selectedDate) => {
-              if (Platform.OS === "android") setShowPicker(false); // only hide on Android
+              if (Platform.OS === "android") setShowPicker(false);
               if (!selectedDate) return;
 
               if (pickerMode === "date") {
                 setEventDate(selectedDate);
-                // adjust start/end times to new date
-                const newStart = new Date(startTime);
-                newStart.setFullYear(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+
+                // Only update times if they exist (in-person)
+                if (startTime) {
+                  const newStart = new Date(startTime);
+                  newStart.setFullYear(
+                    selectedDate.getFullYear(),
+                    selectedDate.getMonth(),
+                    selectedDate.getDate()
+                  );
+                  setStartTime(newStart);
+                }
+
+                if (endTime) {
+                  const newEnd = new Date(endTime);
+                  newEnd.setFullYear(
+                    selectedDate.getFullYear(),
+                    selectedDate.getMonth(),
+                    selectedDate.getDate()
+                  );
+                  setEndTime(newEnd);
+                }
+
+              } else if (pickerMode === "start") {
+                if (!eventDate) return;
+
+                const newStart = new Date(selectedDate);
+                newStart.setFullYear(
+                  eventDate.getFullYear(),
+                  eventDate.getMonth(),
+                  eventDate.getDate()
+                );
                 setStartTime(newStart);
 
-                const newEnd = new Date(endTime);
-                newEnd.setFullYear(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
-                setEndTime(newEnd);
-              } else if (pickerMode === "start") {
-                selectedDate.setFullYear(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
-                setStartTime(selectedDate);
               } else if (pickerMode === "end") {
-                selectedDate.setFullYear(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
-                setEndTime(selectedDate);
+                if (!eventDate) return;
+
+                const newEnd = new Date(selectedDate);
+                newEnd.setFullYear(
+                  eventDate.getFullYear(),
+                  eventDate.getMonth(),
+                  eventDate.getDate()
+                );
+                setEndTime(newEnd);
               }
             }}
           />
@@ -295,53 +356,71 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         <View style={styles.section}>
           
           <Text style={styles.label}>Campaign Type<Text style={{ color: "red" }}> *</Text></Text>
-        <DropDownPicker
-          open={filterOpen}
-          setOpen = {setFilterOpen}
-          value={campaignType}
-          setValue={setCampaignType}
-          listMode = "SCROLLVIEW"
-  
-          items={[
-            { label: 'Petition', value: 'Petition' },
-            { label: 'Constituent Advocacy', value: 'Constituent Advocacy' },
-            { label: 'Public Commenting', value: 'Public Commenting' },
-            { label: 'Custom', value: 'Custom' },
+          <DropDownPicker
+            open={filterOpen}
+            setOpen = {setFilterOpen}
+            value={campaignType}
+            setValue={setCampaignType}
+            listMode = "SCROLLVIEW"
+    
+            items={[
+              { label: 'Petition', value: 'Petition' },
+              { label: 'Constituent Advocacy', value: 'Constituent Advocacy' },
+              { label: 'Public Commenting', value: 'Public Commenting' },
+              { label: 'Custom', value: 'Custom' },
 
-          ]}
-          style={{
-            backgroundColor: "#F2F2F2",
-            borderRadius: 10,
-            borderWidth: 0,
-            paddingHorizontal: 12,
-            paddingVertical: 12,
-          }}
-          dropDownContainerStyle={{
-            backgroundColor: "#F2F2F2",
-            borderRadius: 10,
-            borderWidth: 0,
-          }}
-          textStyle={{ color: "#000" }}
-          />
-        </View>
-        )}
+            ]}
+            style={{
+              backgroundColor: "#F2F2F2",
+              borderRadius: 10,
+              borderWidth: 0,
+              paddingHorizontal: 12,
+              paddingVertical: 12,
+            }}
+            dropDownContainerStyle={{
+              backgroundColor: "#F2F2F2",
+              borderRadius: 10,
+              borderWidth: 0,
+            }}
+            textStyle={{ color: "#000" }}
+            selectedItemContainerStyle = {{backgroundColor : "#E4EFD4"}}
+            
+            
+            />
 
-        <View style={styles.section}>
-          <Text style = {styles.label}>Description<Text style={{ color: "red" }}> *</Text></Text>
-          <TextInput
-            style={styles.description}
-            placeholder="Desscription"
-            value={description}
-            onChangeText={setDescription}
-            multiline = {true}
-          />
-        </View>
+          {campaignType === "Custom" && (
+            <View style={styles.section}>
+              <Text style={styles.label}>
+                Enter Custom Campaign Type<Text style={{ color: "red" }}> *</Text>
+              </Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter custom campaign type"
+                value={customCampaignType}
+                onChangeText={setCustomCampaignType}
+              />
+            </View>
+          )}
+          </View>
+          
+          )}
+
+        <RichToolbar
+          editor={richText}
+          actions={['bold', 'italic', 'underline', 'unorderedList', 'orderedList']}
+          style={{ backgroundColor: '#eee', borderRadius: 10, marginBottom: 8 }}
+        />
+
+        <RichEditor
+          ref={richText}
+          placeholder="Enter description..."
+          onChange={setDescription}
+          style={{ minHeight: 150, backgroundColor: '#F2F2F2', borderRadius: 12, padding: 14 }}
+        />
     </View>
   </View>
-  </ScrollView>
-  </KeyboardAvoidingView>
+  </KeyboardAwareScrollView>
   </SafeAreaView>
-  </SafeAreaProvider>
   );
 };
         
@@ -448,6 +527,14 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 12,
+  },
+  datePill:
+  {
+    backgroundColor: "#7676801F",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+
   },
 
   description: {
