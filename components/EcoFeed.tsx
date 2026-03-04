@@ -177,10 +177,16 @@ export const EventCard = (props: Event) => {
     setExpanded(prev => !prev);
   };
 
-  const openSignUpLink = (link: string) => {
+  // const openSignUpLink = (link: string) => {
+  //   Linking.openURL(link);
+  //   setSignUpClicked(true);
+  // }  
+
+  const openSignUpLink = async (link: string) => {
+    await logClick();   // ✅ log click immediately
     Linking.openURL(link);
     setSignUpClicked(true);
-  }  
+  }
 
   useEffect(() => {
     async function checkIfLiked() {
@@ -233,6 +239,22 @@ export const EventCard = (props: Event) => {
   //     checkIfLiked();
   //   }
   // }, [user, props.id]);
+
+  async function logClick() {
+    try {
+      await supabase
+        .from("interactions_events")
+        .insert([
+          {
+            interaction_type: "click",
+            event_id: Number(props.id),
+            user_id: user?.id ?? null, 
+          },
+        ]);
+    } catch (error) {
+      console.log("Click logging error:", error);
+    }
+  }
 
   async function toggleLike() {
     if (!user?.id) {
@@ -403,10 +425,16 @@ export const InPersonCard = (props: InPersonEcoAction) => {
     setExpanded(prev => !prev);
   };
 
-  const openSignUpLink = (link: string) => {
+  // const openSignUpLink = (link: string) => {
+  //   Linking.openURL(link);
+  //   setSignUpClicked(true);
+  // }  
+
+  const openSignUpLink = async (link: string) => {
+    await logClick();   // ✅ log click immediately
     Linking.openURL(link);
     setSignUpClicked(true);
-  }  
+  }
 
   useEffect(() => {
     async function checkIfLiked() {
@@ -436,6 +464,22 @@ export const InPersonCard = (props: InPersonEcoAction) => {
 
     checkIfLiked();
   }, [user?.id, props.id]);
+
+  async function logClick() {
+    try {
+      await supabase
+        .from("interactions_eco_inperson")
+        .insert([
+          {
+            interaction_type: "click",
+            action_id: Number(props.id),
+            user_id: user?.id ?? null, 
+          },
+        ]);
+    } catch (error) {
+      console.log("Click logging error:", error);
+    }
+  }
 
   async function toggleLike() {
     if (!user?.id) {
@@ -608,10 +652,17 @@ export const OnlineCard = (props: OnlineEcoAction) => {
     setExpanded(prev => !prev);
   };
 
-  const openSignUpLink = (link: string) => {
+  // const openSignUpLink = (link: string) => {
+  //   Linking.openURL(link);
+  //   setSignUpClicked(true);
+  // }
+
+  const openSignUpLink = async (link: string) => {
+    await logClick();   // ✅ log click immediately
     Linking.openURL(link);
     setSignUpClicked(true);
   }
+
   useEffect(() => {
     async function checkIfLiked() {
       if (!user?.id) {
@@ -640,6 +691,24 @@ export const OnlineCard = (props: OnlineEcoAction) => {
 
     checkIfLiked();
   }, [user?.id, props.id]);
+
+  async function logClick() {
+    console.log("props.id:", props.id);
+    console.log("Number(props.id):", Number(props.id));
+    try {
+      await supabase
+        .from("interactions_eco_online")
+        .insert([
+          {
+            interaction_type: "click",
+            action_id: Number(props.id),
+            user_id: user?.id ?? null, 
+          },
+        ]);
+    } catch (error) {
+      console.log("Click logging error:", error);
+    }
+  }
 
   async function toggleLike() {
     if (!user?.id) {
