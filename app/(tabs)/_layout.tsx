@@ -81,10 +81,10 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="AdminNewsUpdateFormView"
+        name="AdminNewsAddFormView"
         options={{
           href: null,
-          title: 'News Update Form',
+          title: 'News Add Form',
         }}
       />
       <Tabs.Screen

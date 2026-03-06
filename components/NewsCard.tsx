@@ -6,7 +6,7 @@ import { Trash, Pencil } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { supabase } from "@/constants/supabase";
 
-export interface NewsUpdateProps {
+export interface NewsCardProps {
   title: string;
   editionNumber?: number;
   date: string;
@@ -17,7 +17,7 @@ export interface NewsUpdateProps {
   onEdit?: () => void;
 }
 
-export const NewsUpdate = ({
+export const NewsCard = ({
   title,
   date,
   editionNumber,
@@ -26,7 +26,7 @@ export const NewsUpdate = ({
   onPress,
   onDelete,
   onEdit,
-}: NewsUpdateProps) => {
+}: NewsCardProps) => {
   return (
     <Pressable style={styles.card} onPress={onPress}>
       <View style={styles.imageWrapper}>

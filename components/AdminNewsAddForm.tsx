@@ -5,7 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/constants/supabase';
 
-export const AdminNewsUpdateForm = () => {
+export const AdminNewsAddForm = () => {
     const [editionNumber, setEditionNumber] = React.useState("");
     const [link, setLink] = React.useState("");
     const [previewImage, setPreviewImage] = useState("");

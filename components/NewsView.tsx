@@ -1,6 +1,6 @@
 import { Text, TextInput, FlatList, Pressable, View, StyleSheet } from "react-native";
 import React, { useState, useCallback } from "react";
-import { NewsUpdate } from "@/components/NewsUpdate";
+import { NewsCard } from "@/components/NewsCard";
 import { DeleteNewsConfirmationModal } from "@/components/DeleteNewsConfirmationModal";
 import { WebView } from "react-native-webview";
 import DropDownPicker from 'react-native-dropdown-picker'
@@ -189,7 +189,7 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
         onRefresh={fetchNewsletters}
         refreshing={refreshing}
         renderItem={({ item }) => (
-          <NewsUpdate
+          <NewsCard
             title={`Environteers Weekly Update: ${item.edition_number}th Edition`}
             date={item.date}
             previewImage={item.preview_image}
@@ -212,7 +212,7 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
           <Pressable 
             style={styles.addNewsletterButton} 
             onPress={() => router.push({
-              pathname: '/(tabs)/AdminNewsUpdateFormView'
+              pathname: '/(tabs)/AdminNewsAddFormView'
             })}>
             <Text style={styles.addNewsletterButtonText}>+ Add</Text>
           </Pressable>
