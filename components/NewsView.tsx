@@ -108,6 +108,11 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
     }
   }
 
+  const handleCancel = () => {
+    setDeleteModalVisible(false);
+    setSelectedNewsletter(null);
+  }
+
   useFocusEffect(
     useCallback(() => {
       fetchNewsletters();
@@ -199,7 +204,7 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
             onEdit={() => {
               console.log("Edit pressed, id:", item.newsletter_id);
               router.push({
-                pathname: '/(tabs)/AdminNewsEdit',
+                pathname: '/(tabs)/AdminNewsEditFormView',
                 params: { id: item.newsletter_id }
               });
             }}
@@ -219,10 +224,7 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
     
           <DeleteNewsConfirmationModal 
             visible={deleteModalVisible} 
-            onCancel={() => {
-              setDeleteModalVisible(false);
-              setSelectedNewsletter(null);
-            }} 
+            onCancel={handleCancel} 
             onConfirm={handleDelete} 
             newsletterTitle={
               selectedNewsletter

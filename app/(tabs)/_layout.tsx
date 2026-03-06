@@ -88,7 +88,7 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-      name="AdminNewsEdit"
+      name="AdminNewsEditFormView"
       options={{
         href: null,
         title: 'Edit Newsletter',
