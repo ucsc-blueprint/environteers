@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Pressable, Alert } from 'react-native';
+import { StyleSheet, Text, View, Pressable, Alert, ActivityIndicator } from 'react-native';
 import { AdminNewsForm } from '@/components/AdminNewsForm';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/constants/supabase';
@@ -8,10 +8,13 @@ export const AdminNewsEditForm = ({ id }: { id: string }) => {
     const [editionNumber, setEditionNumber] = useState("");
     const [link, setLink] = useState("");
     const [previewImage, setPreviewImage] = useState("");
+    const [loading, setLoading] = useState(true);
     const router = useRouter();
 
     useEffect(() => {
         const fetchNewsletter = async () => {
+            setLoading(true);
+
             const { data, error } = await supabase
                 .from("news")
                 .select("*")
@@ -25,6 +28,8 @@ export const AdminNewsEditForm = ({ id }: { id: string }) => {
                 setLink(data.link);
                 setPreviewImage(data.preview_image);
             }
+
+            setLoading(false);
         }
 
         fetchNewsletter();
@@ -55,10 +60,11 @@ export const AdminNewsEditForm = ({ id }: { id: string }) => {
     }
 
     const handleCancel = () => {
-        setEditionNumber("");
-        setLink("");
-        setPreviewImage("");
         router.push("/(tabs)/newsletter");
+    }
+
+    if (loading) {
+        return <ActivityIndicator size="large" color="#000000" />
     }
 
     return (
