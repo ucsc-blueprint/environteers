@@ -4,7 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Redirect } from 'expo-router';
 import { ActivityIndicator } from 'react-native';
 
-export default function newsletter(){
+export default function Newsletter(){
   const { profile, loading } = useAuth();
   if (loading) {
       return <ActivityIndicator size="large" color="#000000" />
