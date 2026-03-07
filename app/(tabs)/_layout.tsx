@@ -81,15 +81,19 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="AdminNewsUpdateFormView"
+        name="AdminNewsAddFormView"
         options={{
-          href: profile?.is_admin ? undefined : null,
-          title: 'News Update Form',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="create" size = {size} color = {color}></Ionicons>
-          ),
+          href: null,
+          title: 'News Add Form',
         }}
       />
+      <Tabs.Screen
+      name="AdminNewsEditFormView"
+      options={{
+        href: null,
+        title: 'Edit Newsletter',
+      }}
+    />
     </Tabs>
   );
 }
