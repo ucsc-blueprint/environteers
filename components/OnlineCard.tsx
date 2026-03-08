@@ -13,7 +13,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
 import { styled } from "storybook/theming";
 import { CardStyles } from "@/app/stylesheets/CardStyles";
-import { renderIcon, renderCoverPhoto } from "@/app/utils/cards";
+import { renderIcon, renderCoverPhoto, toggleLike } from "@/app/utils/cards";
 
 
 export type OnlineCardData = {
@@ -45,7 +45,7 @@ export const OnlineCard = ({
 }: OnlineCardDataProps) => {
   const [expanded, setExpanded] = useState(false);
   const [signUpClick, setSignUpClicked] = useState(false);
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(initialLike);
   const [loadingLike, setLoadingLike] = useState(true);
   const { user } = useAuth();
 
@@ -80,11 +80,14 @@ export const OnlineCard = ({
           <View style={CardStyles.iconsColumn}>
             <View style={CardStyles.iconBackgrounds}>
               <MaterialCommunityIcons
-                  name={liked ? "cards-heart" : "cards-heart-outline"}
-                  size={25}
-                  color={'#0282D3'}
-                  // onPress={toggleLike}
-                />
+                name={liked ? "cards-heart" : "cards-heart-outline"}
+                size={25}
+                color={'#0282D3'}
+                onPress={() =>
+                  toggleLike("interactions_eco_online", cardInfo.id, user.id, liked, 'action_id')
+                }
+                disabled={!user?.id}
+              />
               </View>
             <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>
           </View>

@@ -12,7 +12,7 @@ import { supabase } from "@/constants/supabase";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
-import { renderIcon, renderCoverPhoto, formatEventDate } from "@/app/utils/cards";
+import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike } from "@/app/utils/cards";
 
 
 export type InPersonCardData = {
@@ -45,8 +45,9 @@ export const InPersonCard = ({
 }: InPersonCardProps) => {
   const [expanded, setExpanded] = useState(false);
   const [signUpClick, setSignUpClicked] = useState(false);
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(initialLike);
   const [loadingLike, setLoadingLike] = useState(true);
+  const [signedUp, setSignedUp] = useState(initialSignUp);
   const { user } = useAuth();
 
   const toggleExpanded = () => {
@@ -56,6 +57,10 @@ export const InPersonCard = ({
   const openSignUpLink = (link: string) => {
     Linking.openURL(link);
     setSignUpClicked(true);
+  }
+
+  const userSignUp = () => {
+    setSignedUp(true);
   }
 
   return (
@@ -92,6 +97,10 @@ export const InPersonCard = ({
                 name={liked ? "cards-heart" : "cards-heart-outline"}
                 size={25}
                 color={'#0282D3'}
+                onPress={() =>
+                  toggleLike("interactions_eco_inperson", cardInfo.id, user.id, liked, 'action_id')
+                }
+                disabled={!user?.id}
               />
             </View>
             <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>
@@ -134,35 +143,6 @@ export const InPersonCard = ({
 }
 
 
-  // useEffect(() => {
-  //   async function checkIfLiked() {
-  //     if (!user?.id) {
-  //       setLoadingLike(false);
-  //       return;
-  //     }
-
-  //     const { data, error } = await supabase
-  //       .from("interactions_eco_inperson")
-  //       .select("id")
-  //       .eq("action_id", Number(props.id))
-  //       .eq("user_id", user.id)
-  //       .eq("interaction_type", "like")
-  //       .maybeSingle();
-
-  //     if (error) {
-  //       console.log("Like check error:", error);
-  //     }
-
-  //     if (data) {
-  //       setLiked(true);
-  //     }
-
-  //     setLoadingLike(false);
-  //   }
-
-  //   checkIfLiked();
-  // }, [user?.id, props.id]);
-
   // async function toggleLike() {
   //   if (!user?.id) {
   //     Alert.alert("Error", "You must be logged in to like.");
@@ -196,6 +176,9 @@ export const InPersonCard = ({
   //       user_id: user?.id,
   //       interaction_type: "like"
   //     });
+
+
+
       
   //     const { data, error } = await supabase
   //       .from("interactions_eco_inperson")
@@ -217,7 +200,8 @@ export const InPersonCard = ({
   //   }
   // }
 
-  // async function addInteraction(props: InPersonEcoAction, interaction: string) {
+
+    // async function addInteraction(props: InPersonEcoAction, interaction: string) {
   //   const { data, error } = await supabase
   //     .from('interactions_eco_inperson')
   //     .insert([{

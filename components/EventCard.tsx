@@ -1,19 +1,13 @@
 import { useAuth } from "@/context/AuthContext";
-import { View, Image, Text, StyleSheet, Pressable, Linking, Alert } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import { View, Image, Text, Pressable, Linking } from 'react-native';
 import { useState, useEffect, useRef} from "react";
-import { supabase } from "@/constants/supabase";
 import { 
-  mdiMenu,
-  mdiBell,
-  mdiListBoxOutline,
   mdiOpenInNew,
 } from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
-import { styled } from "storybook/theming";
 import { CardStyles } from "@/app/stylesheets/CardStyles";
-import { renderIcon, renderCoverPhoto, formatEventDate } from "@/app/utils/cards";
+import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike } from "@/app/utils/cards";
 
 export type EventCardData = {
   id: string,
@@ -45,8 +39,8 @@ export const EventCard = ({
 }: EventCardDataProps) => {
   const [expanded, setExpanded] = useState(false);
   const [signUpClick, setSignUpClicked] = useState(false);
-  const [liked, setLiked] = useState(false);
-  const [loadingLike, setLoadingLike] = useState(true);
+  const [liked, setLiked] = useState(initialLike);
+  // const [loadingLike, setLoadingLike] = useState(true);
   const { user } = useAuth();
 
   const toggleExpanded = () => {
@@ -90,7 +84,10 @@ export const EventCard = ({
                 name={liked ? "cards-heart" : "cards-heart-outline"}
                 size={25}
                 color={'#0282D3'}
-                // onPress={toggleLike}
+                onPress={() =>
+                  toggleLike("interactions_events", cardInfo.id, user.id, liked, 'event_id')
+                }
+                disabled={!user?.id}
               />
             </View>
             <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>

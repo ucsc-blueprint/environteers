@@ -1,6 +1,5 @@
 import { ScrollView, StyleSheet, View } from "react-native";
-import { EcoFeed, Header } from "@/components/EcoFeed";
-// import { EcoHeader } from "@/components/EcoHeader";
+import { Header } from "@/components/EcoFeed";
 import { useEffect, useState } from "react";
 import { supabase } from "@/constants/supabase";
 import { LinearGradient } from 'expo-linear-gradient';
@@ -84,34 +83,30 @@ export default function Volunteer() {
     const fetchData = async () => {
       if (!user?.id) return;
 
-      const { data: inPersonData, error: inPersonDataError} = await supabase
-        .from("inperson_ecoactions")
-        .select(`
-          *,
-          interactions_eco_inperson!left(*)
-        `)
-        .eq("interactions_eco_inperson.user_id", user.id);
-      
-        const { data: onlineData, error: onlineDataError } = await supabase
-        .from("online_ecoactions")
-        .select(`
-          *,
-          interactions_eco_online!left(*)
-        `)
-        .eq("interactions_eco_online.user_id", user.id);
+      const [inPersonRes, onlineRes, eventRes] = await Promise.all([
+        supabase
+          .from("inperson_ecoactions")
+          .select(`*, interactions_eco_inperson!left(*)`)
+          .eq("interactions_eco_inperson.user_id", user.id),
 
+        supabase
+          .from("online_ecoactions")
+          .select(`*, interactions_eco_online!left(*)`)
+          .eq("interactions_eco_online.user_id", user.id),
 
-      const { data: eventData, error: eventDataError } = await supabase
-        .from("events")
-        .select(`
-          *,
-          interactions_events!left(*)
-        `)
-        .eq("interactions_events.user_id", user.id);
+        supabase
+          .from("events")
+          .select(`*, interactions_events!left(*)`)
+          .eq("interactions_events.user_id", user.id)
+      ]);
 
-    if (inPersonDataError) console.error(inPersonDataError);
-    if (onlineDataError) console.error(onlineDataError);
-    if (eventDataError) console.error(eventDataError);
+      if (inPersonRes.error) console.error(inPersonRes.error);
+      if (onlineRes.error) console.error(onlineRes.error);
+      if (eventRes.error) console.error(eventRes.error);
+
+      const inPersonData = inPersonRes.data ?? [];
+      const onlineData = onlineRes.data ?? [];
+      const eventData = eventRes.data ?? [];
     
       // Values: "event", "in_person", "online"
       const inPersonCardData: CardProps[] = (inPersonData ?? []).map(card => {

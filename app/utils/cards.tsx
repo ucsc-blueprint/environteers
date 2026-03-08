@@ -43,6 +43,77 @@ export const renderCoverPhoto = (coverPhoto: string) => {
     />
   );
 }
+export async function toggleLike (
+  tableName: string,
+  foreign_id: string,
+  user_id: string,
+  alreadyLiked: boolean,
+  foreign_field_name: string // Expected Values: "event_id" or "action_id"
+) {
+  // Add interaction if not liked
+    const { data, error } = await supabase
+      .from(tableName)
+      .upsert([{
+        [foreign_field_name]: foreign_id,
+        user_id: user_id,
+        liked: !alreadyLiked,
+        liked_timestamp: !alreadyLiked ? new Date().toISOString() : null,
+        }], {
+          onConflict: `user_id,${foreign_field_name}`
+        });
+    
+    if (error) {
+      console.log(error);
+      Alert.alert('Error. Something went wrong. Please try again');
+    } else {
+      Alert.alert('Success!');
+    }
+};
+
+// Adds a new signup to supabase (doesn't get rid of existing sign-ups).
+export async function addSignUp (
+  tableName: string,
+  foreign_id: string,
+  user_id: string,
+  foreign_field_name: string // Expected Values: "event_id" or "action_id"
+) {
+  const { data, error} = await supabase
+    .from(tableName)
+    .upsert([{
+        foreign_field_name: foreign_id,
+        user_id: user_id,
+        signed_up: true,
+        signed_up_timestamp: new Date().toISOString(),
+      }]);
+    
+    if (error) { 
+      console.log(error);
+      Alert.alert('Error. Something went wrong. Please try again');
+    }
+    return data;
+};
+
+
+  //   if (error) {
+  //     // 23505 = unique constraint violation
+  //     if (error.code === '23505') {
+  //       Alert.alert(
+  //         'Already Recorded',
+  //         interaction === 'like'
+  //           ? 'You have already liked this event.'
+  //           : 'You have already signed up for this event.'
+  //       );
+  //     } else {
+  //       console.log('Supabase error:', error);
+  //       Alert.alert(
+  //         'Error',
+  //         'Something went wrong. Please try again.'
+  //       );
+  //     }
+  //     return;
+  //   }
+
+
 
 export async function addInteraction(
   tableName: string, 
@@ -53,6 +124,7 @@ export async function addInteraction(
   completed: boolean,
   clicked: boolean,
 ){
+  // upsert...
   if (tableName === "interactions_events") {
     const { data, error } = await supabase
       .from(tableName)
@@ -84,19 +156,31 @@ export async function addInteraction(
       console.log('error occured: ', error);
     }
     return;
-    // 23505 = unique constraint violation 
-    // if (error && error.code === '23505') {
-    //   Alert.alert(
-    //     'Already Recorded',
-    //     interaction === 'like'
-    //       ? 'You have already liked this event.'
-    //       : 'You have already signed up for this event.'
-    //   );
-    //   } else {
-    //     console.log('Supabase error:', error);
-    //     Alert.alert(
-    //       'Error',
-    //       'Something went wrong. Please try again.'
-    //     );
   }
 }
+
+// Checks if user has already made an interaction in the database. 
+export async function checkInteraction(tableName: string, user_id: string) {
+  const { data, error } = await supabase
+    .from(tableName)
+    .select("")
+
+}
+
+  //   const checkIfLiked = async () => {
+  //     const { data, error } = await supabase
+  //       .from("interactions_events")
+  //       .select("id")
+  //       .eq("event_id", props.id)
+  //       .eq("user_id", user?.id)
+  //       .eq("interaction_type", "like")
+  //       .maybeSingle();
+
+    //   const checkIfLiked = async () => {
+  //     const { data, error } = await supabase
+  //       .from("interactions_events")
+  //       .select("id")
+  //       .eq("event_id", props.id)
+  //       .eq("user_id", user?.id)
+  //       .eq("interaction_type", "like")
+  //       .maybeSingle();

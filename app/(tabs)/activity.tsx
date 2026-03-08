@@ -83,42 +83,30 @@ export default function Activity() {
     const fetchData = async () => {
       if (!user?.id) return;
 
-      const { data: inPersonData, error: inPersonDataError} = await supabase
-        .from("interactions_eco_inperson")
-        .select(`
-          liked,
-          signed_up,
-          completed,
-          clicked,
-          inperson_ecoactions(*)
-        `)
-        .eq("user_id", user.id);
+      const [inPersonRes, onlineRes, eventRes] = await Promise.all([
+        supabase
+          .from("interactions_eco_inperson")
+          .select(`*, inperson_ecoactions(*)`)
+          .eq("user_id", user.id),
 
-      const { data: onlineData, error: onlineDataError } = await supabase
-        .from("interactions_eco_online")
-        .select(`
-          liked,
-          signed_up,
-          completed,
-          clicked,
-          online_ecoactions(*)
-        `)
-        .eq("user_id", user.id);
+        supabase
+          .from("interactions_eco_online")
+          .select(`*, online_ecoactions(*)`)
+          .eq("user_id", user.id),
 
-      const { data: eventData, error: eventDataError } = await supabase
-        .from("interactions_events")
-        .select(`
-          liked,
-          signed_up,
-          completed,
-          clicked,
-          events(*)
-        `)
-        .eq("user_id", user.id);
+        supabase
+          .from("interactions_events")
+          .select(`*, events(*)`)
+          .eq("user_id", user.id)
+      ]);
 
-    if (inPersonDataError) console.error(inPersonDataError);
-    if (onlineDataError) console.error(onlineDataError);
-    if (eventDataError) console.error(eventDataError);
+      if (inPersonRes.error) console.error(inPersonRes.error);
+      if (onlineRes.error) console.error(onlineRes.error);
+      if (eventRes.error) console.error(eventRes.error);
+
+      const inPersonData = inPersonRes.data ?? [];
+      const onlineData = onlineRes.data ?? [];
+      const eventData = eventRes.data ?? [];
     
       // Values: "event", "in_person", "online"
       const inPersonCardData: CardProps[] = (inPersonData ?? []).map(interaction => ({
@@ -150,9 +138,7 @@ export default function Activity() {
 
       const fullData = [...inPersonCardData, ...onlineCardData, ...eventCardData]
       setLikedCards((fullData ?? []).filter(card => card.liked));
-      // console.log('liked cards: ', likedCards);
       setSignedUpCards(fullData.filter(card => card.signed_up));
-      // console.log('signedup cards: ', signedUpCards);
     };
 
     fetchData();
@@ -179,51 +165,10 @@ export default function Activity() {
   );
 }
 
-
-//   return (
-//     <LinearGradient
-//         colors={['white','#EDF3F7', '#EAF2F6']}
-//         locations={[0.8, 0.9, 1]}
-//         start={{ x: 0, y: 0}}
-//         end={{ x: 0, y: 0.5 }}
-//         style={styles.gradient}
-//       >
-//       <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
-//         {/* <Header resultsCount={items.length}/>
-//         { items.map((item) => (
-//           <EcoFeed
-//             key={`${item.id}-${item.type}`}
-//             {...item}
-//           />
-//         ))} */}
-//       </ScrollView>
-//         <View style={styles.mapBackground}>
-//           <MaterialCommunityIcons name="map" size={30} color={'#0282D3'}></MaterialCommunityIcons>          
-//         </View>
-//     </LinearGradient>
-//   );
-// }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'column',
     gap: '20',
   }
-
-
-  // scrollContent: {
-  //   padding: 16,
-  //   gap: 16,
-  // },
-  // mapBackground: {
-  //   backgroundColor: 'white',
-  //   borderRadius: 50,
-  //   padding: 15,
-  //   maxWidth: 80,
-  //   position: 'absolute',
-  //   bottom: 10,
-  //   right: 20,
-  //   boxShadow: '0px 0px 10px 0px #0282D333',
-  // }
 });
