@@ -159,7 +159,7 @@ export default function Activity() {
         {signedUpCards?.map(card => (
           <CardRenderer key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
         ))}
-      {/* <LogoutButton/> */}
+      <LogoutButton/>
     </ScrollView>
     </View>
   );

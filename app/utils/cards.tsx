@@ -43,6 +43,8 @@ export const renderCoverPhoto = (coverPhoto: string) => {
     />
   );
 }
+
+// Adds/updates user's like to supabase (doesn't get rid of existing likes).
 export async function toggleLike (
   tableName: string,
   foreign_id: string,
@@ -51,26 +53,27 @@ export async function toggleLike (
   foreign_field_name: string // Expected Values: "event_id" or "action_id"
 ) {
   // Add interaction if not liked
-    const { data, error } = await supabase
-      .from(tableName)
-      .upsert([{
-        [foreign_field_name]: foreign_id,
-        user_id: user_id,
-        liked: !alreadyLiked,
-        liked_timestamp: !alreadyLiked ? new Date().toISOString() : null,
-        }], {
-          onConflict: `user_id,${foreign_field_name}`
-        });
+  const { data, error } = await supabase
+    .from(tableName)
+    .upsert([{
+      [foreign_field_name]: foreign_id,
+      user_id: user_id,
+      liked: !alreadyLiked,
+      liked_timestamp: !alreadyLiked ? new Date().toISOString() : null,
+    }], {
+    onConflict: `user_id,${foreign_field_name}`
+  });
     
-    if (error) {
-      console.log(error);
-      Alert.alert('Error. Something went wrong. Please try again');
-    } else {
-      Alert.alert('Success!');
-    }
+  if (error) {
+    console.log(data);
+    console.log(error);
+    Alert.alert('Error. Something went wrong. Please try again');
+  } else {
+    Alert.alert('Success!');
+  }
 };
 
-// Adds a new signup to supabase (doesn't get rid of existing sign-ups).
+// Adds new signup to supabase
 export async function addSignUp (
   tableName: string,
   foreign_id: string,
@@ -80,107 +83,17 @@ export async function addSignUp (
   const { data, error} = await supabase
     .from(tableName)
     .upsert([{
-        foreign_field_name: foreign_id,
+        [foreign_field_name]: foreign_id,
         user_id: user_id,
         signed_up: true,
         signed_up_timestamp: new Date().toISOString(),
       }]);
     
     if (error) { 
+      console.log(data);
       console.log(error);
       Alert.alert('Error. Something went wrong. Please try again');
     }
-    return data;
+    Alert.alert('Success! Thank you for signing up.');
 };
 
-
-  //   if (error) {
-  //     // 23505 = unique constraint violation
-  //     if (error.code === '23505') {
-  //       Alert.alert(
-  //         'Already Recorded',
-  //         interaction === 'like'
-  //           ? 'You have already liked this event.'
-  //           : 'You have already signed up for this event.'
-  //       );
-  //     } else {
-  //       console.log('Supabase error:', error);
-  //       Alert.alert(
-  //         'Error',
-  //         'Something went wrong. Please try again.'
-  //       );
-  //     }
-  //     return;
-  //   }
-
-
-
-export async function addInteraction(
-  tableName: string, 
-  foreign_id: string, 
-  user_id: string,
-  liked: boolean,
-  signed_up: boolean,
-  completed: boolean,
-  clicked: boolean,
-){
-  // upsert...
-  if (tableName === "interactions_events") {
-    const { data, error } = await supabase
-      .from(tableName)
-      .insert([{
-        event_id: foreign_id,
-        user_id: user_id,
-        liked: liked,
-        signed_up: signed_up,
-        completed: completed,
-        clicked: clicked,
-      }]);
-    if (error) {
-      console.log('error occured: ', error);
-    }
-    return;
-  // Eco-action
-  } else {
-    const { data, error } = await supabase
-      .from(tableName)
-      .insert([{
-        action_id: foreign_id,
-        user_id: user_id,
-        liked: liked,
-        signed_up: signed_up,
-        completed: completed,
-        clicked: clicked,
-      }]);
-    if (error) {
-      console.log('error occured: ', error);
-    }
-    return;
-  }
-}
-
-// Checks if user has already made an interaction in the database. 
-export async function checkInteraction(tableName: string, user_id: string) {
-  const { data, error } = await supabase
-    .from(tableName)
-    .select("")
-
-}
-
-  //   const checkIfLiked = async () => {
-  //     const { data, error } = await supabase
-  //       .from("interactions_events")
-  //       .select("id")
-  //       .eq("event_id", props.id)
-  //       .eq("user_id", user?.id)
-  //       .eq("interaction_type", "like")
-  //       .maybeSingle();
-
-    //   const checkIfLiked = async () => {
-  //     const { data, error } = await supabase
-  //       .from("interactions_events")
-  //       .select("id")
-  //       .eq("event_id", props.id)
-  //       .eq("user_id", user?.id)
-  //       .eq("interaction_type", "like")
-  //       .maybeSingle();

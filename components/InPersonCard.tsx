@@ -1,18 +1,18 @@
 import { useAuth } from "@/context/AuthContext";
-import { View, Image, Text, StyleSheet, Pressable, Linking, Alert } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
-import { useState, useEffect, useRef} from "react";
+import { View, Image, Text, Pressable, Linking, Alert } from 'react-native';
+// import Svg, { Path } from 'react-native-svg';
+import { useState} from "react";
 import { 
-  mdiMenu,
-  mdiBell,
-  mdiListBoxOutline,
+  // mdiMenu,
+  // mdiBell,
+  // mdiListBoxOutline,
   mdiOpenInNew,
 } from '@mdi/js';
-import { supabase } from "@/constants/supabase";
+// import { supabase } from "@/constants/supabase";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
-import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike } from "@/app/utils/cards";
+import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp } from "@/app/utils/cards";
 
 
 export type InPersonCardData = {
@@ -46,8 +46,7 @@ export const InPersonCard = ({
   const [expanded, setExpanded] = useState(false);
   const [signUpClick, setSignUpClicked] = useState(false);
   const [liked, setLiked] = useState(initialLike);
-  const [loadingLike, setLoadingLike] = useState(true);
-  const [signedUp, setSignedUp] = useState(initialSignUp);
+  const [signUpStatus, setSignUpStatus] = useState(initialSignUp);
   const { user } = useAuth();
 
   const toggleExpanded = () => {
@@ -59,9 +58,27 @@ export const InPersonCard = ({
     setSignUpClicked(true);
   }
 
-  const userSignUp = () => {
-    setSignedUp(true);
+  const handleSignUp = (cardInfo: InPersonCardData) => {
+    if (user?.id) {
+      addSignUp("interactions_eco_inperson", cardInfo.id, user.id, 'action_id');
+      setSignUpStatus(true);
+      return;
+    }
+    Alert.alert("Not signed in! Can't sign up");
+    return;
   }
+
+
+  const handleLikes = (cardInfo: InPersonCardData) => {
+    if (user?.id) {
+      toggleLike("interactions_eco_inperson", cardInfo.id, user.id, liked, 'action_id');
+      setLiked(!liked);
+      return;
+    }
+    Alert.alert("Not signed in! Can't like post");
+    return;
+  }
+
 
   return (
     <View style={CardStyles.card}>
@@ -97,9 +114,7 @@ export const InPersonCard = ({
                 name={liked ? "cards-heart" : "cards-heart-outline"}
                 size={25}
                 color={'#0282D3'}
-                onPress={() =>
-                  toggleLike("interactions_eco_inperson", cardInfo.id, user.id, liked, 'action_id')
-                }
+                onPress={() => handleLikes(cardInfo)}
                 disabled={!user?.id}
               />
             </View>
@@ -111,16 +126,16 @@ export const InPersonCard = ({
           <View style={CardStyles.signUpContainer}>
             { cardInfo.summary && <Text style={{ marginTop: 20 }}>{cardInfo.summary}</Text>}
             {/* Verify If User Signed-up */}
-            { signUpClick &&
+            { signUpClick && !signUpStatus &&
               <View style={CardStyles.confirmationContainer}>
                 <Text style={{color: '#3A5513'}}>Did you sign up for this in person eco action?</Text>
                 <View style={CardStyles.confirmationButtons}>
                   <Pressable style={CardStyles.confirmationButton} onPress={() => (setSignUpClicked(false))}>
-                    <Text style={CardStyles.confirmationText}>No</Text>
+                    <Text style={CardStyles.confirmationText} onPress={() => setExpanded(!expanded)}>No</Text>
                     <MaterialCommunityIcons name="close" size={20} color={'black'} />
                   </Pressable>
                   <Pressable style={CardStyles.confirmationButton}>
-                    <Text style={CardStyles.confirmationText}>Yes</Text>
+                    <Text style={CardStyles.confirmationText} onPress={() => (handleSignUp(cardInfo))}>Yes</Text>
                     <MaterialCommunityIcons name="check" size={20} color={'black'} />
                   </Pressable>
                 </View>
@@ -130,7 +145,10 @@ export const InPersonCard = ({
             { cardInfo.sign_up_link &&
               <View style={CardStyles.signUpButtonContainer}>
                 <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => openSignUpLink(cardInfo.sign_up_link!)}> 
-                  <Text style={CardStyles.signUpText}>Sign Up</Text>
+                  { signUpStatus ? 
+                    <Text style={CardStyles.signUpText}>Revisit Link</Text> : 
+                    <Text style={CardStyles.signUpText}>Take Action</Text> 
+                  }
                   {renderIcon(15, mdiOpenInNew, 'white')}
                 </Pressable>
               </View>
@@ -141,91 +159,3 @@ export const InPersonCard = ({
     </View>
   );
 }
-
-
-  // async function toggleLike() {
-  //   if (!user?.id) {
-  //     Alert.alert("Error", "You must be logged in to like.");
-  //     return;
-  //   }
-  //   //const eventId = Number(props.id);
-  
-  //   if (!liked) {
-  //     // INSERT like
-  //     const { error } = await supabase
-  //       .from("interactions_eco_inperson")
-  //       .insert([
-  //         {
-  //           interaction_type: "like",
-  //           action_id: Number(props.id),
-  //           user_id: user.id,
-  //         },
-  //       ]);
-  
-  //     if (error) {
-  //       console.log(error);
-  //       Alert.alert("Error", "Could not like this event.");
-  //       return;
-  //     }
-  
-  //     setLiked(true);
-  //   } else {
-  //     // DELETE like (unlike)
-  //     console.log("Attempting delete with:", {
-  //       event_id: Number(props.id),
-  //       user_id: user?.id,
-  //       interaction_type: "like"
-  //     });
-
-
-
-      
-  //     const { data, error } = await supabase
-  //       .from("interactions_eco_inperson")
-  //       .delete()
-  //       .eq("interaction_type", "like")
-  //       .eq("action_id", Number(props.id))
-  //       .eq("user_id", user.id)
-  //       .select();
-
-  //     console.log("Deleted rows:", data);
-
-  //     if (error) {
-  //       console.log(error);
-  //       Alert.alert("Error", "Could not unlike this event.");
-  //       return;
-  //     }
-
-  //     setLiked(false);
-  //   }
-  // }
-
-
-    // async function addInteraction(props: InPersonEcoAction, interaction: string) {
-  //   const { data, error } = await supabase
-  //     .from('interactions_eco_inperson')
-  //     .insert([{
-  //       interaction_type: interaction,
-  //       action_id: props.id,
-  //       user_id: user?.id,
-  //     }]);
-  //   if (error) {
-  //     // 23505 = unique constraint violation
-  //     if (error.code === '23505') {
-  //       Alert.alert(
-  //         'Already Recorded',
-  //         interaction === 'like'
-  //           ? 'You have already liked this event.'
-  //           : 'You have already signed up for this event.'
-  //       );
-  //     } else {
-  //       console.log('Supabase error:', error);
-  //       Alert.alert(
-  //         'Error',
-  //         'Something went wrong. Please try again.'
-  //       );
-  //     }
-  //     return;
-  //   }
-  //   setSignUpClicked(false);
-  // }

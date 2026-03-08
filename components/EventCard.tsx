@@ -1,13 +1,13 @@
 import { useAuth } from "@/context/AuthContext";
-import { View, Image, Text, Pressable, Linking } from 'react-native';
-import { useState, useEffect, useRef} from "react";
+import { View, Image, Text, Pressable, Linking, Alert } from 'react-native';
+import { useState } from "react";
 import { 
   mdiOpenInNew,
 } from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
-import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike } from "@/app/utils/cards";
+import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp } from "@/app/utils/cards";
 
 export type EventCardData = {
   id: string,
@@ -39,8 +39,8 @@ export const EventCard = ({
 }: EventCardDataProps) => {
   const [expanded, setExpanded] = useState(false);
   const [signUpClick, setSignUpClicked] = useState(false);
+  const [signUpStatus, setSignUpStatus] = useState(initialSignUp);
   const [liked, setLiked] = useState(initialLike);
-  // const [loadingLike, setLoadingLike] = useState(true);
   const { user } = useAuth();
 
   const toggleExpanded = () => {
@@ -51,6 +51,26 @@ export const EventCard = ({
     Linking.openURL(link);
     setSignUpClicked(true);
   }  
+
+  const handleSignUp = (cardInfo: EventCardData) => {
+    if (user?.id) {
+      addSignUp("interactions_events", cardInfo.id, user.id, 'event_id');
+      setSignUpStatus(true);
+      return;
+    }
+    Alert.alert("Not signed in! Can't sign up");
+    return;
+  }
+
+  const handleLikes = (cardInfo: EventCardData) => {
+    if (user?.id) {
+      toggleLike("interactions_events", cardInfo.id, user.id, liked, 'event_id');
+      setLiked(!liked);
+      return;
+    }
+    Alert.alert("Not signed in! Can't like post");
+    return;
+  }
 
   return (
     <View style={CardStyles.card}>
@@ -84,29 +104,28 @@ export const EventCard = ({
                 name={liked ? "cards-heart" : "cards-heart-outline"}
                 size={25}
                 color={'#0282D3'}
-                onPress={() =>
-                  toggleLike("interactions_events", cardInfo.id, user.id, liked, 'event_id')
-                }
+                onPress={() => handleLikes(cardInfo)}
                 disabled={!user?.id}
               />
             </View>
             <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>
           </View>
+        </View>
           {/* Expanded Content */}
           { expanded && 
             <View style={CardStyles.signUpContainer}>
               { cardInfo.description && <Text style={{ marginTop: 20 }}>{cardInfo.description}</Text>}
               {/* Verify If User Signed-up */}
-              { signUpClick &&
+              { signUpClick && !signUpStatus &&
                 <View style={CardStyles.confirmationContainer}>
                   <Text style={{color: '#3A5513'}}>Did you sign up for this event?</Text>
                   <View style={CardStyles.confirmationButtons}>
                     <Pressable style={CardStyles.confirmationButton} onPress={() => setSignUpClicked(false)}>
-                      <Text style={CardStyles.confirmationText}>No</Text>
+                      <Text style={CardStyles.confirmationText} onPress={() => setExpanded(!expanded)}>No</Text>
                       <MaterialCommunityIcons name="close" size={20} color={'black'} />
                     </Pressable>
                     <Pressable style={CardStyles.confirmationButton}>
-                      <Text style={CardStyles.confirmationText}>Yes</Text>
+                      <Text style={CardStyles.confirmationText} onPress={() => handleSignUp(cardInfo)}>Yes</Text>
                       <MaterialCommunityIcons name="check" size={20} color={'black'} />
                     </Pressable>
                   </View>
@@ -116,14 +135,16 @@ export const EventCard = ({
               { cardInfo.sign_up_link &&
                 <View style={CardStyles.signUpButtonContainer}>
                   <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => openSignUpLink(cardInfo.sign_up_link!)}> 
-                    <Text style={CardStyles.signUpText}>Sign Up</Text>
+                    { signUpStatus ? 
+                      <Text style={CardStyles.signUpText}>Revisit Link</Text> : 
+                      <Text style={CardStyles.signUpText}>Take Action</Text> 
+                    }
                     {renderIcon(15, mdiOpenInNew, 'white')}
                   </Pressable>
                 </View>
               }
             </View>
           }
-        </View>
       </Pressable>
     </View>
   );
