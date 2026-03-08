@@ -1,137 +1,229 @@
-import { View, Text } from "react-native";
+import { View, Text, ScrollView, StyleSheet } from "react-native";
 import { LogoutButton } from "@/components/LogoutButton";
 import { useAuth } from "@/context/AuthContext";
 import { useState, useEffect } from "react";
 import { supabase } from "@/constants/supabase";
-import { InPersonCard } from "@/components/InPersonCard";
-
-type UserInteraction = {
-  id: string;
-  created_at: string;
-  user_id: string;
-  action_id: string;
-  liked: string;
-  signedUp: string;
-}
-
-type InPersonCardData = {
-  id: string,
-  created_at: string,
-  cover_photo?: string,
-  title: string,
-  location?: string,
-  start_date: Date,
-  end_date: Date,
-  sign_up_link: string,
-  summary?: string,
-}
+import { InPersonCardData, InPersonCard } from "@/components/InPersonCard";
+import { OnlineCardData, OnlineCard } from "@/components/OnlineCard";
+import { EventCardData, EventCard } from "@/components/EventCard";
 
 type InPersonCardProps = {
-  cardInfo: InPersonCardData,
-  liked: Boolean,
-  signedUp: Boolean,
+  cardType: "in_person";
+  cardInfo: InPersonCardData;
+  liked: boolean;
+  signed_up: boolean;
+  completed: boolean;
+  clicked: boolean;
+}
+
+type OnlineCardProps = {
+  cardType: "online";
+  cardInfo: OnlineCardData;
+  liked: boolean;
+  signed_up: boolean;
+  completed: boolean;
+  clicked: boolean;
+}
+
+type EventCardProps = {
+  cardType: "event";
+  cardInfo: EventCardData;
+  liked: boolean;
+  signed_up: boolean;
+  completed: boolean;
+  clicked: boolean;
+}
+
+type CardProps = InPersonCardProps | OnlineCardProps | EventCardProps;
+
+function CardRenderer({card}: { card: CardProps }) {
+  switch (card.cardType) {
+    case "in_person":
+      return (
+        <InPersonCard 
+          {...card} 
+          liked={card.liked} 
+          signed_up={card.signed_up} 
+          completed={card.completed} 
+          clicked={card.clicked}
+        />
+      );
+    case "online":
+      return (
+        <OnlineCard 
+          {...card} 
+          liked={card.liked} 
+          signed_up={card.signed_up} 
+          completed={card.completed} 
+          clicked={card.clicked}
+        />
+      );
+    case "event":
+      return (
+        <EventCard 
+          {...card} 
+          liked={card.liked} 
+          signed_up={card.signed_up} 
+          completed={card.completed} 
+          clicked={card.clicked}
+        />
+      );
+    default:
+      return null;
+  }
 }
 
 export default function Activity() {
-  const { profile, user } = useAuth()
-  const [inPersonUserInteractions, setInPersonUserInteractions] = useState<UserInteraction[]>([]);
-  const [likedCards, setLikedCards] = useState<InPersonCardProps[]>([]);
-  const [signedUpCards, setSignedUpCards] = useState<InPersonCardProps[]>([]);
+  const { user } = useAuth()
+  // const [inPersonUserInteractions, setInPersonUserInteractions] = useState<UserInteraction[]>([]);
+  const [likedCards, setLikedCards] = useState<CardProps[]>([]);
+  const [signedUpCards, setSignedUpCards] = useState<CardProps[]>([]);
 
   useEffect(() => {
-    const fetchInPersonInteractions = async () => {
+    const fetchData = async () => {
       if (!user?.id) return;
 
-      const { data, error } = await supabase
-        .from("test_interactions")
+      const { data: inPersonData, error: inPersonDataError} = await supabase
+        .from("interactions_eco_inperson")
         .select(`
           liked,
           signed_up,
-          inperson_eco-actions(*)
+          completed,
+          clicked,
+          inperson_ecoactions(*)
         `)
         .eq("user_id", user.id);
 
-      if (error || !data) {
-        setLikedCards([]);
-        setSignedUpCards([]);
-        return;
-      }
+      const { data: onlineData, error: onlineDataError } = await supabase
+        .from("interactions_eco_online")
+        .select(`
+          liked,
+          signed_up,
+          completed,
+          clicked,
+          online_ecoactions(*)
+        `)
+        .eq("user_id", user.id);
 
-      const fullCardData: InPersonCardProps[] = data.map(interaction => ({
-        cardInfo: interaction["inperson_eco-actions"],
+      const { data: eventData, error: eventDataError } = await supabase
+        .from("interactions_events")
+        .select(`
+          liked,
+          signed_up,
+          completed,
+          clicked,
+          events(*)
+        `)
+        .eq("user_id", user.id);
+
+    if (inPersonDataError) console.error(inPersonDataError);
+    if (onlineDataError) console.error(onlineDataError);
+    if (eventDataError) console.error(eventDataError);
+    
+      // Values: "event", "in_person", "online"
+      const inPersonCardData: CardProps[] = (inPersonData ?? []).map(interaction => ({
+        cardType: 'in_person',
+        cardInfo: interaction["inperson_ecoactions"],
         liked: interaction.liked,
-        signedUp: interaction.signed_up,
+        signed_up: interaction.signed_up,
+        completed: interaction.completed,
+        clicked: interaction.clicked,
+      }));   
+    
+      const onlineCardData: CardProps[] = (onlineData ?? []).map(interaction => ({
+        cardType: 'online',
+        cardInfo: interaction["online_ecoactions"],
+        liked: interaction.liked,
+        signed_up: interaction.signed_up,
+        completed: interaction.completed,
+        clicked: interaction.clicked,
+      }));    
+
+      const eventCardData: CardProps[] = (eventData ?? []).map(interaction => ({
+        cardType: 'event',
+        cardInfo: interaction["events"],
+        liked: interaction.liked,
+        signed_up: interaction.signed_up,
+        completed: interaction.completed,
+        clicked: interaction.clicked,
       }));
-      console.log('FULL CARD DATA: ', fullCardData);
-      setLikedCards(fullCardData.filter(card => card.liked));
-      setSignedUpCards(fullCardData.filter(card => card.signedUp));
 
-      // const { data: interactions, error } = await supabase
-      //   .from("test_interactions")
-      //   .select("*")
-      //   .eq("user_id", user?.id);
-
-      // if (error || !interactions?.length) {
-      //   setLikedCards([]);
-      //   setSignedUpCards([]);
-      //   return;
-      // }
-
-      // const cardIds = interactions.map(i => i.action_id);
-      // const { data: cards, error: cardError } = await supabase
-      //   .from("inperson_eco-actions")
-      //   .select("*")
-      //   .in("id", cardIds);
-
-      // if (cardError || !cards) return;
-
-      // const cardMap = new Map(
-      //   cards.map(card => [card.id, card])
-      // );
-
-      // const fullCardData: InPersonCardProps[] = interactions
-      //   .map(interaction => {
-      //     const card = cardMap.get(interaction.action_id);
-      //     if (!card) return null;
-
-      //     return {
-      //       cardInfo: {...card},
-      //       liked: interaction.liked,
-      //       signedUp: interaction.signed_up,
-      //     };
-      //   })
-      //   .filter(Boolean) as InPersonCardProps[];
-
-      // // 6️⃣ Split into two lists
-      // setLikedCards(fullCardData.filter(card => card.liked));
-      // setSignedUpCards(fullCardData.filter(card => card.signedUp));
-      // console.log(fullCardData.filter(card => card.liked));
-      // console.log(fullCardData.filter(card => card.signedUp));
-      // console.log(fullCardData);
+      const fullData = [...inPersonCardData, ...onlineCardData, ...eventCardData]
+      setLikedCards((fullData ?? []).filter(card => card.liked));
+      // console.log('liked cards: ', likedCards);
+      setSignedUpCards(fullData.filter(card => card.signed_up));
+      // console.log('signedup cards: ', signedUpCards);
     };
 
-    fetchInPersonInteractions();
-  }, [user?.id]);
+    fetchData();
+  }, [user?.id, likedCards, signedUpCards]);
 
   return (
-    <View>
-      <Text>Activity</Text>
-      <Text>Activity</Text>
-      <Text>Activity</Text>
-      <Text>Requires Action</Text>
-      <Text>Upcoming</Text>
-      <Text>Past Activity</Text>
-      <Text>Likes:</Text>
-      <Text>Likes:</Text>
-      {likedCards?.map(card => (
-        <InPersonCard key={card.cardInfo.id} cardInfo={card.cardInfo} liked={card.liked} signedUp={card.signedUp} />
-      ))}
-
-      <Text>Signed Up:</Text>
-      {signedUpCards?.map(card => (
-        <InPersonCard key={card.cardInfo.id} cardInfo={card.cardInfo} liked={card.liked} signedUp={card.signedUp} />
-      ))}     
-    <LogoutButton/>
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
+        {/* <Text>Activity</Text>
+        <Text>Requires Action</Text>
+        <Text>Upcoming</Text> */}
+        {/* <Text>Past Activity</Text> */}
+        <Text>Likes:</Text>
+        {likedCards?.map(card => (
+          <CardRenderer key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
+        ))}
+        <Text>Signed Up:</Text>
+        {signedUpCards?.map(card => (
+          <CardRenderer key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
+        ))}
+      {/* <LogoutButton/> */}
+    </ScrollView>
     </View>
   );
 }
+
+
+//   return (
+//     <LinearGradient
+//         colors={['white','#EDF3F7', '#EAF2F6']}
+//         locations={[0.8, 0.9, 1]}
+//         start={{ x: 0, y: 0}}
+//         end={{ x: 0, y: 0.5 }}
+//         style={styles.gradient}
+//       >
+//       <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
+//         {/* <Header resultsCount={items.length}/>
+//         { items.map((item) => (
+//           <EcoFeed
+//             key={`${item.id}-${item.type}`}
+//             {...item}
+//           />
+//         ))} */}
+//       </ScrollView>
+//         <View style={styles.mapBackground}>
+//           <MaterialCommunityIcons name="map" size={30} color={'#0282D3'}></MaterialCommunityIcons>          
+//         </View>
+//     </LinearGradient>
+//   );
+// }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: 'column',
+    gap: '20',
+  }
+
+
+  // scrollContent: {
+  //   padding: 16,
+  //   gap: 16,
+  // },
+  // mapBackground: {
+  //   backgroundColor: 'white',
+  //   borderRadius: 50,
+  //   padding: 15,
+  //   maxWidth: 80,
+  //   position: 'absolute',
+  //   bottom: 10,
+  //   right: 20,
+  //   boxShadow: '0px 0px 10px 0px #0282D333',
+  // }
+});
