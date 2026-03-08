@@ -39,7 +39,8 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
     const [customCampaignType, setCustomCampaignType] = useState('')
 
 
-    
+    const[uploading, setUploading] = useState(false);
+    const [imageUrl, setImageUrl] = useState('');
     const router = useRouter();
     const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
 
@@ -48,16 +49,49 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
               if (!status?.granted) 
               {
                 await requestPermission();
-                return;
               }
+
               const result = await ImagePicker.launchImageLibraryAsync()
-              
+
               if (!result.canceled)
               {
                 setCoverPhoto(result.assets[0].uri);
-                console.log(result.assets[0].uri);
               }
+          };
+      
+      const uriToBlob = async(uri: string) => {
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        return blob;
+      };
+
+      const uploadImage = async() => {
+        if (!coverPhoto) return;
+
+        setUploading(true);
+        try {
+          const blob = await uriToBlob(coverPhoto);
+          const fileName = `${Date.now()}.jpg`;
+          const filePath = `user_uploads/${fileName}`;
+
+          const { data, error } = await supabase.storage
+            .from('eco-action images')
+            .upload(filePath, blob, { contentType: 'image/jpeg' });
+
+          if (error) throw error;
+          
+          alert('Image uploaded successfully!')
+          console.log(data);
+
+          } catch(error) {
+            console.error(error);
+            alert('Upload failed');
           }
+            finally {
+            setUploading(false);  
+          }
+        };
+      
       const resetAll = () => 
       {
         setLocation("")
@@ -77,6 +111,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         resetAll()
         router.push("/(tabs)/volunteer")
     }
+
     const handleInsert = async () => {
         if (!title)
         {
@@ -127,7 +162,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
                 Alert.alert("Eco action created successfully")
             }
           }
-          else if (typeOfAction === "in-person")
+        else if (typeOfAction === "in-person")
           {
             const { error } = await supabase.from("inperson_ecoactions").insert({
                   title,
@@ -149,8 +184,6 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         resetAll()
       }
 
-
-
     return (
     <SafeAreaView style={{ flex: 1 }} edges = {['bottom']}>
     <KeyboardAwareScrollView
@@ -168,7 +201,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
 
         <Text style={styles.headerTitle}>Add Event</Text>
 
-        <Pressable style={styles.rightButton} onPress={handleInsert}>
+        <Pressable style={styles.rightButton} onPress={() => {handleInsert(); uploadImage();}}>
           <Text style={styles.saveText}>Save</Text>
         </Pressable>
       </View>
