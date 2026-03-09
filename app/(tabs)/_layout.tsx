@@ -58,7 +58,6 @@ export default function TabsLayout() {
           ),
         }}
       />
-    
 
       {/* Admin only tabs */}
       <Tabs.Screen
@@ -74,14 +73,15 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="VolunteerView"
         options={{
-          href: null,
+          href: profile?.is_admin ? undefined : null,
           title: 'Volunteer View',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="bar-chart" size = {size} color = {color}></Ionicons>
           ),
         }}
-      /><Tabs.Screen
-        name = "AddEcoAction"
+      />
+      <Tabs.Screen
+       name = "AddEcoAction"
         options = {{
           title: 'Add Eco Action',
           tabBarIcon: ({ color, size }) => (
@@ -89,7 +89,20 @@ export default function TabsLayout() {
           ),
         }}
         />
-      </Tabs>
-      
+      <Tabs.Screen
+        name="AdminNewsAddFormView"
+        options={{
+          href: null,
+          title: 'News Add Form',
+        }}
+      />
+      <Tabs.Screen
+      name="AdminNewsEditFormView"
+      options={{
+        href: null,
+        title: 'Edit Newsletter',
+      }}
+    />
+    </Tabs>
   );
 }
