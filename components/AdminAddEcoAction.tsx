@@ -9,6 +9,8 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import { RichEditor, RichToolbar } from 'react-native-pell-rich-editor';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as FileSystem from 'expo-file-system/legacy'
+import { decode } from 'base64-arraybuffer';
 
 
 export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { // in-person or online
@@ -28,6 +30,8 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
     const [campaignType, setCampaignType] = useState("");
     const [location, setLocation] = useState("");
     const [link, setLink] = useState("");
+    const BUCKETNAME = 'eco-action images'
+
 
     //ui handling
     const [mode, setMode] = useState<'date' | 'time'>("date");
@@ -40,7 +44,6 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
 
 
     const[uploading, setUploading] = useState(false);
-    const [imageUrl, setImageUrl] = useState('');
     const router = useRouter();
     const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
 
@@ -58,30 +61,32 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
                 setCoverPhoto(result.assets[0].uri);
               }
           };
-      
-      const uriToBlob = async(uri: string) => {
-        const response = await fetch(uri);
-        const blob = await response.blob();
-        return blob;
-      };
 
-      const uploadImage = async() => {
-        if (!coverPhoto) return;
+      const uploadImage = async(uri: string) => { // returns the public url for the supabase stroage
+        if (!uri || !coverPhoto) return;
 
         setUploading(true);
         try {
-          const blob = await uriToBlob(coverPhoto);
           const fileName = `${Date.now()}.jpg`;
           const filePath = `user_uploads/${fileName}`;
+          const base64 = await FileSystem.readAsStringAsync(uri, {
+              encoding: 'base64', 
+            });
+          
+          const bytes = decode(base64);
 
-          const { data, error } = await supabase.storage
-            .from('eco-action images')
-            .upload(filePath, blob, { contentType: 'image/jpeg' });
+          const { error } = await supabase.storage
+            .from(BUCKETNAME)
+            .upload(filePath, bytes, { contentType: 'image/jpeg' });
 
           if (error) throw error;
+        
+          const { data } = supabase.storage
+            .from(BUCKETNAME)
+            .getPublicUrl(filePath);
           
-          alert('Image uploaded successfully!')
           console.log(data);
+          return data.publicUrl
 
           } catch(error) {
             console.error(error);
@@ -106,6 +111,8 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         setEventDate(typeOfAction === "in-person" ? new Date() : null);
         setStartTime(typeOfAction === "in-person" ? new Date() : null);
         setEndTime(typeOfAction === "in-person" ? new Date() : null);
+        if (richText.current)
+          richText.current.setContentHTML("");
       }
       const handleCancel = () => {
         resetAll()
@@ -113,6 +120,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
     }
 
     const handleInsert = async () => {
+        const imageUrl = await uploadImage(coverPhoto)
         if (!title)
         {
           Alert.alert("Title required");
@@ -148,7 +156,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         if (typeOfAction === "online")
         {
             const { error } = await supabase.from("online_ecoactions").insert({
-              cover_photo: coverPhoto,
+              cover_photo: imageUrl,
               title: title,
               campaign_type: campaignType === 'Custom' ? customCampaignType : campaignType,
               email_link: link,
@@ -171,7 +179,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
                   end_date: endTime!.toISOString(),
                   location: location,
                   sign_up_link: link,
-                  cover_photo: coverPhoto,
+                  cover_photo: imageUrl,
                 });
             if (error) {
                 Alert.alert(error.message)
@@ -193,6 +201,10 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
       enableOnAndroid={true}
       extraScrollHeight={40}
     >
+    <Pressable
+      style={{ flex: 1 }}
+      onPress={() => Keyboard.dismiss()}
+    >
     <View style={styles.container}>
       <View style={styles.header}>
         <Pressable style = {styles.leftButton} onPress={() => handleCancel()}>
@@ -201,7 +213,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
 
         <Text style={styles.headerTitle}>Add Event</Text>
 
-        <Pressable style={styles.rightButton} onPress={() => {handleInsert(); uploadImage();}}>
+        <Pressable style={styles.rightButton} onPress={() => {handleInsert()}}>
           <Text style={styles.saveText}>Save</Text>
         </Pressable>
       </View>
@@ -452,6 +464,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         />
     </View>
   </View>
+  </Pressable>
   </KeyboardAwareScrollView>
   </SafeAreaView>
   );
