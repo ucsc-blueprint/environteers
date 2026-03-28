@@ -42,7 +42,12 @@ const SignupForm = ({ onSubmit }: SignupFormProps) => {
       return;
     }
 
-    if (!email.includes('@')) {
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters.');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError('Please enter a valid email address!');
       return;
     }

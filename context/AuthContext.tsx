@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState, useContext } from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { Session } from '@supabase/supabase-js'
 import { supabase } from '@/constants/supabase'
 
@@ -12,6 +12,7 @@ type AuthContextType = {
   user: Session['user'] | null
   profile: UserProfile | null
   loading: boolean
+  refreshProfile: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -19,6 +20,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   profile: null,
   loading: true,
+  refreshProfile: async () => {},
 })
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -26,25 +28,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Fetch profile whenever session.user changes
-  useEffect(() => {
+  const fetchProfile = useCallback(async () => {
     if (!session?.user) {
       setProfile(null);
       return;
     }
 
-    const fetchProfile = async () => {
-      const { data } = await supabase
-        .from('users')
-        .select('username, is_admin')
-        .eq('user_id', session.user.id)
-        .single();
+    const { data } = await supabase
+      .from('users')
+      .select('username, is_admin')
+      .eq('user_id', session.user.id)
+      .single();
 
-      setProfile(data ?? null);
-    };
-
-    fetchProfile();
+    setProfile(data ?? null);
   }, [session?.user]);
+
+  // Fetch profile whenever session.user changes
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   // Initialize session and listen for changes
   useEffect(() => {
@@ -72,6 +74,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         user: session?.user ?? null,
         profile,
         loading,
+        refreshProfile: fetchProfile,
       }}
     >
       {children}
