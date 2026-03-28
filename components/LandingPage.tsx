@@ -11,16 +11,31 @@ const LandingPage = () => {
       resizeMode={'cover'}>
       <View style={styles.overlay}/>
       <View style={styles.box}>
-        <Text style={styles.title}>
-          environteers
-        </Text>
-        <Text style={styles.subtitle}>
-          Inspiring informed action in Santa Cruz County <Text style={styles.italic}>and beyond.</Text>
-        </Text>
-        <View style={styles.buttonContainer}>
-          <Pressable onPress={() => router.push('/login')} style={styles.buttonLogin}><Text style={styles.buttonText}>Login</Text></Pressable>
-          <Pressable onPress={() => router.push('/signup')} style={styles.buttonRegister}><Text style={styles.buttonText}>Make an account</Text></Pressable>
+        <View style={{ flex: 128 }} />
+        <View style={styles.textContainer}>
+          <Text style={styles.title}>
+            environteers
+          </Text>
+          <Text style={styles.subtitle}>
+            Inspiring informed action {'\n'}in Santa Cruz County {'\n'}<Text style={styles.italic}>and beyond.</Text>
+          </Text>
         </View>
+        <View style={{ flex: 97 }} />
+        <View style={styles.buttonContainer}>
+          <Pressable onPress={() => router.push('/login')} style={styles.buttonLogin}>
+            <Text style={styles.buttonTextLight}>Login</Text>
+          </Pressable>
+          <Pressable onPress={() => router.push('/signup')} style={styles.buttonRegister}>
+            <Text style={styles.buttonTextGreen}>Create Account</Text>
+          </Pressable>
+          <Pressable style={styles.buttonAdminLogin}>
+            <Text style={styles.buttonTextLight}>Admin Login</Text>
+          </Pressable>
+          <Pressable style={styles.buttonAdminRegister}>
+            <Text style={styles.buttonTextNavy}>Admin Create Account</Text>
+          </Pressable>
+        </View>
+        <View style={{ flex: 97 }} />
       </View>
     </ImageBackground>
   )
@@ -34,57 +49,90 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255,255,255,0.35)'
+    backgroundColor: 'rgba(255,255,255,0.8)'
   },
   box: {
     flex: 1,
     flexDirection: "column",
-    marginTop: 40,
-    alignItems: "center"
+    alignItems: "center",
+  },
+  textContainer: {
+    alignItems: "center",
+    flex: 1,
+    justifyContent: "center",
   },
   title: {
-    fontSize: 48,
-    fontWeight: 500,
-    color: "#86AE42"
+    fontSize: 54,
+    fontWeight: 600,
+    color: "#86AE42",
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 20,
-    marginTop: 24,
+    lineHeight: 21,
+    marginTop: 8,
     textAlign: "center",
-    width: 288,
     color: "#45483D"
   },
   italic: {
-    fontSize: 20,
     fontStyle: "italic",
-    width: 288
   },
   buttonContainer: {
-    marginTop: "auto",
-    marginBottom: 60,
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    height: 120
+    width: 307,
+    gap: 8,
   },
   buttonLogin: {
-    borderRadius: 8,
-    backgroundColor: "#4F6629",
-    padding: 10,
-    width: 288
+    borderRadius: 12,
+    backgroundColor: "#3A5513",
+    height: 40,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   buttonRegister: {
-    borderRadius: 8,
-    backgroundColor: "#4F6629",
-    padding: 10,
-    width: 288,
+    borderRadius: 12,
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#3A5513",
+    height: 40,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  buttonText: {
-    fontSize: 20,
-    color: "white",
-    textAlign: "center"
-  }
+  buttonAdminLogin: {
+    borderRadius: 12,
+    backgroundColor: "#172A36",
+    height: 40,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 56,
+  },
+  buttonAdminRegister: {
+    borderRadius: 12,
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#172A36",
+    height: 40,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonTextLight: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: "#F2F7F5",
+  },
+  buttonTextGreen: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: "#3A5513",
+  },
+  buttonTextNavy: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: "#172A36",
+  },
 });
-
 
 export default LandingPage;
