@@ -46,6 +46,11 @@ const ProfileSettings = ({ onSubmit, initialUsername = '', initialEmail = '' }: 
   const handleSubmit = async (_event: GestureResponderEvent) => {
     setError("");
 
+    if (email !== initialEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setError('Please enter a valid email address');
+        return;
+    }
+
     if (newPassword !== confirmPassword) {
       setError("Passwords do not match!");
       return;
