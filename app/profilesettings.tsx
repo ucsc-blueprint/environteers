@@ -14,8 +14,6 @@ export default function Settings() {
     currentPassword: string,
     password: string
   ): Promise<string | null> => {
-
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return "User not logged in";
 
     const trimmedUsername = username.trim();
@@ -39,25 +37,49 @@ export default function Settings() {
     }
 
     // Update username
-    if (trimmedUsername !== "") {
+    if (trimmedUsername !== "" && trimmedUsername !== profile?.username) {
       const { error } = await supabase
         .from("users")
         .update({ username: trimmedUsername })
         .eq("user_id", user.id);
 
       if (error) {
-        return "Failed to update username";
+        Toast.show({
+          type: 'error',
+          text1: 'Failed to update username',
+        });
+        return null;
       }
     }
 
-    // Update password AFTER username
+    // Update email
+    const trimmedEmail = email.trim();
+    if (trimmedEmail !== "" && trimmedEmail !== user?.email) {
+      const { error } = await supabase.auth.updateUser({
+        email: trimmedEmail,
+      });
+
+      if (error) {
+        Toast.show({
+          type: 'error',
+          text1: 'Failed to update email',
+        });
+        return null;
+      }
+    }
+
+    // Update password AFTER username and email
     if (password) {
       const { error } = await supabase.auth.updateUser({
         password: password,
       });
 
       if (error) {
-        return "Failed to update password";
+        Toast.show({
+          type: 'error',
+          text1: 'Failed to update password',
+        });
+        return null;
       }
 
       passwordChanged = true;
@@ -66,7 +88,11 @@ export default function Settings() {
     // Logout after password change
     if (passwordChanged) {
       await supabase.auth.signOut();
-      return "Password updated. Please log in again.";
+      Toast.show({
+        type: 'success',
+        text1: 'Password updated. Please log in again.',
+      });
+      return null;
     }
 
     await refreshProfile();
