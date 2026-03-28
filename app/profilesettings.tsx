@@ -1,8 +1,12 @@
 import React from "react";
+import { useAuth } from "@/context/AuthContext";
 import ProfileSettings from "../components/ProfileSettings";
 import { supabase } from "../constants/supabase";
+import Toast from 'react-native-toast-message';
 
 export default function Settings() {
+  const { user, profile } = useAuth();
+
   const handleProfileUpdate = async (
     username: string,
     email: string,
@@ -64,8 +68,16 @@ export default function Settings() {
       return "Password updated. Please log in again.";
     }
 
+    Toast.show({
+      type: 'success',
+      text1: 'Profile updated successfully',
+    });
     return null;
   };
 
-  return <ProfileSettings onSubmit={handleProfileUpdate} />;
+  return <ProfileSettings
+    onSubmit={handleProfileUpdate}
+    initialUsername={profile?.username ?? ""}
+    initialEmail={user?.email ?? ""}
+  />;
 }

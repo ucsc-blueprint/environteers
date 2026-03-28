@@ -1,145 +1,155 @@
-import React, { useState } from 'react';
-import {View, Text, Pressable, Image, Switch, StyleSheet, TextInput, GestureResponderEvent} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Pressable, Image, Switch, StyleSheet, TextInput, GestureResponderEvent } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 
-export interface ProfileSettingsProps{
-onSubmit: (
-  username: string,
-  email: string,
-  currentPassword: string,
-  password: string
-) => Promise<string | null>; //thanks to this, we can return an error message if the update fails, or null if it succeeds
+export interface ProfileSettingsProps {
+  onSubmit: (
+    username: string,
+    email: string,
+    currentPassword: string,
+    password: string
+  ) => Promise<string | null>; //thanks to this, we can return an error message if the update fails, or null if it succeeds
+  initialUsername?: string;
+  initialEmail?: string;
 }
 
-const ProfileSettings = ({ onSubmit }: ProfileSettingsProps) => {
-    const router = useRouter();
-    const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
+const ProfileSettings = ({ onSubmit, initialUsername = '', initialEmail = '' }: ProfileSettingsProps) => {
+  const router = useRouter();
+  const [username, setUsername] = useState(initialUsername);
+  const [email, setEmail] = useState(initialEmail);
 
-    const [currentPassword, setCurrentPassword] = useState(''); 
-    const [newPassword, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
+  // Update initial username + email once they finish fetching
+  useEffect(() => {
+    setUsername(initialUsername);
+    setEmail(initialEmail);
+  }, [initialUsername, initialEmail]);
 
-    const [error, setError] = useState('');
+  const [currentPassword, setCurrentPassword] = useState(''); 
+  const [newPassword, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
-const handleSubmit = async (_event: GestureResponderEvent) => {
-  setError("");
+  const [error, setError] = useState('');
 
-  if (newPassword !== confirmPassword) {
-    setError("Passwords do not match!");
-    return;
-  }
+  const handleSubmit = async (_event: GestureResponderEvent) => {
+    setError("");
+
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match!");
+      return;
+    }
 
     const result = await onSubmit(
-    username,
-    email,
-    currentPassword,
-    newPassword
-  );
+      username,
+      email,
+      currentPassword,
+      newPassword
+    );
 
-  if (result) {
-    setError(result);
-  }
-};
+    if (result) {
+      setError(result);
+    }
+  };
 
-    return(
-        <View style={styles.container}>
-            <View style={styles.content}>
-                <View style={styles.backContainer}>
-                    <Pressable 
-                        style={styles.backButton} 
-                        onPress={() => router.push('/profile')} 
-                        >
-                        <ChevronLeft size={24} />
-                        <Text style={styles.title}>  Account</Text>
-                    </Pressable>
-                </View>
-                <Text style={styles.header}>Profile</Text>
-                <View style={styles.toggleContainer}>
-                    <Image 
-                        source={require('../assets/images/PFP.png')} 
-                        style={styles.image}
-                    />
-                    <View style={styles.boxButton}>
-                        <Pressable
-                            style={({ pressed }) => [
-                            styles.profileButton,
-                            pressed && styles.changeButtonPressed,
-                            ]}
-                            onPress={handleSubmit}>
-                            <Text style={styles.customButtonText}>Change Profile Photo</Text>
-                        </Pressable>
-                        <Pressable
-                            style={({ pressed }) => [
-                            styles.deleteButton,
-                            pressed && styles.deleteButtonPressed,
-                            ]}
-                            onPress={handleSubmit}>
-                            <Text style={styles.deleteButtonText}>Remove Profile Photo</Text>
-                        </Pressable>
-                    </View>
-                </View>
-                <Text style={styles.subtitle2}>Name</Text>
-                <TextInput
-                    value={username}
-                    onChangeText={setUsername}
-                    style={styles.input}
-                />
-
-                <Text style={styles.subtitle2}>Email</Text>
-                <TextInput
-                    value={email}
-                    onChangeText={setEmail}
-                    style={styles.input}
-                />
-
-                <Text style={styles.header}>Security</Text>
-                <Text style={[styles.subtitle, {color: '#172A36'}]}>Reset Password</Text>
-
-                <View style={{ marginLeft: 40 }}>
-
-                    <Text style={styles.subtitle2}>Current Password</Text>
-                    <TextInput
-                        value={currentPassword}            
-                        onChangeText={setCurrentPassword}  
-                        secureTextEntry
-                        style={styles.input}
-                    />
-
-                    <Text style={styles.subtitle2}>New Password</Text>
-                    <TextInput
-                        value={newPassword}
-                        secureTextEntry
-                        onChangeText={setPassword}
-                        style={styles.input}
-                    />
-
-                    <Text style={styles.subtitle2}>Confirm Password</Text>
-                    <TextInput
-                        value={confirmPassword}
-                        secureTextEntry
-                        onChangeText={setConfirmPassword}
-                        style={styles.input}
-                    />
-
-                </View>
-
-                {error !== '' && (
-                    <Text style={styles.error}>{error}</Text>
-                )}
-
-                <Pressable
-                    style={({ pressed }) => [
-                    styles.saveButton,
-                    pressed && styles.saveButtonPressed,
-                    ]}
-                    onPress={handleSubmit}>
-                    <Text style={styles.customButtonText}>Save Changes</Text>
-                </Pressable>
-            </View>
+  return (
+    <View style={styles.container}>
+      <View style={styles.content}>
+        <View style={styles.backContainer}>
+          <Pressable 
+            style={styles.backButton} 
+            onPress={() => router.push('/profile')} 
+          >
+            <ChevronLeft size={24} />
+            <Text style={styles.title}>  Account</Text>
+          </Pressable>
         </View>
-    )
+        <Text style={styles.header}>Profile</Text>
+        <View style={styles.toggleContainer}>
+          <Image 
+            source={require('../assets/images/PFP.png')} 
+            style={styles.image}
+          />
+          <View style={styles.boxButton}>
+            <Pressable
+              style={({ pressed }) => [
+                styles.profileButton,
+                pressed && styles.changeButtonPressed,
+              ]}
+              onPress={handleSubmit}
+            >
+              <Text style={styles.customButtonText}>Change Profile Photo</Text>
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [
+                styles.deleteButton,
+                pressed && styles.deleteButtonPressed,
+              ]}
+              onPress={handleSubmit}
+            >
+              <Text style={styles.deleteButtonText}>Remove Profile Photo</Text>
+            </Pressable>
+          </View>
+        </View>
+        <Text style={styles.subtitle2}>Name</Text>
+        <TextInput
+          value={username}
+          onChangeText={setUsername}
+          style={styles.input}
+        />
+
+        <Text style={styles.subtitle2}>Email</Text>
+        <TextInput
+          value={email}
+          onChangeText={setEmail}
+          style={styles.input}
+        />
+
+        <Text style={styles.header}>Security</Text>
+        <Text style={[styles.subtitle, {color: '#172A36'}]}>Reset Password</Text>
+
+        <View style={{ marginLeft: 40 }}>
+
+          <Text style={styles.subtitle2}>Current Password</Text>
+          <TextInput
+            value={currentPassword}            
+            onChangeText={setCurrentPassword}  
+            secureTextEntry
+            style={styles.input}
+          />
+
+          <Text style={styles.subtitle2}>New Password</Text>
+          <TextInput
+            value={newPassword}
+            secureTextEntry
+            onChangeText={setPassword}
+            style={styles.input}
+          />
+
+          <Text style={styles.subtitle2}>Confirm Password</Text>
+          <TextInput
+            value={confirmPassword}
+            secureTextEntry
+            onChangeText={setConfirmPassword}
+            style={styles.input}
+          />
+
+        </View>
+
+        {error !== '' && (
+          <Text style={styles.error}>{error}</Text>
+        )}
+
+        <Pressable
+          style={({ pressed }) => [
+            styles.saveButton,
+            pressed && styles.saveButtonPressed,
+          ]}
+          onPress={handleSubmit}>
+          <Text style={styles.customButtonText}>Save Changes</Text>
+        </Pressable>
+      </View>
+    </View>
+  )
 };
 
 export default ProfileSettings;
