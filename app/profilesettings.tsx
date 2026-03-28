@@ -19,6 +19,11 @@ export default function Settings() {
     const trimmedUsername = username.trim();
     let passwordChanged = false;
 
+    // Must fill out both current and new password, not just one
+    if ((currentPassword && !password) || (password && !currentPassword)) {
+        return "Please fill in all password fields";
+    }
+
     // If user wants to change password, verify current password first
     if (password) {
 
