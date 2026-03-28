@@ -29,6 +29,14 @@ const ProfileSettings = ({ onSubmit, initialUsername = '', initialEmail = '' }: 
   const [newPassword, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  // Only enable save changes button if user has made updates
+  const hasChanges =
+    username !== initialUsername ||
+    email !== initialEmail ||
+    (currentPassword != "" &&
+    newPassword !== "" &&
+    confirmPassword !== "");
+
   const [error, setError] = useState('');
 
   const handleSubmit = async (_event: GestureResponderEvent) => {
@@ -104,8 +112,7 @@ const ProfileSettings = ({ onSubmit, initialUsername = '', initialEmail = '' }: 
           style={styles.input}
         />
 
-        <Text style={styles.header}>Security</Text>
-        <Text style={[styles.subtitle, {color: '#172A36'}]}>Reset Password</Text>
+        <Text style={styles.header}>Password Reset</Text>
 
         <View style={{ marginLeft: 40 }}>
 
@@ -143,8 +150,11 @@ const ProfileSettings = ({ onSubmit, initialUsername = '', initialEmail = '' }: 
           style={({ pressed }) => [
             styles.saveButton,
             pressed && styles.saveButtonPressed,
+            !hasChanges && styles.saveButtonDisabled,
           ]}
-          onPress={handleSubmit}>
+          onPress={handleSubmit}
+          disabled={!hasChanges}
+        >
           <Text style={styles.customButtonText}>Save Changes</Text>
         </Pressable>
       </View>
@@ -260,6 +270,10 @@ const styles = StyleSheet.create({
 
     saveButtonPressed: {
         backgroundColor: '#76BAE4',
+    },
+
+    saveButtonDisabled: {
+        backgroundColor: '#B0C4D8',
     },
 
     deleteButtonPressed: {
