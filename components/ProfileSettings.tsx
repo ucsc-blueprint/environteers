@@ -51,6 +51,11 @@ const ProfileSettings = ({ onSubmit, initialUsername = '', initialEmail = '' }: 
       return;
     }
 
+    if (newPassword && newPassword.length < 8) {
+      setError("Password must include at least 8 characters");
+      return;
+    }
+
     const result = await onSubmit(
       username,
       email,
