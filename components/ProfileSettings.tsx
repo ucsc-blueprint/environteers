@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Text, Pressable, Image, Switch, StyleSheet, TextInput, GestureResponderEvent } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
+import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
 
 export interface ProfileSettingsProps {
   onSubmit: (
@@ -36,6 +36,10 @@ const ProfileSettings = ({ onSubmit, initialUsername = '', initialEmail = '' }: 
     (currentPassword != "" &&
     newPassword !== "" &&
     confirmPassword !== "");
+
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const [error, setError] = useState('');
 
@@ -119,35 +123,50 @@ const ProfileSettings = ({ onSubmit, initialUsername = '', initialEmail = '' }: 
       <Text style={styles.header}>Password Reset</Text>
       <View style={styles.passwordCard}>
         <Text style={styles.subtitle2}>Current Password</Text>
-        <TextInput
-          value={currentPassword}
-          onChangeText={setCurrentPassword}
-          secureTextEntry
-          placeholder="Enter old password"
-          placeholderTextColor="#aaa"
-          style={styles.input}
-        />
+        <View style={styles.passwordInputContainer}>
+          <TextInput
+            value={currentPassword}
+            onChangeText={setCurrentPassword}
+            secureTextEntry={!showCurrent}
+            placeholder="Enter old password"
+            placeholderTextColor="#aaa"
+            style={[styles.input, { flex: 1, marginBottom: 0 }]}
+          />
+          <Pressable style={styles.eyeIcon} onPress={() => setShowCurrent(prev => !prev)}>
+            {showCurrent ? <EyeOff size={18} color="#aaa" /> : <Eye size={18} color="#aaa" />}
+          </Pressable>
+        </View>
 
         <Text style={styles.subtitle2}>New Password</Text>
-        <TextInput
-          value={newPassword}
-          secureTextEntry
-          onChangeText={setPassword}
-          placeholder="Enter new password"
-          placeholderTextColor="#aaa"
-          style={styles.input}
-        />
+        <View style={styles.passwordInputContainer}>
+          <TextInput
+            value={newPassword}
+            secureTextEntry={!showNew}
+            onChangeText={setPassword}
+            placeholder="Enter new password"
+            placeholderTextColor="#aaa"
+            style={[styles.input, { flex: 1, marginBottom: 0 }]}
+          />
+          <Pressable style={styles.eyeIcon} onPress={() => setShowNew(prev => !prev)}>
+            {showNew ? <EyeOff size={18} color="#aaa" /> : <Eye size={18} color="#aaa" />}
+          </Pressable>
+        </View>
         <Text style={styles.label}>Must include at least 8 characters</Text>
 
         <Text style={styles.subtitle2}>Confirm Password</Text>
-        <TextInput
-          value={confirmPassword}
-          secureTextEntry
-          onChangeText={setConfirmPassword}
-          placeholder="Confirm new password"
-          placeholderTextColor="#aaa"
-          style={styles.input}
-        />
+        <View style={styles.passwordInputContainer}>
+          <TextInput
+            value={confirmPassword}
+            secureTextEntry={!showConfirm}
+            onChangeText={setConfirmPassword}
+            placeholder="Confirm new password"
+            placeholderTextColor="#aaa"
+            style={[styles.input, { flex: 1, marginBottom: 0 }]}
+          />
+          <Pressable style={styles.eyeIcon} onPress={() => setShowConfirm(prev => !prev)}>
+            {showConfirm ? <EyeOff size={18} color="#aaa" /> : <Eye size={18} color="#aaa" />}
+          </Pressable>
+        </View>
       </View>
 
       {error !== '' && (
@@ -221,7 +240,7 @@ const styles = StyleSheet.create({
         marginLeft: 4, 
         color: '#808080',
         marginBottom: 14,
-        marginTop: -10,
+        marginTop: -5,
     },
 
     saveButton: {
@@ -326,7 +345,20 @@ const styles = StyleSheet.create({
     passwordCard: {
         backgroundColor: '#D9E8F0',
         borderRadius: 12,
-        padding: 16,
-        marginBottom: 16,
+        padding: 12,
+        marginBottom: 12,
+    },
+
+    passwordInputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FFFFFF',
+        borderRadius: 10,
+        marginBottom: 12,
+    },
+
+    eyeIcon: {
+        position: 'absolute',
+        right: 12,
     },
 })
