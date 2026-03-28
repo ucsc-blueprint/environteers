@@ -2,6 +2,7 @@ import React from "react";
 import { useAuth } from "@/context/AuthContext";
 import ProfileSettings from "../components/ProfileSettings";
 import { supabase } from "../constants/supabase";
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
 export default function Settings() {
@@ -76,9 +77,13 @@ export default function Settings() {
     return null;
   };
 
-  return <ProfileSettings
-    onSubmit={handleProfileUpdate}
-    initialUsername={profile?.username ?? ""}
-    initialEmail={user?.email ?? ""}
-  />;
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#EAF2F6' }}>
+      <ProfileSettings
+        onSubmit={handleProfileUpdate}
+        initialUsername={profile?.username ?? ""}
+        initialEmail={user?.email ?? ""}
+      />
+    </SafeAreaView>
+  );
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, Image, Switch, StyleSheet, TextInput, GestureResponderEvent } from 'react-native';
+import { View, ScrollView, Text, Pressable, Image, Switch, StyleSheet, TextInput, GestureResponderEvent } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 
@@ -61,103 +61,111 @@ const ProfileSettings = ({ onSubmit, initialUsername = '', initialEmail = '' }: 
 
   return (
     <View style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.backContainer}>
-          <Pressable 
-            style={styles.backButton} 
-            onPress={() => router.push('/profile')} 
-          >
-            <ChevronLeft size={24} />
-            <Text style={styles.title}>  Account</Text>
-          </Pressable>
-        </View>
-        <Text style={styles.header}>Profile</Text>
-        <View style={styles.toggleContainer}>
-          <Image 
-            source={require('../assets/images/PFP.png')} 
-            style={styles.image}
-          />
-          <View style={styles.boxButton}>
-            <Pressable
-              style={({ pressed }) => [
-                styles.profileButton,
-                pressed && styles.changeButtonPressed,
-              ]}
-              onPress={handleSubmit}
-            >
-              <Text style={styles.customButtonText}>Change Profile Photo</Text>
-            </Pressable>
-            <Pressable
-              style={({ pressed }) => [
-                styles.deleteButton,
-                pressed && styles.deleteButtonPressed,
-              ]}
-              onPress={handleSubmit}
-            >
-              <Text style={styles.deleteButtonText}>Remove Profile Photo</Text>
-            </Pressable>
-          </View>
-        </View>
-        <Text style={styles.subtitle2}>Name</Text>
-        <TextInput
-          value={username}
-          onChangeText={setUsername}
-          style={styles.input}
-        />
-
-        <Text style={styles.subtitle2}>Email</Text>
-        <TextInput
-          value={email}
-          onChangeText={setEmail}
-          style={styles.input}
-        />
-
-        <Text style={styles.header}>Password Reset</Text>
-
-        <View style={{ marginLeft: 40 }}>
-
-          <Text style={styles.subtitle2}>Current Password</Text>
-          <TextInput
-            value={currentPassword}            
-            onChangeText={setCurrentPassword}  
-            secureTextEntry
-            style={styles.input}
-          />
-
-          <Text style={styles.subtitle2}>New Password</Text>
-          <TextInput
-            value={newPassword}
-            secureTextEntry
-            onChangeText={setPassword}
-            style={styles.input}
-          />
-
-          <Text style={styles.subtitle2}>Confirm Password</Text>
-          <TextInput
-            value={confirmPassword}
-            secureTextEntry
-            onChangeText={setConfirmPassword}
-            style={styles.input}
-          />
-
-        </View>
-
-        {error !== '' && (
-          <Text style={styles.error}>{error}</Text>
-        )}
-
+    <View style={styles.content}>
+      <View style={styles.backContainer}>
         <Pressable
-          style={({ pressed }) => [
-            styles.saveButton,
-            pressed && styles.saveButtonPressed,
-            !hasChanges && styles.saveButtonDisabled,
-          ]}
-          onPress={handleSubmit}
-          disabled={!hasChanges}
+          style={styles.backButton}
+          onPress={() => router.push('/profile')}
         >
-          <Text style={styles.customButtonText}>Save Changes</Text>
+          <ChevronLeft size={24} />
+          <Text style={styles.title}>Manage Account</Text>
         </Pressable>
       </View>
+
+      <Text style={styles.header}>Profile</Text>
+      <View style={styles.toggleContainer}>
+        <Image
+          source={require('../assets/images/PFP.png')}
+          style={styles.image}
+        />
+        <View style={styles.boxButton}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.profileButton,
+              pressed && styles.changeButtonPressed,
+            ]}
+            onPress={handleSubmit}
+          >
+            <Text style={styles.customButtonText}>Change Profile Photo</Text>
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.deleteButton,
+              pressed && styles.deleteButtonPressed,
+            ]}
+            onPress={handleSubmit}
+          >
+            <Text style={styles.deleteButtonText}>Remove Profile Photo</Text>
+          </Pressable>
+        </View>
+      </View>
+
+      <Text style={styles.subtitle2}>Name</Text>
+      <TextInput
+        value={username}
+        onChangeText={setUsername}
+        style={styles.input}
+      />
+
+      <Text style={styles.subtitle2}>Email</Text>
+      <TextInput
+        value={email}
+        onChangeText={setEmail}
+        style={styles.input}
+        keyboardType="email-address"
+        autoCapitalize="none"
+      />
+
+      <Text style={styles.header}>Password Reset</Text>
+      <View style={styles.passwordCard}>
+        <Text style={styles.subtitle2}>Current Password</Text>
+        <TextInput
+          value={currentPassword}
+          onChangeText={setCurrentPassword}
+          secureTextEntry
+          placeholder="Enter old password"
+          placeholderTextColor="#aaa"
+          style={styles.input}
+        />
+
+        <Text style={styles.subtitle2}>New Password</Text>
+        <TextInput
+          value={newPassword}
+          secureTextEntry
+          onChangeText={setPassword}
+          placeholder="Enter new password"
+          placeholderTextColor="#aaa"
+          style={styles.input}
+        />
+        <Text style={styles.label}>Must include at least 8 characters</Text>
+
+        <Text style={styles.subtitle2}>Confirm Password</Text>
+        <TextInput
+          value={confirmPassword}
+          secureTextEntry
+          onChangeText={setConfirmPassword}
+          placeholder="Confirm new password"
+          placeholderTextColor="#aaa"
+          style={styles.input}
+        />
+      </View>
+
+      {error !== '' && (
+        <Text style={styles.error}>{error}</Text>
+      )}
+
+      <Pressable
+        style={({ pressed }) => [
+          styles.saveButton,
+          pressed && styles.saveButtonPressed,
+          !hasChanges && styles.saveButtonDisabled,
+        ]}
+        onPress={handleSubmit}
+        disabled={!hasChanges}
+      >
+        <Text style={styles.customButtonText}>Save Changes</Text>
+      </Pressable>
+    </View>
     </View>
   )
 };
@@ -168,15 +176,16 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#EAF2F6',
-        justifyContent: 'center'
     },
 
     content: {
         paddingHorizontal: 24,
+        paddingBottom: 40,
     },
 
     title: {
-        fontSize: 22,
+        fontSize: 20,
+        fontWeight: '600',
     },
 
     subtitle: {
@@ -187,81 +196,62 @@ const styles = StyleSheet.create({
     },
 
     subtitle2: {
-        marginTop: 20,
-        fontSize: 14,
-        color: '#808080',
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#172A36',
+        marginBottom: 6,
     },
 
     error: {
         color: 'red',
         marginBottom: 12,
+        textAlign: 'center',
     },
 
     header: {
-        fontSize: 16,
+        fontSize: 20,
         fontWeight: 'bold',
-        marginBottom: 12,
+        color: '#172A36',
+        marginBottom: 8,
+        marginTop: 8,
     },
 
     label: {
         fontSize: 12,
         marginLeft: 4, 
         color: '#808080',
-        marginBottom: 18,
+        marginBottom: 14,
+        marginTop: -10,
     },
 
     saveButton: {
-        backgroundColor: '#0282D3',
-        paddingVertical: 6,
-        borderRadius: 20,
+        backgroundColor: '#86AE42',
+        paddingVertical: 14,
+        borderRadius: 12,
         alignItems: 'center',
-        marginTop: 10,
-        marginBottom: 18,
-        width: 113,
-        height: 35,
-        display: 'flex',
-        alignSelf: 'center',
-        justifyContent: 'center'
+        marginTop: 8,
     },
 
     boxButton: {
         flexDirection: 'column',
         gap: 10,
-        alignItems: 'center',
+        flex: 1,
     },
 
     profileButton: {
         backgroundColor: '#76BAE4',
-        paddingVertical: 6,
+        paddingVertical: 8,
         borderRadius: 20,
         alignItems: 'center',
-        marginTop: 9,
-        marginBottom: 9,
-        marginRight: 10,
-        marginLeft: 10,
-        width: 147,
-        height: 30,
-        alignSelf: 'center',
-        display: 'flex',
-        justifyContent: 'center',
     },
 
     deleteButton: {
         backgroundColor: '#FFECEF',
         borderColor: '#D8021C',
         borderWidth: 2,
-        paddingVertical: 6,
-        borderRadius: 300,
+        paddingVertical: 8,
+        borderRadius: 20,
         alignItems: 'center',
-        marginTop: 9,
-        marginBottom: 9,
-        marginRight: 10,
-        marginLeft: 10,
-        width: 147,
-        height: 30,
-        alignSelf: 'center',
-        display: 'flex',
-        justifyContent: 'center',
     },
 
     changeButtonPressed: {
@@ -282,22 +272,18 @@ const styles = StyleSheet.create({
 
     deleteButtonText: {
         color: '#D8021C',
-        fontSize: 12,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center'
+        fontSize: 13,
+        fontWeight: '600',
     },
 
     customButtonText: {
         color: 'white',
-        fontSize: 12,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center'
+        fontSize: 15,
+        fontWeight: '600',
     },
     
     backContainer: {
-        marginTop: 10,
+        marginTop: 16,
         marginBottom: 20,
     },
 
@@ -307,19 +293,20 @@ const styles = StyleSheet.create({
     },
 
     input: {
-        height: 28,
+        height: 40,
         borderRadius: 10,
         paddingHorizontal: 12,
         backgroundColor: '#FFFFFF',
-        marginBottom: 18,
+        marginBottom: 12,
+        fontSize: 14,
+        color: '#172A36',
     },
 
     toggleContainer: {
         flexDirection: 'row',
-        display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
         marginBottom: 12,
+        gap: 16,
     },
 
     toggleSwitch: {
@@ -334,5 +321,12 @@ const styles = StyleSheet.create({
         width: 102,
         height: 102,
         marginBottom: 12,
-    }
+    },
+
+    passwordCard: {
+        backgroundColor: '#D9E8F0',
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 16,
+    },
 })
