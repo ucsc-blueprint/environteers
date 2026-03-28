@@ -5,7 +5,7 @@ import { supabase } from "../constants/supabase";
 import Toast from 'react-native-toast-message';
 
 export default function Settings() {
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
 
   const handleProfileUpdate = async (
     username: string,
@@ -68,6 +68,7 @@ export default function Settings() {
       return "Password updated. Please log in again.";
     }
 
+    await refreshProfile();
     Toast.show({
       type: 'success',
       text1: 'Profile updated successfully',
