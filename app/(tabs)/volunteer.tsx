@@ -1,9 +1,10 @@
-import { ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { EcoFeed, Header } from "@/components/EcoFeed";
 import { useEffect, useState } from "react";
 import { supabase } from "@/constants/supabase";
 import { LinearGradient } from 'expo-linear-gradient';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
+import { useRouter } from 'expo-router';
 
 type OnlineEcoAction = {
   type: "online",
@@ -47,6 +48,8 @@ type VolunteerItem = OnlineEcoAction | InPersonEcoAction | Event
 
 export default function Volunteer() {
   const [items, setItems] = useState<VolunteerItem[]>([]);
+
+  const router = useRouter();
 
   useEffect(() => {
     const fetchVolunteerData = async () => {
@@ -127,7 +130,9 @@ export default function Volunteer() {
         ))}
       </ScrollView>
         <View style={styles.mapBackground}>
-          <MaterialCommunityIcons name="map" size={30} color={'#0282D3'}></MaterialCommunityIcons>          
+          <Pressable onPress={() => router.push('/(tabs)/map')}>
+            <MaterialCommunityIcons name="map" size={30} color={'#0282D3'} />
+          </Pressable>
         </View>
     </LinearGradient>
   );

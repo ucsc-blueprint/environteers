@@ -15,7 +15,7 @@ const LandingPage = () => {
           environteers
         </Text>
         <Text style={styles.subtitle}>
-          Inspiring informed action to serve Santa Cruz County <Text style={styles.italic}>and beyond.</Text>
+          Inspiring informed action in Santa Cruz County <Text style={styles.italic}>and beyond.</Text>
         </Text>
         <View style={styles.buttonContainer}>
           <Pressable onPress={() => router.push('/login')} style={styles.buttonLogin}><Text style={styles.buttonText}>Login</Text></Pressable>
