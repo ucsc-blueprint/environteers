@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, Text, Pressable, Image, Switch, StyleSheet, TextInput, GestureResponderEvent } from 'react-native';
+import { View, Text, Pressable, Image, StyleSheet, TextInput, GestureResponderEvent } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
 
@@ -33,7 +33,7 @@ const ProfileSettings = ({ onSubmit, initialUsername = '', initialEmail = '' }: 
   const hasChanges =
     username !== initialUsername ||
     email !== initialEmail ||
-    (currentPassword != "" &&
+    (currentPassword !== "" &&
     newPassword !== "" &&
     confirmPassword !== "");
 
