@@ -28,10 +28,10 @@ const LandingPage = () => {
           <Pressable onPress={() => router.push('/signup')} style={styles.buttonRegister}>
             <Text style={styles.buttonTextGreen}>Create Account</Text>
           </Pressable>
-          <Pressable style={styles.buttonAdminLogin}>
+          <Pressable onPress={() => router.push('/login?isAdmin=true')} style={styles.buttonAdminLogin}>
             <Text style={styles.buttonTextLight}>Admin Login</Text>
           </Pressable>
-          <Pressable style={styles.buttonAdminRegister}>
+          <Pressable onPress={() => router.push('/signup?isAdmin=true')} style={styles.buttonAdminRegister}>
             <Text style={styles.buttonTextNavy}>Admin Create Account</Text>
           </Pressable>
         </View>
@@ -58,7 +58,6 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     alignItems: "center",
-    flex: 1,
     justifyContent: "center",
   },
   title: {

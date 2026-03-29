@@ -8,8 +8,8 @@ import {
   GestureResponderEvent,
   StyleSheet,
 } from 'react-native';
-import {Checkbox} from 'expo-checkbox';
 import { useRouter } from 'expo-router';
+import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
 
 export interface SignupFormProps {
   onSubmit: (
@@ -18,15 +18,17 @@ export interface SignupFormProps {
     password: string,
     isAdmin: boolean
   ) => void;
+  isAdmin?: boolean;
 }
 
-const SignupForm = ({ onSubmit }: SignupFormProps) => {
+const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = (_event: GestureResponderEvent) => {
@@ -58,46 +60,71 @@ const SignupForm = ({ onSubmit }: SignupFormProps) => {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>Register</Text>
-        <Text style={styles.subtitle}>Create your account</Text>
+        <Pressable style={styles.backButton} onPress={() => router.push('/')}>
+          <ChevronLeft size={20} color="#757575" />
+          <Text style={styles.backText}>
+            {isAdmin ? 'Not an admin? Click to go back' : 'Back'}
+          </Text>
+        </Pressable>
 
-        <Text style={styles.label}>username</Text>
-        <TextInput
-          value={username}
-          onChangeText={setUsername}
-          style={styles.input}
-        />
+        <Text style={styles.title}>Welcome!</Text>
+        <Text style={styles.subtitle}>
+          {isAdmin
+            ? 'Create an admin account that the organization will later approve.'
+            : 'Create an account to get involved'}
+        </Text>
 
-        <Text style={styles.label}>email</Text>
-        <TextInput
-          value={email}
-          onChangeText={setEmail}
-          style={styles.input}
-        />
-
-        <Text style={styles.label}>password</Text>
-        <TextInput
-          value={password}
-          secureTextEntry
-          onChangeText={setPassword}
-          style={styles.input}
-        />
-
-        <Text style={styles.label}>confirm password</Text>
-        <TextInput
-          value={confirmPassword}
-          secureTextEntry
-          onChangeText={setConfirmPassword}
-          style={styles.input}
-        />
-
-        <View style={styles.checkboxRow}>
-          <Checkbox
-            value={isAdmin}
-            onValueChange={setIsAdmin}
-            color={isAdmin ? '#88B04B' : undefined}
+        <View style={styles.fields}>
+          <Text style={styles.label}>Username</Text>
+          <TextInput
+            value={username}
+            onChangeText={setUsername}
+            placeholder="Enter username"
+            placeholderTextColor="#868E8B"
+            style={styles.input}
           />
-          <Text style={styles.checkboxLabel}>Are you an admin?</Text>
+
+          <Text style={styles.label}>Email</Text>
+          <TextInput
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Enter email"
+            placeholderTextColor="#868E8B"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            style={styles.input}
+          />
+
+          <Text style={styles.label}>Password</Text>
+          <View style={styles.inputContainer}>
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Enter password"
+              placeholderTextColor="#868E8B"
+              secureTextEntry={!showPassword}
+              style={[styles.input, { flex: 1, marginBottom: 0 }]}
+            />
+            <Pressable style={styles.eyeIcon} onPress={() => setShowPassword(prev => !prev)}>
+              {showPassword ? <EyeOff size={18} color="#868E8B" /> : <Eye size={18} color="#868E8B" />}
+            </Pressable>
+          </View>
+          <Text style={styles.hint}>Must include at least 8 characters</Text>
+
+          <Text style={styles.label}>Confirm password</Text>
+          <View style={styles.inputContainer}>
+            <TextInput
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              placeholder="Re-type password"
+              placeholderTextColor="#868E8B"
+              secureTextEntry={!showConfirm}
+              style={[styles.input, { flex: 1, marginBottom: 0 }]}
+            />
+            <Pressable style={styles.eyeIcon} onPress={() => setShowConfirm(prev => !prev)}>
+              {showConfirm ? <EyeOff size={18} color="#868E8B" /> : <Eye size={18} color="#868E8B" />}
+            </Pressable>
+          </View>
         </View>
 
         {error !== '' && (
@@ -106,17 +133,19 @@ const SignupForm = ({ onSubmit }: SignupFormProps) => {
 
         <Pressable
           style={({ pressed }) => [
-            styles.customButton,
-            pressed && styles.customButtonPressed,
+            styles.submitButton,
+            pressed && styles.submitButtonPressed,
           ]}
           onPress={handleSubmit}
         >
-          <Text style={styles.customButtonText}>Register</Text>
+          <Text style={styles.submitButtonText}>Create account</Text>
         </Pressable>
 
-        <Text style={styles.loginText}>
-          Have an account? <Pressable onPress={() => router.push('/login')}><Text style={styles.loginLink}>Login</Text></Pressable>
-        </Text>
+        <Pressable onPress={() => router.push('/login')}>
+          <Text style={styles.loginText}>
+            Already have an account? <Text style={styles.loginLink}>Login</Text>
+          </Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -125,84 +154,123 @@ const SignupForm = ({ onSubmit }: SignupFormProps) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E5E5E5',
-    justifyContent: 'center',
+    backgroundColor: '#F6FBF2',
   },
 
   content: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 40,
+    paddingBottom: 40,
+  },
+
+  backButton: {
+    marginTop: 72,
+    marginBottom: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginLeft: -4,
+  },
+
+  backText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#757575',
   },
 
   title: {
     fontSize: 36,
-    fontWeight: 'bold',
-    marginBottom: 6,
+    fontWeight: '600',
+    color: '#86AE42',
+    lineHeight: 46,
+    marginBottom: 12,
   },
 
   subtitle: {
-    fontSize: 16,
-    marginBottom: 30,
+    fontSize: 20,
+    fontWeight: '400',
+    color: 'black',
+    lineHeight: 21,
+    marginBottom: 24,
+  },
+
+  fields: {
+    gap: 12,
+    marginBottom: 24,
   },
 
   label: {
     fontSize: 14,
-    marginBottom: 6,
-    textTransform: 'lowercase',
+    fontWeight: '700',
+    color: '#525856',
+    lineHeight: 20,
   },
 
   input: {
-    height: 48,
+    height: 40,
     borderWidth: 1,
-    borderColor: '#000',
-    borderRadius: 6,
+    borderColor: '#D9E0DE',
+    borderRadius: 8,
     paddingHorizontal: 12,
     backgroundColor: '#fff',
-    marginBottom: 18,
+    fontSize: 14,
+    color: '#172A36',
   },
 
-  checkboxRow: {
+  inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#D9E0DE',
+    borderRadius: 8,
   },
 
-  checkboxLabel: {
-    marginLeft: 10,
-    fontSize: 14,
+  eyeIcon: {
+    position: 'absolute',
+    right: 12,
+  },
+
+  hint: {
+    fontSize: 12,
+    color: '#868E8B',
+    lineHeight: 12,
   },
 
   error: {
     color: 'red',
     marginBottom: 12,
+    textAlign: 'center',
   },
 
-  customButton: {
-    backgroundColor: '#88B04B',
-    paddingVertical: 14,
-    borderRadius: 30,
+  submitButton: {
+    backgroundColor: '#3A5513',
+    height: 40,
+    borderRadius: 12,
     alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 18,
+    justifyContent: 'center',
+    marginBottom: 8,
   },
 
-  customButtonPressed: {
-    backgroundColor: '#75a03f',
+  submitButtonPressed: {
+    backgroundColor: '#2d4210',
   },
 
-  customButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
+  submitButtonText: {
+    color: '#F2F7F5',
+    fontSize: 14,
+    fontWeight: '700',
+    lineHeight: 20,
   },
 
   loginText: {
     textAlign: 'center',
     fontSize: 14,
+    color: '#3A5513',
+    lineHeight: 40,
   },
 
   loginLink: {
-    fontWeight: 'bold',
-    textDecorationLine: 'underline',
+    fontWeight: '700',
   },
 });
 
