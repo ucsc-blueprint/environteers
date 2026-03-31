@@ -2,20 +2,23 @@ import { View } from 'react-native';
 import SignupForm from '@/components/SignupForm';
 import { supabase } from '@/constants/supabase';
 import Toast from 'react-native-toast-message';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import React from 'react';
 
 export default function SignupScreen() {
   const router = useRouter();
-    const {user, profile} = useAuth();
+  const {user, profile} = useAuth();
     
-    React.useEffect(() => {
-      if (user && profile) {
-        router.push('/(tabs)/home')
-      }
-    }, [user, profile, router])
-  async function onSubmit(username: string, email: string, password: string, isAdmin: boolean) {
+  React.useEffect(() => {
+    if (user && profile) {
+      router.push('/(tabs)/home')
+    }
+  }, [user, profile, router])
+
+  const { isAdmin: isAdminParam } = useLocalSearchParams();
+
+  async function onSubmit(firstName: string, lastName: string, email: string, password: string, isAdmin: boolean) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -30,7 +33,8 @@ export default function SignupScreen() {
     };
     const {error: insertError} = await supabase.from('users').insert({
       user_id: data.user!.id,
-      username,
+      first_name: firstName,
+      last_name: lastName,
       email,
       is_admin: isAdmin
     })
@@ -51,7 +55,7 @@ export default function SignupScreen() {
   }
   return (
     <View style={{flex: 1}}>
-      <SignupForm onSubmit={onSubmit}/>
+      <SignupForm onSubmit={onSubmit} isAdmin={isAdminParam === 'true'} />
     </View>
   )
 }
