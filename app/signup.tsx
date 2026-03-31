@@ -18,7 +18,7 @@ export default function SignupScreen() {
 
   const { isAdmin: isAdminParam } = useLocalSearchParams();
 
-  async function onSubmit(username: string, email: string, password: string, isAdmin: boolean) {
+  async function onSubmit(firstName: string, lastName: string, email: string, password: string, isAdmin: boolean) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -33,7 +33,8 @@ export default function SignupScreen() {
     };
     const {error: insertError} = await supabase.from('users').insert({
       user_id: data.user!.id,
-      username,
+      first_name: firstName,
+      last_name: lastName,
       email,
       is_admin: isAdmin
     })

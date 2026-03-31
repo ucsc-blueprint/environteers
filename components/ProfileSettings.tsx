@@ -5,25 +5,29 @@ import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
 
 export interface ProfileSettingsProps {
   onSubmit: (
-    username: string,
+    firstName: string,
+    lastName: string,
     email: string,
     currentPassword: string,
     password: string
   ) => Promise<string | null>; //thanks to this, we can return an error message if the update fails, or null if it succeeds
-  initialUsername?: string;
+  initialFirstName?: string;
+  initialLastName?: string;
   initialEmail?: string;
 }
 
-const ProfileSettings = ({ onSubmit, initialUsername = '', initialEmail = '' }: ProfileSettingsProps) => {
+const ProfileSettings = ({ onSubmit, initialFirstName = '', initialLastName = '', initialEmail = '' }: ProfileSettingsProps) => {
   const router = useRouter();
-  const [username, setUsername] = useState(initialUsername);
+  const [firstName, setFirstName] = useState(initialFirstName);
+  const [lastName, setLastName] = useState(initialLastName);
   const [email, setEmail] = useState(initialEmail);
 
-  // Update initial username + email once they finish fetching
+  // Update initial name + email once they finish fetching
   useEffect(() => {
-    setUsername(initialUsername);
+    setFirstName(initialFirstName);
+    setLastName(initialLastName);
     setEmail(initialEmail);
-  }, [initialUsername, initialEmail]);
+  }, [initialFirstName, initialLastName, initialEmail]);
 
   const [currentPassword, setCurrentPassword] = useState(''); 
   const [newPassword, setPassword] = useState('');
@@ -31,7 +35,8 @@ const ProfileSettings = ({ onSubmit, initialUsername = '', initialEmail = '' }: 
 
   // Only enable save changes button if user has made updates
   const hasChanges =
-    username !== initialUsername ||
+    firstName !== initialFirstName ||
+    lastName !== initialLastName ||
     email !== initialEmail ||
     (currentPassword !== "" &&
     newPassword !== "" &&
@@ -62,7 +67,8 @@ const ProfileSettings = ({ onSubmit, initialUsername = '', initialEmail = '' }: 
     }
 
     const result = await onSubmit(
-      username,
+      firstName,
+      lastName,
       email,
       currentPassword,
       newPassword
@@ -87,37 +93,44 @@ const ProfileSettings = ({ onSubmit, initialUsername = '', initialEmail = '' }: 
       </View>
 
       <Text style={styles.header}>Profile</Text>
-      <View style={styles.toggleContainer}>
+      <View style={styles.avatarRow}>
         <Image
           source={require('../assets/images/PFP.png')}
-          style={styles.image}
+          style={styles.avatar}
         />
-        <View style={styles.boxButton}>
+        <View style={styles.photoButtons}>
           <Pressable
             style={({ pressed }) => [
-              styles.profileButton,
-              pressed && styles.changeButtonPressed,
+              styles.changePhotoButton,
+              pressed && styles.changePhotoButtonPressed,
             ]}
-            onPress={handleSubmit}
+            onPress={() => {}} // Do nothing for now
           >
-            <Text style={styles.customButtonText}>Change Profile Photo</Text>
+            <Text style={styles.changePhotoText}>Change Profile Photo</Text>
           </Pressable>
           <Pressable
             style={({ pressed }) => [
-              styles.deleteButton,
-              pressed && styles.deleteButtonPressed,
+              styles.removePhotoButton,
+              pressed && styles.removePhotoButtonPressed,
             ]}
-            onPress={handleSubmit}
+            onPress={() => {}} // Do nothing for now
           >
-            <Text style={styles.deleteButtonText}>Remove Profile Photo</Text>
+            <Text style={styles.removePhotoText}>Remove Profile Photo</Text>
           </Pressable>
         </View>
       </View>
 
-      <Text style={styles.subtitle2}>Name</Text>
+      <Text style={styles.subtitle2}>First Name</Text>
       <TextInput
-        value={username}
-        onChangeText={setUsername}
+        value={firstName}
+        onChangeText={setFirstName}
+        style={styles.input}
+      />
+
+      <Text style={styles.subtitle2}>Last Name</Text>
+      <TextInput
+        value={lastName}
+        onChangeText={setLastName}
         style={styles.input}
       />
 
@@ -208,8 +221,9 @@ const styles = StyleSheet.create({
     },
 
     content: {
-        paddingHorizontal: 24,
-        paddingBottom: 40,
+        flex: 1,
+        paddingHorizontal: 22,
+        paddingBottom: 16,
     },
 
     title: {
@@ -254,55 +268,24 @@ const styles = StyleSheet.create({
     },
 
     saveButton: {
-        backgroundColor: '#86AE42',
-        paddingVertical: 14,
+        backgroundColor: '#618E20',
+        paddingVertical: 11,
         borderRadius: 12,
         alignItems: 'center',
-        marginTop: 8,
-    },
-
-    boxButton: {
-        flexDirection: 'column',
-        gap: 10,
-        flex: 1,
-    },
-
-    profileButton: {
-        backgroundColor: '#76BAE4',
-        paddingVertical: 8,
-        borderRadius: 20,
-        alignItems: 'center',
-    },
-
-    deleteButton: {
-        backgroundColor: '#FFECEF',
-        borderColor: '#D8021C',
-        borderWidth: 2,
-        paddingVertical: 8,
-        borderRadius: 20,
-        alignItems: 'center',
-    },
-
-    changeButtonPressed: {
-        backgroundColor: '#0282D3',
     },
 
     saveButtonPressed: {
-        backgroundColor: '#76BAE4',
+        backgroundColor: '#4e7018',
     },
 
     saveButtonDisabled: {
         backgroundColor: '#B0C4D8',
     },
 
-    deleteButtonPressed: {
-        backgroundColor: '#d46976',
-    },
-
-    deleteButtonText: {
-        color: '#D8021C',
-        fontSize: 13,
-        fontWeight: '600',
+    boxButton: {
+        flexDirection: 'column',
+        gap: 10,
+        flex: 1,
     },
 
     customButtonText: {
@@ -322,7 +305,7 @@ const styles = StyleSheet.create({
     },
 
     input: {
-        height: 40,
+        height: 35,
         borderRadius: 10,
         paddingHorizontal: 12,
         backgroundColor: '#FFFFFF',
@@ -331,17 +314,61 @@ const styles = StyleSheet.create({
         color: '#172A36',
     },
 
-    toggleContainer: {
+    avatarRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 12,
         gap: 16,
+        marginBottom: 12,
     },
 
-    toggleSwitch: {
-        position: 'relative',
-        width: 60,
-        height: 34
+    avatar: {
+        width: 80,
+        height: 80,
+        borderRadius: 9999,
+        backgroundColor: '#D9D9D9',
+    },
+
+    photoButtons: {
+        flex: 1,
+        gap: 8,
+    },
+
+    changePhotoButton: {
+        backgroundColor: '#4695FF',
+        paddingVertical: 7,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+
+    changePhotoButtonPressed: {
+        backgroundColor: '#2176d9',
+    },
+
+    changePhotoText: {
+        color: '#F2F7F5',
+        fontSize: 14,
+        fontWeight: '400',
+        lineHeight: 20,
+    },
+
+    removePhotoButton: {
+        backgroundColor: '#FFECEF',
+        paddingVertical: 7,
+        borderRadius: 8,
+        alignItems: 'center',
+        borderWidth: 2,
+        borderColor: '#FF4163',
+    },
+
+    removePhotoButtonPressed: {
+        backgroundColor: '#ffd0d8',
+    },
+
+    removePhotoText: {
+        color: '#FF4163',
+        fontSize: 14,
+        fontWeight: '400',
+        lineHeight: 20,
     },
 
     image: {

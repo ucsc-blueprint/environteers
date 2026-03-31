@@ -13,7 +13,8 @@ import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
 
 export interface SignupFormProps {
   onSubmit: (
-    username: string,
+    firstName: string,
+    lastName: string,
     email: string,
     password: string,
     isAdmin: boolean
@@ -23,7 +24,8 @@ export interface SignupFormProps {
 
 const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
   const router = useRouter();
-  const [username, setUsername] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -34,7 +36,7 @@ const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
   const handleSubmit = (_event: GestureResponderEvent) => {
     setError('');
 
-    if (!username || !email || !password || !confirmPassword) {
+    if (!firstName || !lastName || !email || !password || !confirmPassword) {
       setError('Please fill out all fields.');
       return;
     }
@@ -54,7 +56,7 @@ const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
       return;
     }
 
-    onSubmit(username, email, password, isAdmin);
+    onSubmit(firstName, lastName, email, password, isAdmin);
   };
 
   return (
@@ -75,11 +77,20 @@ const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
         </Text>
 
         <View style={styles.fields}>
-          <Text style={styles.label}>Username</Text>
+          <Text style={styles.label}>First name</Text>
           <TextInput
-            value={username}
-            onChangeText={setUsername}
-            placeholder="Enter username"
+            value={firstName}
+            onChangeText={setFirstName}
+            placeholder="Enter first name"
+            placeholderTextColor="#868E8B"
+            style={styles.input}
+          />
+
+          <Text style={styles.label}>Last name</Text>
+          <TextInput
+            value={lastName}
+            onChangeText={setLastName}
+            placeholder="Enter last name"
             placeholderTextColor="#868E8B"
             style={styles.input}
           />
