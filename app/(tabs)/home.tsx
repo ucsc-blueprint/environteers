@@ -13,7 +13,7 @@ export default function Home() {
       }}
     >
       <Text>Home</Text>
-      <Text>You are: {profile?.username}</Text>
+      <Text>You are: {profile?.first_name} {profile?.last_name}</Text>
       <LogoutButton/>
     </View>
   );

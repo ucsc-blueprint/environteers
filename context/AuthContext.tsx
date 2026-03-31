@@ -3,7 +3,8 @@ import { Session } from '@supabase/supabase-js'
 import { supabase } from '@/constants/supabase'
 
 type UserProfile = {
-  username: string
+  first_name: string
+  last_name: string
   is_admin: boolean
 }
 
@@ -36,7 +37,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const { data } = await supabase
       .from('users')
-      .select('username, is_admin')
+      .select('first_name, last_name, is_admin')
       .eq('user_id', session.user.id)
       .single();
 

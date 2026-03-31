@@ -149,7 +149,7 @@ export const Header = ({ resultsCount }: HeaderProps) => {
         {renderIcon(24, mdiBell, 'black')}
       </View>
       <Text style={styles.userText}>Ready to take action 
-        <Text style={ styles.userName}> {profile?.username}?</Text>
+        <Text style={ styles.userName}> {profile?.first_name} {profile?.last_name}?</Text>
       </Text>
       {/* Searchbar */}
       <View>

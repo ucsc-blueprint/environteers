@@ -16,7 +16,7 @@ export default function Profile() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ justifyContent: "center" }}>
       <Text style={styles.header}>Hello
-        <Text style={{ fontWeight: "bold" }}> {profile?.username}</Text>
+        <Text style={{ fontWeight: "bold" }}> {profile?.first_name} {profile?.last_name}</Text>
       </Text>
 
       <View style={styles.profilePicContainer}>

@@ -9,14 +9,16 @@ export default function Settings() {
   const { user, profile, refreshProfile } = useAuth();
 
   const handleProfileUpdate = async (
-    username: string,
+    firstName: string,
+    lastName: string,
     email: string,
     currentPassword: string,
     password: string
   ): Promise<string | null> => {
     if (!user) return "User not logged in";
 
-    const trimmedUsername = username.trim();
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
     let passwordChanged = false;
 
     // Must fill out both current and new password, not just one
@@ -41,19 +43,31 @@ export default function Settings() {
       }
     }
 
-    // Update username
-    if (trimmedUsername !== "" && trimmedUsername !== profile?.username) {
-      const { error } = await supabase
-        .from("users")
-        .update({ username: trimmedUsername })
-        .eq("user_id", user.id);
+    // Update name
+    if (trimmedFirstName !== "" || trimmedLastName !== "") {
+      const updates = {};
 
-      if (error) {
-        Toast.show({
-          type: 'error',
-          text1: 'Failed to update username',
-        });
-        return null;
+      if (trimmedFirstName !== "" && trimmedFirstName !== profile?.first_name) {
+        updates.first_name = trimmedFirstName;
+      }
+
+      if (trimmedLastName !== "" && trimmedLastName !== profile?.last_name) {
+        updates.last_name = trimmedLastName;
+      }
+
+      if (Object.keys(updates).length > 0) {
+        const { error } = await supabase
+          .from("users")
+          .update(updates)
+          .eq("user_id", user.id);
+
+        if (error) {
+          Toast.show({
+            type: 'error',
+            text1: 'Failed to update name',
+          });
+          return null;
+        }
       }
     }
 
@@ -73,7 +87,7 @@ export default function Settings() {
       }
     }
 
-    // Update password AFTER username and email
+    // Update password AFTER name and email
     if (password) {
       const { error } = await supabase.auth.updateUser({
         password: password,
@@ -112,7 +126,8 @@ export default function Settings() {
     <SafeAreaView style={{ flex: 1, backgroundColor: '#EAF2F6' }}>
       <ProfileSettings
         onSubmit={handleProfileUpdate}
-        initialUsername={profile?.username ?? ""}
+        initialFirstName={profile?.first_name ?? ""}
+        initialLastName={profile?.last_name ?? ""}
         initialEmail={user?.email ?? ""}
       />
     </SafeAreaView>
