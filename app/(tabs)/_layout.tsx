@@ -51,6 +51,16 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="map"
+        options={{
+          title: 'Map',
+          href: null,
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="map" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="newsletter"
         options={{
           title: 'Newsletter',

@@ -170,7 +170,9 @@ export default function Volunteer() {
         ))}
       </ScrollView>
         <View style={styles.mapBackground}>
-          <MaterialCommunityIcons name="map" size={30} color={'#0282D3'}></MaterialCommunityIcons>          
+          <Pressable onPress={() => router.push('/(tabs)/map')}>
+            <MaterialCommunityIcons name="map" size={30} color={'#0282D3'} />
+          </Pressable>
         </View>
     </LinearGradient>
   );
