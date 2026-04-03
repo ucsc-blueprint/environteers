@@ -46,78 +46,18 @@ export default function Map() {
   const snapPoints = useMemo(() => ['12%', '50%', '90%'], []);
 
   async function geocodeAddress(address: string) {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
-    );
+    const res = await Location.geocodeAsync(address);
 
-    if (!res.ok) {
-      console.error('Failed to geocode', res.status);
+    if (!res || res.length === 0) {
+      console.error('Failed to geocode', res);
       return null;
     }
 
-    const data = await res.json();
-
-    if (data.length > 0) {
-      console.log(data)
-      return {
-        latitude: parseFloat(data[0].lat),
-        longitude: parseFloat(data[0].lon),
-      };
-    }
-
-    return null;
-  }
-
-  // get eco action locations
-  useEffect(() => {
-    const fetchEcoActionLocations = async () => {
-      const { data, error } = await supabase
-        .from('inperson_ecoactions')
-        .select('*');
-      if (error) {
-        console.error(error);
-        return;
-      }
-
-      const markers: any[] = [];
-
-      // check if coords are stored in supabase
-      // if not, reverse geocode the address from supabase and store it
-      for (const item of data) {
-        let coords : {latitude: number, longitude: number} | null = null;
-        if (item.location_latitude && item.location_longitude) {
-          coords = {latitude: item.location_latitude, longitude: item.location_longitude};
-        } else {
-          coords = await geocodeAddress(item.location);
-          if (coords) {
-            const { error: updateError } = await supabase
-              .from('inperson_ecoactions')
-              .update({ location_latitude: coords.latitude, location_longitude: coords.longitude })
-              .eq('id', item.id);
-
-            if (updateError) console.error('Error updating supabase coordinates:', updateError);
-          }
-
-          // this is just to help with the openstreetmap limit
-          await new Promise((resolve) => setTimeout(resolve, 1500));
-        }
-        
-        if (coords && !isNaN(coords.latitude) && !isNaN(coords.longitude)) {
-          markers.push({
-            id: item.id,
-            latitude: coords.latitude,
-            longitude: coords.longitude,
-            title: item.title,
-            description: item.summary,
-          });
-        }
-      }
-
-      setMarkers(markers);
+    return {
+        latitude: res[0].latitude,
+        longitude: res[0].longitude,
     };
-
-    fetchEcoActionLocations();
-  }, []);
+  }
 
   // Request user location
   useEffect(() => {
@@ -134,11 +74,48 @@ export default function Map() {
     const fetchMapData = async () => {
       const { data: event } = await supabase
         .from("events")
-        .select("id, title, start_time, end_time, location, cover_photo, google_calendar_link, description, sign_up_link");
+        .select("*");
   
       const { data: ecoInPerson } = await supabase
-        .from("inperson_eco-actions")
-        .select("id, created_at, cover_photo, title, end_date, sign_up_link, summary, start_date, location");
+        .from("inperson_ecoactions")
+        .select("*");
+
+      const markers: any[] = []
+      
+      const processLocation = async (item: any, type: "event" | "ecoaction") => {
+        let coords = null;
+        if (item.location_longitude && item.location_latitude) {
+          coords = {
+            latitude: item.location_latitude,
+            longitude: item.location_longitude,
+          };
+        } else {
+          coords = await geocodeAddress(item.location);
+        }
+
+        if (coords) {
+          const table = type === "event" ? "events" : "inperson_ecoactions"
+          const {error} = await supabase
+            .from(table)
+            .update({
+              location_latitude: coords.latitude,
+              location_longitude: coords.longitude,
+            })
+            .eq("id", item.id);
+
+          if (error) {
+            console.error("Error updating coordinates on supabase", error);
+          }
+        
+          markers.push({
+            id: item.id,
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+            title: item.title,
+            type,
+          });
+        }
+      };
 
       const events: Event[] = event?.map((e) => ({
         type: "event",
@@ -166,7 +143,15 @@ export default function Map() {
         summary: e.summary ?? undefined,
       })) ?? [];
 
+      for (const e of event || []) {
+        await processLocation(e, "event");
+      }
+      for (const e of ecoInPerson || []) {
+        await processLocation(e, "ecoaction");
+      }
+
       setItems([...events, ...inPersonEcoItems]);
+      setMarkers(markers);
     }
 
     getLocation();
@@ -196,6 +181,7 @@ export default function Map() {
               latitude: marker.latitude,
               longitude: marker.longitude,
             }}
+            pinColor={marker.type === "event" ? "#437CA1" : "#79B128"}
           />
         ))}
       </MapView>
