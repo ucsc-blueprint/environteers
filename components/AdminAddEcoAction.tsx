@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router';
 import { supabase } from '@/constants/supabase';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { RichEditor, RichToolbar } from 'react-native-pell-rich-editor';
+import { actions, RichEditor, RichToolbar } from 'react-native-pell-rich-editor';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as FileSystem from 'expo-file-system/legacy'
@@ -41,8 +41,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
     const richText = useRef<RichEditor>(null);
     const [customCampaignType, setCustomCampaignType] = useState('')
 
-
-    const[uploading, setUploading] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
     const router = useRouter();
     const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
 
@@ -64,7 +63,6 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
       const uploadImage = async(uri: string) => { // returns the public url for the supabase stroage
         if (!uri || !coverPhoto) return;
 
-        setUploading(true);
         try {
           const fileName = `${Date.now()}.jpg`;
           const filePath = `user_uploads/${fileName}`;
@@ -91,9 +89,6 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
             console.error(error);
             alert('Upload failed');
           }
-            finally {
-            setUploading(false);  
-          }
         };
       
       const resetAll = () => 
@@ -119,6 +114,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
     }
 
     const handleInsert = async () => {
+        setSubmitting(true);
         if (!title)
         {
           Alert.alert("Title required");
@@ -128,9 +124,6 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         {
           Alert.alert("Description required");
           return;
-        }
-        if (!host){
-          Alert.alert("Host organization required")
         }
         if (typeOfAction === "in-person" && !location)
         {
@@ -152,11 +145,12 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
           Alert.alert("Campaign type required for online eco actions");
           return;
         }
-        const imageUrl = await uploadImage(coverPhoto)
 
+        try {
+          const imageUrl = await uploadImage(coverPhoto)
+          if (coverPhoto && !imageUrl) return;
 
-        if (typeOfAction === "online")
-        {
+          if (typeOfAction === "online") {
             const { error } = await supabase.from("online_ecoactions").insert({
               cover_photo: imageUrl,
               title: title,
@@ -166,34 +160,33 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
               host_organization: host,
             });
             if (error) {
-                Alert.alert(error.message)
-            } 
-            else {
-                Alert.alert("Eco action created successfully")
+              Alert.alert(error.message);
+              return;
             }
           }
-        else if (typeOfAction === "in-person")
-          {
+          else if (typeOfAction === "in-person") {
             const { error } = await supabase.from("inperson_ecoactions").insert({
-                  title,
-                  summary: description,
-                  start_date: startTime!.toISOString(),
-                  end_date: endTime!.toISOString(),
-                  location: location,
-                  sign_up_link: link,
-                  cover_photo: imageUrl,
-                  host_organization: host,
-                });
+              title,
+              summary: description,
+              start_date: startTime!.toISOString(),
+              end_date: endTime!.toISOString(),
+              location: location,
+              sign_up_link: link,
+              cover_photo: imageUrl,
+              host_organization: host,
+            });
             if (error) {
-                Alert.alert(error.message)
+                Alert.alert(error.message);
+                return;
             } 
-            else {
-                Alert.alert("Eco action created successfully")
-            }
           }
-    
-        resetAll()
+
+        Alert.alert("Eco action created successfully");
+        resetAll();
+      } finally {
+        setSubmitting(false);
       }
+    };
 
     return (
     <SafeAreaView style={{ flex: 1 }} edges = {['bottom']}>
@@ -216,8 +209,12 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
 
         <Text style={styles.headerTitle}>Add {typeOfAction} eco-action</Text>
 
-        <Pressable style={styles.rightButton} onPress={() => {handleInsert()}}>
-          <Text style={styles.saveText}>Save</Text>
+        <Pressable
+          style={[styles.rightButton, submitting && { opacity: 0.5}]}
+          onPress={() => handleInsert()}
+          disabled={submitting}
+        >
+          <Text style={styles.saveText}>{submitting ? 'Saving...' : 'Save'}</Text>
         </Pressable>
       </View>
       <View>
@@ -455,7 +452,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
 
         <RichToolbar
           editor={richText}
-          actions={['bold', 'italic', 'underline', 'unorderedList', 'orderedList', 'createlink']}
+          actions={['bold', 'italic', 'underline', 'unorderedList', 'orderedList', actions.insertLink]}
           style={{ backgroundColor: '#eee', borderRadius: 10, marginBottom: 8 }}
         />
 
