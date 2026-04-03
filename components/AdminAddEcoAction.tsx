@@ -34,7 +34,6 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
 
 
     //ui handling
-    const [mode, setMode] = useState<'date' | 'time'>("date");
     const [host, setHost] = useState("");
     const [showPicker, setShowPicker] = useState(false);
     const [pickerMode, setPickerMode] = useState<"date" | "start" |"end">("date");
@@ -120,7 +119,6 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
     }
 
     const handleInsert = async () => {
-        const imageUrl = await uploadImage(coverPhoto)
         if (!title)
         {
           Alert.alert("Title required");
@@ -128,8 +126,11 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         }
         if (!description)
         {
-          Alert.alert("description required");
+          Alert.alert("Description required");
           return;
+        }
+        if (!host){
+          Alert.alert("Host organization required")
         }
         if (typeOfAction === "in-person" && !location)
         {
@@ -151,7 +152,8 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
           Alert.alert("Campaign type required for online eco actions");
           return;
         }
-        
+        const imageUrl = await uploadImage(coverPhoto)
+
 
         if (typeOfAction === "online")
         {
@@ -161,7 +163,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
               campaign_type: campaignType === 'Custom' ? customCampaignType : campaignType,
               email_link: link,
               summary: description,
-            
+              host_organization: host,
             });
             if (error) {
                 Alert.alert(error.message)
@@ -180,6 +182,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
                   location: location,
                   sign_up_link: link,
                   cover_photo: imageUrl,
+                  host_organization: host,
                 });
             if (error) {
                 Alert.alert(error.message)
@@ -211,7 +214,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
           <Ionicons name="close" size={28} color="black" />
         </Pressable>
 
-        <Text style={styles.headerTitle}>Add Event</Text>
+        <Text style={styles.headerTitle}>Add {typeOfAction} eco-action</Text>
 
         <Pressable style={styles.rightButton} onPress={() => {handleInsert()}}>
           <Text style={styles.saveText}>Save</Text>
@@ -452,7 +455,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
 
         <RichToolbar
           editor={richText}
-          actions={['bold', 'italic', 'underline', 'unorderedList', 'orderedList']}
+          actions={['bold', 'italic', 'underline', 'unorderedList', 'orderedList', 'createlink']}
           style={{ backgroundColor: '#eee', borderRadius: 10, marginBottom: 8 }}
         />
 
