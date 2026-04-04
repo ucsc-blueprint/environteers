@@ -1,5 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, Text, View, ScrollView, StyleSheet, Image } from "react-native";
+import { LogoutButton } from "@/components/LogoutButton";
 import { ProfileButtons } from "@/components/ProfileButtons";
 import { useAuth } from '@/context/AuthContext';
 import { Redirect } from 'expo-router';
@@ -10,7 +11,7 @@ export default function Profile() {
     return <ActivityIndicator size="large" color="#000000" />
   }
   if (!profile) {
-    return <Redirect href="/(tabs)/home" />
+    return <Redirect href="/" />
   }
 
   return (
@@ -34,6 +35,8 @@ export default function Profile() {
       <View style={styles.buttonsContainer}>
         <ProfileButtons />
       </View>
+
+      <LogoutButton/>
     </ScrollView>
   );
 }
