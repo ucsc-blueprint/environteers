@@ -30,6 +30,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
     const [campaignType, setCampaignType] = useState("");
     const [location, setLocation] = useState("");
     const [link, setLink] = useState("");
+    const [googleCalendarLink, setGoogleCalendarLink] = useState("");
     const [calendar, setCalendar] = useState("")
     const BUCKETNAME = 'eco-action images'
 
@@ -275,7 +276,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
           )}
         </View>
       <View style={styles.section}>
-        {typeOfAction === "in-person" ? (
+        {typeOfAction === "in-person" || typeOfAction === "event"? (
           <Text style={styles.label}>Set a Date<Text style={{ color: "red" }}> *</Text></Text>
         ) : (
           <Text style={styles.label}>End Date {`(optional)`}</Text>
@@ -392,10 +393,19 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
       </View>
 
         <View style={styles.section}>
-          <Text style={styles.label}>Eco-Action Title<Text style={{ color: "red" }}> *</Text></Text>
+          <Text style={styles.label}>
+
+            {typeOfAction === "in-person" || typeOfAction === "online"
+              ? "Eco-Action Title"
+              : typeOfAction === "event"
+              ? "Event Title"
+              : ""}
+          <Text style={{ color: "red" }}> *</Text>
+          </Text>
           <TextInput
             style={styles.input}
-            placeholder="Event"
+            placeholder={typeOfAction === "event" ? "Enter event title" : "Enter eco-action title"}
+            placeholderTextColor="#888"
             value={title}
             onChangeText={setTitle}
           />
@@ -405,18 +415,20 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
           <Text style={styles.label}>Host organization</Text>
           <TextInput
             style={styles.input}
-            placeholder="Host Organization"
+            placeholder="Enter Host Organization"
+            placeholderTextColor="#888"
             value={host}
             onChangeText={setHost}
           />
         </View>
-        {(typeOfAction === "in-person" || typeOfAction === "eventh") && ( // location for in person
+        {(typeOfAction === "in-person" || typeOfAction === "event") && ( // location for in person
         <View style={styles.section}>
           
           <Text style={styles.label}>Location<Text style={{ color: "red" }}> *</Text></Text>
           <TextInput
             style={styles.input}
-            placeholder="Location"
+            placeholder="Select Location Address"
+            placeholderTextColor= "#888"
             value={location}
             onChangeText={setLocation}
           />
@@ -424,11 +436,13 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         )}
         
         <View style={styles.section}>
-          
-          <Text style={styles.label}>Link<Text style={{ color: "red" }}> *</Text></Text>
+          <Text style={styles.label}>
+            {typeOfAction === "online" ? "Link/Email" : "Sign Up Link"}
+          </Text> 
           <TextInput
             style={styles.input}
-            placeholder= {(typeOfAction === "in-person" || typeOfAction === "event") ? "Sign up Link" : "Add link or email"}
+            placeholder= {(typeOfAction === "in-person" || typeOfAction === "event") ? "Paste Sign up Link" : "Add link or email"}
+            placeholderTextColor="#888"
             value={link}
             onChangeText={setLink}
           />
@@ -436,12 +450,13 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         
         {typeOfAction === "event" && (
         <View style={styles.section}>
-          <Text style={styles.label}>Google Calendar Link<Text style={{ color: "red" }}> *</Text></Text>
+          <Text style={styles.label}>Google Calendar Link</Text>
           <TextInput
             style={styles.input}
-            placeholder= "Calendar Link"
-            value={link}
-            onChangeText={setLink}
+            placeholder= "Paste Calendar Link"
+            placeholderTextColor= "#888"
+            value={googleCalendarLink}
+            onChangeText={setGoogleCalendarLink}
           />
         </View>
         )}
@@ -498,7 +513,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
           </View>
           
           )}
-
+        <Text style={styles.label}>Description<Text style={{ color: "red" }}> *</Text></Text>         
         <RichToolbar
           editor={richText}
           actions={['bold', 'italic', 'underline', 'unorderedList', 'orderedList', actions.insertLink]}
