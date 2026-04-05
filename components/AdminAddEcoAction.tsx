@@ -235,12 +235,16 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         <Pressable style = {styles.leftButton} onPress={() => handleCancel()}>
           <Ionicons name="close" size={28} color="black" />
         </Pressable>
-        (typeOfAction === "in-person" || typeOfAction === "online") ? (
-          <Text style={styles.headerTitle}>Add {typeOfAction} eco-action</Text>
-        )
-        (typeOfAction === "event") ? (
-          <Text style={styles.headerTitle}>Add event</Text>
-        )
+        {typeOfAction === "in-person" || typeOfAction === "online" ? (
+
+            <Text style={styles.headerTitle}>Add {typeOfAction} eco-action</Text>
+          ) 
+          : typeOfAction === "event" ? (
+            <Text style={styles.headerTitle}>Add event</Text>
+          )
+          : null
+        }
+
         <Pressable
           style={[styles.rightButton, submitting && { opacity: 0.5}]}
           onPress={() => handleInsert()}
@@ -248,7 +252,8 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         >
           <Text style={styles.saveText}>{submitting ? 'Saving...' : 'Save'}</Text>
         </Pressable>
-      </View>
+    </View>
+    
       <View>
         <View style={styles.photoCard}>
           {coverPhoto ? (
