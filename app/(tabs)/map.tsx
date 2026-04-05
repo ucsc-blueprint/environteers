@@ -72,13 +72,21 @@ export default function Map() {
     };
 
     const fetchMapData = async () => {
-      const { data: event } = await supabase
+      const { data: event, error: eventError } = await supabase
         .from("events")
         .select("*");
+
+      if (eventError) {
+        console.error("Error fetching events from supabase", eventError);
+      }
   
-      const { data: ecoInPerson } = await supabase
+      const { data: ecoInPerson, error: ecoInPersonError } = await supabase
         .from("inperson_ecoactions")
         .select("*");
+
+      if (ecoInPersonError) {
+        console.error("Error fetching in-person eco-actions from supabase", ecoInPersonError);
+      }
 
       const markers: any[] = []
       
