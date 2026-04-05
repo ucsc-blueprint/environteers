@@ -87,8 +87,6 @@ export default function Map() {
       if (ecoInPersonError) {
         console.error("Error fetching in-person eco-actions from supabase", ecoInPersonError);
       }
-
-      const markers: any[] = []
       
       const processLocation = async (item: any, type: "event" | "ecoaction") => {
         let coords = null;
@@ -116,15 +114,15 @@ export default function Map() {
           }
         }
 
-        if (coords) {
-          markers.push({
-            id: item.id,
-            latitude: coords.latitude,
-            longitude: coords.longitude,
-            title: item.title,
-            type,
-          });
-        }
+        if (!coords) return null;
+
+        return {
+          id: item.id,
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          title: item.title,
+          type,
+        };
       };
 
       const events: Event[] = event?.map((e) => ({
@@ -153,12 +151,12 @@ export default function Map() {
         summary: e.summary ?? undefined,
       })) ?? [];
 
-      for (const e of event || []) {
-        await processLocation(e, "event");
-      }
-      for (const e of ecoInPerson || []) {
-        await processLocation(e, "ecoaction");
-      }
+      const markerResults = await Promise.all([
+        ...((event || []).map((e) => processLocation(e, "event"))),
+        ...((ecoInPerson || []).map((e) => processLocation(e, "ecoaction"))),
+      ])
+
+      const markers = markerResults.filter((m) => m !== null);
 
       setItems([...events, ...inPersonEcoItems]);
       setMarkers(markers);
