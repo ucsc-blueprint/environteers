@@ -5,34 +5,8 @@ import * as Location from 'expo-location';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { supabase } from '@/constants/supabase';
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
-import { EcoFeed } from '@/components/EcoFeed';
+import { EcoFeed, InPersonEcoAction, Event } from '@/components/EcoFeed';
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-
-type InPersonEcoAction = {
-  type: "inperson",
-  id: string,
-  created_at: string,
-  cover_photo?: string,
-  title: string,
-  location?: string,
-  start_date: Date,
-  end_date: Date,
-  sign_up_link: string,
-  summary?: string,
-}
-
-type Event = {
-  type: "event",
-  id: string,
-  title: string,
-  start_time?: Date,
-  end_time?: Date,
-  location?: string,
-  cover_photo?: string,
-  google_calendar_link?: string,
-  description?: string,
-  sign_up_link?: string,
-}
 
 type MapItem = InPersonEcoAction | Event;
 
