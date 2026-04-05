@@ -18,18 +18,19 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [eventDate, setEventDate] = useState<Date | null>(
-      typeOfAction === "in-person" ? new Date() : null
+      (typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null
     );
     const [startTime, setStartTime] = useState<Date | null>(
-      typeOfAction === "in-person" ? new Date() : null
+      (typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null
     );
     const [endTime, setEndTime] = useState<Date | null>(
-      typeOfAction === "in-person" ? new Date() : null
+      (typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null
     );
     const [coverPhoto, setCoverPhoto] = useState("");
     const [campaignType, setCampaignType] = useState("");
     const [location, setLocation] = useState("");
     const [link, setLink] = useState("");
+    const [calendar, setCalendar] = useState("")
     const BUCKETNAME = 'eco-action images'
 
 
@@ -102,9 +103,9 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         setLink("")
         setCampaignType("")
         setCustomCampaignType("")
-        setEventDate(typeOfAction === "in-person" ? new Date() : null);
-        setStartTime(typeOfAction === "in-person" ? new Date() : null);
-        setEndTime(typeOfAction === "in-person" ? new Date() : null);
+        setEventDate((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
+        setStartTime((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
+        setEndTime((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
         if (richText.current)
           richText.current.setContentHTML("");
       }
@@ -130,6 +131,10 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
           Alert.alert("Location required for in-person eco actions");
           return;
         }
+        if (typeOfAction === "event" && !location){
+          Alert.alert("Location required for events");
+          return;
+        }
         if (typeOfAction === "online" && !link)
         {
           Alert.alert("Link required for online eco actions");
@@ -138,6 +143,11 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         if (typeOfAction === "in-person" && (!eventDate || !startTime || !endTime)) 
           {
             Alert.alert("Date and times required for in-person eco actions");
+            return;
+          }
+        if (typeOfAction === "event" && (!eventDate || !startTime || !endTime)) 
+          {
+            Alert.alert("Date and times required for events");
             return;
           }
         if (typeOfAction === "online" && (!campaignType || (campaignType === "Custom" && !customCampaignType))) 
@@ -163,6 +173,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
               Alert.alert(error.message);
               return;
             }
+            Alert.alert("Eco action created successfully");
           }
           else if (typeOfAction === "in-person") {
             const { error } = await supabase.from("inperson_ecoactions").insert({
@@ -178,10 +189,28 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
             if (error) {
                 Alert.alert(error.message);
                 return;
-            } 
+            }
+            Alert.alert("Eco action created successfully");
+          }
+          else if (typeOfAction === "event") {
+            const { error } = await supabase.from("events").insert({
+              title,
+              summary: description,
+              start_date: startTime!.toISOString(),
+              end_date: endTime!.toISOString(),
+              location: location,
+              sign_up_link: link,
+              cover_photo: imageUrl,
+              host_organization: host,
+              google_calendar_link: calendar,
+            });
+            if (error) {
+                Alert.alert(error.message);
+                return;
+            }
+          Alert.alert("Event created successfully");
           }
 
-        Alert.alert("Eco action created successfully");
         resetAll();
       } finally {
         setSubmitting(false);
@@ -206,9 +235,12 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         <Pressable style = {styles.leftButton} onPress={() => handleCancel()}>
           <Ionicons name="close" size={28} color="black" />
         </Pressable>
-
-        <Text style={styles.headerTitle}>Add {typeOfAction} eco-action</Text>
-
+        (typeOfAction === "in-person" || typeOfAction === "online") ? (
+          <Text style={styles.headerTitle}>Add {typeOfAction} eco-action</Text>
+        )
+        (typeOfAction === "event") ? (
+          <Text style={styles.headerTitle}>Add event</Text>
+        )
         <Pressable
           style={[styles.rightButton, submitting && { opacity: 0.5}]}
           onPress={() => handleInsert()}
@@ -258,7 +290,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
             </Text>
           </Pressable>
           
-          {typeOfAction === "in-person" && ( // pick start time
+          {(typeOfAction === "in-person" || typeOfAction === "event") && ( // pick start time
           <Pressable
             style={[
               styles.datePill,
@@ -306,7 +338,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
               if (pickerMode === "date") {
                 setEventDate(selectedDate);
 
-                // Only update times if they exist (in-person)
+                // Only update times if they exist (in-person or event)
                 if (startTime) {
                   const newStart = new Date(startTime);
                   newStart.setFullYear(
@@ -373,7 +405,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
             onChangeText={setHost}
           />
         </View>
-        {typeOfAction === "in-person" && ( // location for in person
+        {(typeOfAction === "in-person" || typeOfAction === "eventh") && ( // location for in person
         <View style={styles.section}>
           
           <Text style={styles.label}>Location<Text style={{ color: "red" }}> *</Text></Text>
@@ -391,11 +423,23 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
           <Text style={styles.label}>Link<Text style={{ color: "red" }}> *</Text></Text>
           <TextInput
             style={styles.input}
-            placeholder= {typeOfAction === "in-person" ? "Sign up Link" : "Add link or email"}
+            placeholder= {(typeOfAction === "in-person" || typeOfAction === "event") ? "Sign up Link" : "Add link or email"}
             value={link}
             onChangeText={setLink}
           />
         </View>
+        
+        {typeOfAction === "event" && (
+        <View style={styles.section}>
+          <Text style={styles.label}>Google Calendar Link<Text style={{ color: "red" }}> *</Text></Text>
+          <TextInput
+            style={styles.input}
+            placeholder= "Calendar Link"
+            value={link}
+            onChangeText={setLink}
+          />
+        </View>
+        )}
 
         {typeOfAction === "online" && (
         <View style={styles.section}>
