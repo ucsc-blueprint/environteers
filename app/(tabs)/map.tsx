@@ -91,22 +91,24 @@ export default function Map() {
           };
         } else {
           coords = await geocodeAddress(item.location);
+
+          if (coords) {
+            const table = type === "event" ? "events" : "inperson_ecoactions"
+            const {error} = await supabase
+              .from(table)
+              .update({
+                location_latitude: coords.latitude,
+                location_longitude: coords.longitude,
+              })
+              .eq("id", item.id);
+
+            if (error) {
+              console.error("Error updating coordinates on supabase", error);
+            }
+          }
         }
 
         if (coords) {
-          const table = type === "event" ? "events" : "inperson_ecoactions"
-          const {error} = await supabase
-            .from(table)
-            .update({
-              location_latitude: coords.latitude,
-              location_longitude: coords.longitude,
-            })
-            .eq("id", item.id);
-
-          if (error) {
-            console.error("Error updating coordinates on supabase", error);
-          }
-        
           markers.push({
             id: item.id,
             latitude: coords.latitude,
