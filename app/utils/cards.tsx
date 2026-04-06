@@ -68,12 +68,9 @@ export async function toggleLike (
     console.log(data);
     console.log(error);
     Alert.alert('Error. Something went wrong. Please try again');
-  } else {
-    Alert.alert('Success!');
   }
 };
 
-// Adds new signup to supabase
 export async function addSignUp (
   tableName: string,
   foreign_id: string,
@@ -87,13 +84,63 @@ export async function addSignUp (
         user_id: user_id,
         signed_up: true,
         signed_up_timestamp: new Date().toISOString(),
-      }]);
+      }],
+      { onConflict: `${foreign_field_name},user_id`}
+    );
     
     if (error) { 
       console.log(data);
       console.log(error);
       Alert.alert('Error. Something went wrong. Please try again');
     }
-    Alert.alert('Success! Thank you for signing up.');
 };
 
+
+export async function addCompletion (
+  tableName: string,
+  foreign_id: string,
+  user_id: string,
+  foreign_field_name: string // Expected Values: "event_id" or "action_id"
+) {
+  const { data, error} = await supabase
+    .from(tableName)
+    .upsert([{
+        [foreign_field_name]: foreign_id,
+        user_id: user_id,
+        completed: true,
+        completed_timestamp: new Date().toISOString(),
+      }],
+      { onConflict: `${foreign_field_name},user_id`}
+    );
+    console.log('added?');
+    if (error) { 
+      console.log(data);
+      console.log(error);
+      Alert.alert('Error. Something went wrong. Please try again');
+    }
+};
+
+// Tracks external link click
+export async function addClick (
+  tableName: string,
+  foreign_id: string,
+  user_id: string,
+  foreign_field_name: string // Expected Values: "event_id" or "action_id"
+) {
+  const { data, error} = await supabase
+    .from(tableName)
+    .upsert([{
+        [foreign_field_name]: foreign_id,
+        user_id: user_id,
+        clicked: true,
+        clicked_timestamp: new Date().toISOString(),
+      }],
+      { onConflict: `${foreign_field_name},user_id`}
+    );
+    
+    if (error) { 
+      console.log(data);
+      console.log(error);
+      Alert.alert('Error. Something went wrong. Please try again');
+    }
+};

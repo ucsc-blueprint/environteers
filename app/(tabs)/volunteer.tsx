@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View, Pressable } from "react-native";
 import { Header } from "@/components/EcoFeed";
 import { useEffect, useState } from "react";
 import { supabase } from "@/constants/supabase";
@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { InPersonCardData, InPersonCard } from "@/components/InPersonCard";
 import { OnlineCardData, OnlineCard } from "@/components/OnlineCard";
 import { EventCardData, EventCard } from "@/components/EventCard";
+import { router } from "expo-router";
 
 type InPersonCardProps = {
   cardType: "in_person";
@@ -55,7 +56,6 @@ function CardRenderer({card}: { card: CardProps }) {
         <OnlineCard 
           {...card} 
           liked={card.liked} 
-          signed_up={card.signed_up} 
           completed={card.completed} 
           clicked={card.clicked}
         />

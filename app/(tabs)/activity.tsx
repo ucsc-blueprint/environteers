@@ -20,7 +20,6 @@ type OnlineCardProps = {
   cardType: "online";
   cardInfo: OnlineCardData;
   liked: boolean;
-  signed_up: boolean;
   completed: boolean;
   clicked: boolean;
 }
@@ -53,7 +52,6 @@ function CardRenderer({card}: { card: CardProps }) {
         <OnlineCard 
           {...card} 
           liked={card.liked} 
-          signed_up={card.signed_up} 
           completed={card.completed} 
           clicked={card.clicked}
         />
@@ -78,6 +76,7 @@ export default function Activity() {
   // const [inPersonUserInteractions, setInPersonUserInteractions] = useState<UserInteraction[]>([]);
   const [likedCards, setLikedCards] = useState<CardProps[]>([]);
   const [signedUpCards, setSignedUpCards] = useState<CardProps[]>([]);
+  const [completedCards, setCompletedCards] = useState<CardProps[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -109,7 +108,7 @@ export default function Activity() {
       const eventData = eventRes.data ?? [];
     
       // Values: "event", "in_person", "online"
-      const inPersonCardData: CardProps[] = (inPersonData ?? []).map(interaction => ({
+      const inPersonCardData: InPersonCardProps[] = (inPersonData ?? []).map(interaction => ({
         cardType: 'in_person',
         cardInfo: interaction["inperson_ecoactions"],
         liked: interaction.liked,
@@ -118,16 +117,15 @@ export default function Activity() {
         clicked: interaction.clicked,
       }));   
     
-      const onlineCardData: CardProps[] = (onlineData ?? []).map(interaction => ({
+      const onlineCardData: OnlineCardProps[] = (onlineData ?? []).map(interaction => ({
         cardType: 'online',
         cardInfo: interaction["online_ecoactions"],
         liked: interaction.liked,
-        signed_up: interaction.signed_up,
         completed: interaction.completed,
         clicked: interaction.clicked,
       }));    
 
-      const eventCardData: CardProps[] = (eventData ?? []).map(interaction => ({
+      const eventCardData: EventCardProps[] = (eventData ?? []).map(interaction => ({
         cardType: 'event',
         cardInfo: interaction["events"],
         liked: interaction.liked,
@@ -137,8 +135,10 @@ export default function Activity() {
       }));
 
       const fullData = [...inPersonCardData, ...onlineCardData, ...eventCardData]
+      const signedUpData = [...inPersonCardData, ...eventCardData]
       setLikedCards((fullData ?? []).filter(card => card.liked));
-      setSignedUpCards(fullData.filter(card => card.signed_up));
+      setSignedUpCards(signedUpData.filter(card => card.signed_up));
+      setCompletedCards((fullData ?? []).filter(card => card.completed));
     };
 
     fetchData();
@@ -157,6 +157,10 @@ export default function Activity() {
         ))}
         <Text>Signed Up:</Text>
         {signedUpCards?.map(card => (
+          <CardRenderer key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
+        ))}
+        <Text>Completed:</Text>
+        {completedCards?.map(card => (
           <CardRenderer key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
         ))}
       <LogoutButton/>

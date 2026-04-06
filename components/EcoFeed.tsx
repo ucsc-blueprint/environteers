@@ -1,5 +1,6 @@
 import { useAuth } from "@/context/AuthContext";
-import { View, Image, Text, CardStylesheet, Pressable, Linking, Alert } from 'react-native';
+import { View, Image, Text, Pressable, Linking, Alert } from 'react-native';
+// CardStylesheet
 import Svg, { Path } from 'react-native-svg';
 import { useState, useEffect} from "react";
 import { supabase } from "@/constants/supabase";
@@ -62,7 +63,7 @@ export const Header = ({resultsCount}: HeaderProps) => {
         {renderIcon(24, mdiBell, 'black')}
       </View>
       <Text style={CardStyles.userText}>Ready to take action 
-        <Text style={ CardStyles.userName}> {profile?.username}?</Text>
+        <Text style={ CardStyles.userName}> {profile?.first_name} {profile?.last_name}?</Text>
       </Text>
       {/* Searchbar */}
       <View>
@@ -96,7 +97,6 @@ export const EcoFeed = (card: CardProps) => {
         <OnlineCard 
           {...card} 
           liked={card.liked} 
-          signed_up={card.signed_up} 
           completed={card.completed} 
           clicked={card.clicked}
         />
