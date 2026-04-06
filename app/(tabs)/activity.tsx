@@ -46,7 +46,6 @@ function CardRenderer({card}: { card: CardProps }) {
 
 export default function Activity() {
   const { user } = useAuth()
-  // const [inPersonUserInteractions, setInPersonUserInteractions] = useState<UserInteraction[]>([]);
   const [likedCards, setLikedCards] = useState<CardProps[]>([]);
   const [signedUpCards, setSignedUpCards] = useState<CardProps[]>([]);
   const [completedCards, setCompletedCards] = useState<CardProps[]>([]);
@@ -86,7 +85,6 @@ export default function Activity() {
       const onlineData = onlineRes.data ?? [];
       const eventData = eventRes.data ?? [];
     
-      // Values: "event", "in_person", "online"
       const inPersonCardData: InPersonCardDataProps[] = (inPersonData ?? []).map(interaction => ({
         cardType: 'in_person',
         cardInfo: interaction["inperson_ecoactions"],

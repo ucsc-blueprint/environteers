@@ -1,44 +1,15 @@
 import { useAuth } from "@/context/AuthContext";
 import { View, Text, Pressable } from 'react-native';
-// CardStylesheet
 import { 
   mdiMenu,
   mdiBell,
 } from '@mdi/js';
-import { InPersonCardData, InPersonCard } from "@/components/InPersonCard";
-import { OnlineCardData, OnlineCard } from "@/components/OnlineCard";
-import { EventCardData, EventCard } from "@/components/EventCard";
 import { CardStyles } from "@/app/stylesheets/CardStyles";
+import { InPersonCard } from "@/components/InPersonCard";
+import { OnlineCard } from "@/components/OnlineCard";
+import { EventCard } from "@/components/EventCard";
+import { CardProps } from "@/app/(tabs)/volunteer";
 import { renderIcon } from "@/app/utils/cards";
-
-type InPersonCardProps = {
-  cardType: "in_person";
-  cardInfo: InPersonCardData;
-  liked: boolean;
-  signed_up: boolean;
-  completed: boolean;
-  clicked: boolean;
-}
-
-type OnlineCardProps = {
-  cardType: "online";
-  cardInfo: OnlineCardData;
-  liked: boolean;
-  signed_up: boolean;
-  completed: boolean;
-  clicked: boolean;
-}
-
-type EventCardProps = {
-  cardType: "event";
-  cardInfo: EventCardData;
-  liked: boolean;
-  signed_up: boolean;
-  completed: boolean;
-  clicked: boolean;
-}
-
-type CardProps = InPersonCardProps | OnlineCardProps | EventCardProps;
 
 type HeaderProps = {
   resultsCount: number,

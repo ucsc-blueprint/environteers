@@ -5,39 +5,12 @@ import { supabase } from "@/constants/supabase";
 import { LinearGradient } from 'expo-linear-gradient';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { useAuth } from "@/context/AuthContext";
-import { InPersonCardData, InPersonCard } from "@/components/InPersonCard";
-import { OnlineCardData, OnlineCard } from "@/components/OnlineCard";
-import { EventCardData, EventCard } from "@/components/EventCard";
+import { InPersonCard, InPersonCardDataProps } from "@/components/InPersonCard";
+import { OnlineCard, OnlineCardDataProps } from "@/components/OnlineCard";
+import { EventCard, EventCardDataProps } from "@/components/EventCard";
 import { router } from "expo-router";
 
-type InPersonCardProps = {
-  cardType: "in_person";
-  cardInfo: InPersonCardData;
-  liked: boolean;
-  signed_up: boolean;
-  completed: boolean;
-  clicked: boolean;
-}
-
-type OnlineCardProps = {
-  cardType: "online";
-  cardInfo: OnlineCardData;
-  liked: boolean;
-  signed_up: boolean;
-  completed: boolean;
-  clicked: boolean;
-}
-
-type EventCardProps = {
-  cardType: "event";
-  cardInfo: EventCardData;
-  liked: boolean;
-  signed_up: boolean;
-  completed: boolean;
-  clicked: boolean;
-}
-
-type CardProps = InPersonCardProps | OnlineCardProps | EventCardProps;
+export type CardProps = InPersonCardDataProps | OnlineCardDataProps | EventCardDataProps;
 
 function CardRenderer({card}: { card: CardProps }) {
   switch (card.cardType) {
@@ -78,7 +51,7 @@ function CardRenderer({card}: { card: CardProps }) {
 export default function Volunteer() {
   const { user } = useAuth();
   const [items, setItems] = useState<CardProps[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -114,7 +87,6 @@ export default function Volunteer() {
       const onlineData = onlineRes.data ?? [];
       const eventData = eventRes.data ?? [];
     
-      // Values: "event", "in_person", "online"
       const inPersonCardData: CardProps[] = (inPersonData ?? []).map(card => {
         const interaction = card.interactions_eco_inperson?.[0];
 
