@@ -62,7 +62,7 @@ export default function Map() {
         console.error("Error fetching in-person eco-actions from supabase", ecoInPersonError);
       }
       
-      const processLocation = async (item: any, type: "event" | "ecoaction") => {
+      const processLocation = async (item: any, type: "event" | "inperson") => {
         let coords = null;
         if (item.location_longitude && item.location_latitude) {
           coords = {
@@ -127,7 +127,7 @@ export default function Map() {
 
       const markerResults = await Promise.all([
         ...((event || []).map((e) => processLocation(e, "event"))),
-        ...((ecoInPerson || []).map((e) => processLocation(e, "ecoaction"))),
+        ...((ecoInPerson || []).map((e) => processLocation(e, "inperson"))),
       ])
 
       const markers = markerResults.filter((m) => m !== null);
@@ -157,7 +157,7 @@ export default function Map() {
       >
       {markers.map((marker) => (
           <Marker
-            key={marker.id}
+            key={`${marker.id}-${marker.type}`}
             title={marker.title}
             coordinate={{
               latitude: marker.latitude,
