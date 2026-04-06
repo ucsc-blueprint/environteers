@@ -1,39 +1,12 @@
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
 import { LogoutButton } from "@/components/LogoutButton";
 import { useAuth } from "@/context/AuthContext";
 import { useState, useEffect } from "react";
 import { supabase } from "@/constants/supabase";
-import { InPersonCardData, InPersonCard } from "@/components/InPersonCard";
-import { OnlineCardData, OnlineCard } from "@/components/OnlineCard";
-import { EventCardData, EventCard } from "@/components/EventCard";
-
-type InPersonCardProps = {
-  cardType: "in_person";
-  cardInfo: InPersonCardData;
-  liked: boolean;
-  signed_up: boolean;
-  completed: boolean;
-  clicked: boolean;
-}
-
-type OnlineCardProps = {
-  cardType: "online";
-  cardInfo: OnlineCardData;
-  liked: boolean;
-  completed: boolean;
-  clicked: boolean;
-}
-
-type EventCardProps = {
-  cardType: "event";
-  cardInfo: EventCardData;
-  liked: boolean;
-  signed_up: boolean;
-  completed: boolean;
-  clicked: boolean;
-}
-
-type CardProps = InPersonCardProps | OnlineCardProps | EventCardProps;
+import { InPersonCard, InPersonCardDataProps } from "@/components/InPersonCard";
+import { OnlineCard, OnlineCardDataProps } from "@/components/OnlineCard";
+import { EventCard, EventCardDataProps } from "@/components/EventCard";
+import { CardProps } from "./volunteer";
 
 function CardRenderer({card}: { card: CardProps }) {
   switch (card.cardType) {
@@ -77,10 +50,16 @@ export default function Activity() {
   const [likedCards, setLikedCards] = useState<CardProps[]>([]);
   const [signedUpCards, setSignedUpCards] = useState<CardProps[]>([]);
   const [completedCards, setCompletedCards] = useState<CardProps[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user?.id) return;
+      setLoading(true);
+
+      if (!user?.id) {
+        setLoading(false);
+        return;
+      };
 
       const [inPersonRes, onlineRes, eventRes] = await Promise.all([
         supabase
@@ -108,7 +87,7 @@ export default function Activity() {
       const eventData = eventRes.data ?? [];
     
       // Values: "event", "in_person", "online"
-      const inPersonCardData: InPersonCardProps[] = (inPersonData ?? []).map(interaction => ({
+      const inPersonCardData: InPersonCardDataProps[] = (inPersonData ?? []).map(interaction => ({
         cardType: 'in_person',
         cardInfo: interaction["inperson_ecoactions"],
         liked: interaction.liked,
@@ -117,7 +96,7 @@ export default function Activity() {
         clicked: interaction.clicked,
       }));   
     
-      const onlineCardData: OnlineCardProps[] = (onlineData ?? []).map(interaction => ({
+      const onlineCardData: OnlineCardDataProps[] = (onlineData ?? []).map(interaction => ({
         cardType: 'online',
         cardInfo: interaction["online_ecoactions"],
         liked: interaction.liked,
@@ -125,7 +104,7 @@ export default function Activity() {
         clicked: interaction.clicked,
       }));    
 
-      const eventCardData: EventCardProps[] = (eventData ?? []).map(interaction => ({
+      const eventCardData: EventCardDataProps[] = (eventData ?? []).map(interaction => ({
         cardType: 'event',
         cardInfo: interaction["events"],
         liked: interaction.liked,
@@ -139,28 +118,26 @@ export default function Activity() {
       setLikedCards((fullData ?? []).filter(card => card.liked));
       setSignedUpCards(signedUpData.filter(card => card.signed_up));
       setCompletedCards((fullData ?? []).filter(card => card.completed));
+      setLoading(false);
     };
 
     fetchData();
-  }, [user?.id, likedCards, signedUpCards]);
+  }, [user?.id]);
 
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
-        {/* <Text>Activity</Text>
-        <Text>Requires Action</Text>
-        <Text>Upcoming</Text> */}
-        {/* <Text>Past Activity</Text> */}
+        { loading && <ActivityIndicator size="large" color="#0000ff" />}
         <Text>Likes:</Text>
-        {likedCards?.map(card => (
+        { !loading && likedCards?.map(card => (
           <CardRenderer key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
         ))}
         <Text>Signed Up:</Text>
-        {signedUpCards?.map(card => (
+        { !loading && signedUpCards?.map(card => (
           <CardRenderer key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
         ))}
         <Text>Completed:</Text>
-        {completedCards?.map(card => (
+        { !loading && completedCards?.map(card => (
           <CardRenderer key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
         ))}
       <LogoutButton/>

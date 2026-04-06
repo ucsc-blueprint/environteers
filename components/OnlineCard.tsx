@@ -1,5 +1,5 @@
 import { useAuth } from "@/context/AuthContext";
-import { View, Text, Pressable, Linking, Alert } from 'react-native';
+import { View, Text, Pressable, Linking } from 'react-native';
 import { useState} from "react";
 import { 
   mdiListBoxOutline,
@@ -9,7 +9,6 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
 import { renderIcon, renderCoverPhoto, toggleLike, addClick, addCompletion } from "@/app/utils/cards";
-
 
 export type OnlineCardData = {
   id: string,

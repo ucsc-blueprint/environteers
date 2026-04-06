@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View, Pressable } from "react-native";
+import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator } from "react-native";
 import { Header } from "@/components/EcoFeed";
 import { useEffect, useState } from "react";
 import { supabase } from "@/constants/supabase";
@@ -78,10 +78,16 @@ function CardRenderer({card}: { card: CardProps }) {
 export default function Volunteer() {
   const { user } = useAuth();
   const [items, setItems] = useState<CardProps[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user?.id) return;
+      setLoading(true);
+
+      if (!user?.id) {
+        setLoading(false);
+        return;
+      };
 
       const [inPersonRes, onlineRes, eventRes] = await Promise.all([
         supabase
@@ -150,8 +156,8 @@ export default function Volunteer() {
 
       const fullData = [...inPersonCardData, ...onlineCardData, ...eventCardData]
       setItems(fullData);
+      setLoading(false);
     };
-
     fetchData();
   }, [user?.id]);
 
@@ -164,8 +170,10 @@ export default function Volunteer() {
         style={styles.gradient}
       >
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
+        
         <Header resultsCount={items.length}/>
-        { items.map((card) => (
+        { loading && <ActivityIndicator size="large" color="#0000ff" />}
+        { !loading && items.map((card) => (
           <CardRenderer key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
         ))}
       </ScrollView>
