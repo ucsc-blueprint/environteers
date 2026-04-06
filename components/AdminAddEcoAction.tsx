@@ -31,7 +31,6 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
     const [location, setLocation] = useState("");
     const [link, setLink] = useState("");
     const [googleCalendarLink, setGoogleCalendarLink] = useState("");
-    const [calendar, setCalendar] = useState("")
     const BUCKETNAME = 'eco-action images'
 
 
@@ -178,7 +177,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
           }
           else if (typeOfAction === "in-person") {
             const { error } = await supabase.from("inperson_ecoactions").insert({
-              title,
+              title: title,
               summary: description,
               start_date: startTime!.toISOString(),
               end_date: endTime!.toISOString(),
@@ -195,15 +194,15 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
           }
           else if (typeOfAction === "event") {
             const { error } = await supabase.from("events").insert({
-              title,
-              summary: description,
-              start_date: startTime!.toISOString(),
-              end_date: endTime!.toISOString(),
+              title: title,
+              description: description,
+              start_time: startTime!.toISOString(),
+              end_time: endTime!.toISOString(),
               location: location,
               sign_up_link: link,
               cover_photo: imageUrl,
               host_organization: host,
-              google_calendar_link: calendar,
+              google_calendar_link: googleCalendarLink,
             });
             if (error) {
                 Alert.alert(error.message);
