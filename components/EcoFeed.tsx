@@ -42,7 +42,7 @@ export const Header = ({resultsCount}: HeaderProps) => {
     );
 };
 
-export const EcoFeed = (card: CardProps) => {
+export const EcoFeed = ({card}: { card: CardProps }) => {
   switch (card.cardType) {
     case "in_person":
       return (

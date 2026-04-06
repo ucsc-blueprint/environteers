@@ -3,46 +3,11 @@ import { LogoutButton } from "@/components/LogoutButton";
 import { useAuth } from "@/context/AuthContext";
 import { useState, useEffect } from "react";
 import { supabase } from "@/constants/supabase";
-import { InPersonCard, InPersonCardDataProps } from "@/components/InPersonCard";
-import { OnlineCard, OnlineCardDataProps } from "@/components/OnlineCard";
-import { EventCard, EventCardDataProps } from "@/components/EventCard";
+import { InPersonCardDataProps } from "@/components/InPersonCard";
+import { OnlineCardDataProps } from "@/components/OnlineCard";
+import { EventCardDataProps } from "@/components/EventCard";
 import { CardProps } from "./volunteer";
-
-function CardRenderer({card}: { card: CardProps }) {
-  switch (card.cardType) {
-    case "in_person":
-      return (
-        <InPersonCard 
-          {...card} 
-          liked={card.liked} 
-          signed_up={card.signed_up} 
-          completed={card.completed} 
-          clicked={card.clicked}
-        />
-      );
-    case "online":
-      return (
-        <OnlineCard 
-          {...card} 
-          liked={card.liked} 
-          completed={card.completed} 
-          clicked={card.clicked}
-        />
-      );
-    case "event":
-      return (
-        <EventCard 
-          {...card} 
-          liked={card.liked} 
-          signed_up={card.signed_up} 
-          completed={card.completed} 
-          clicked={card.clicked}
-        />
-      );
-    default:
-      return null;
-  }
-}
+import { EcoFeed } from "@/components/EcoFeed";
 
 export default function Activity() {
   const { user } = useAuth()
@@ -128,15 +93,15 @@ export default function Activity() {
         { loading && <ActivityIndicator size="large" color="#0000ff" />}
         <Text>Likes:</Text>
         { !loading && likedCards?.map(card => (
-          <CardRenderer key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
+          <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
         ))}
         <Text>Signed Up:</Text>
         { !loading && signedUpCards?.map(card => (
-          <CardRenderer key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
+          <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
         ))}
         <Text>Completed:</Text>
         { !loading && completedCards?.map(card => (
-          <CardRenderer key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
+          <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
         ))}
       <LogoutButton/>
     </ScrollView>
