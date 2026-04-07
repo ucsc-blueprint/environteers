@@ -12,14 +12,14 @@ type MapItem = InPersonEcoAction | Event;
 
 interface MapMarkerProps {
   coordinate: LatLng;
-  title: string;
   type: string;
+  onPress: () => void;
 }
 
-const MapMarker = ({ coordinate, title, type }: MapMarkerProps) => {
+const MapMarker = ({ coordinate, type, onPress }: MapMarkerProps) => {
   const displayType = type === "event" ? "Event" : "Eco-Action";
     return (
-      <Marker coordinate={coordinate} anchor={{x: 0.5, y: 1}} centerOffset={{x: 0, y: -23}}>
+      <Marker coordinate={coordinate} anchor={{x: 0.5, y: 1}} centerOffset={{x: 0, y: -23}} onPress={onPress}>
         <View
           style={styles.markerContainer}>
           <View style={type === "event" ? styles.bubbleEvent : styles.bubbleEcoAction}>
@@ -36,11 +36,27 @@ export default function Map() {
   const [markers, setMarkers] = useState<any[]>([]);
   const [items, setItems] = useState<MapItem[]>([]);
   const [search, setSearch] = useState("");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const flatListRef = useRef<any>(null);
   const snapPoints = useMemo(() => ['12%', '50%', '90%'], []);
 
-  
+  const handleMarkerPress = (id: string, type: string) => {
+    bottomSheetRef.current?.expand();
+    const index = filteredItems.findIndex(
+      item => item.id === id && item.type === type
+    );
+    setSelectedId(`${id}-${type}`);
+    setTimeout(() => {
+      flatListRef.current?.scrollToIndex({
+        index,
+        animated: true,
+        viewPosition: 0
+      });
+      // timeout so it doesn't try to scroll before the bottom sheet expands
+    }, 700);
+  }
 
   async function geocodeAddress(address: string) {
     const res = await Location.geocodeAsync(address);
@@ -182,8 +198,8 @@ export default function Map() {
           <MapMarker
             key={`${marker.id}-${marker.type}`}
             coordinate={{latitude: marker.latitude, longitude: marker.longitude}}
-            title={marker.title}
-            type={marker.type}/>
+            type={marker.type}
+            onPress={() => handleMarkerPress(marker.id, marker.type)}/>
         ))}
       </MapView>
       
@@ -195,8 +211,15 @@ export default function Map() {
         handleIndicatorStyle={{ backgroundColor: "#ccc" }}
       >
         <BottomSheetFlatList
+          ref={flatListRef}
           data={filteredItems}
           keyExtractor={(item: MapItem) => `${item.id}-${item.type}`}
+          onScrollToIndexFailed={(info: {index: number; averageItemLength: number}) => {
+            flatListRef.current?.scrollToOffset({
+              offset: info.averageItemLength * info.index,
+              animated: true,
+            });
+          }}
           ListHeaderComponent={
             <TextInput
               placeholder="Search..."
@@ -206,7 +229,14 @@ export default function Map() {
               style={styles.searchInput}
             />
           }
-          renderItem={({ item }: { item: MapItem }) => <EcoFeed {...item} />}
+          renderItem={({ item }: { item: MapItem }) => (
+          <View style={[
+            { borderRadius: 12, borderWidth: 2, borderColor: 'transparent' },
+            `${item.id}-${item.type}` === selectedId && { borderColor: item.type === 'event' ? '#437CA1' : '#79B128' }
+          ]}>
+            <EcoFeed {...item} />
+          </View>
+          )}
           contentContainerStyle={{ paddingBottom: 100, gap: 16, padding: 16 }}
         />
       </BottomSheet>
