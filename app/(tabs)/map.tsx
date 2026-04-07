@@ -1,6 +1,6 @@
-import { StyleSheet, TextInput } from 'react-native';
+import { StyleSheet, TextInput, View, Text, Image } from 'react-native';
 import MapView from 'react-native-maps';
-import { Marker } from 'react-native-maps';
+import { Marker, LatLng } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { supabase } from '@/constants/supabase';
@@ -10,6 +10,27 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 type MapItem = InPersonEcoAction | Event;
 
+interface MapMarkerProps {
+  coordinate: LatLng;
+  title: string;
+  type: string;
+}
+
+const MapMarker = ({ coordinate, title, type }: MapMarkerProps) => {
+  const displayType = type === "event" ? "Event" : "Eco-Action";
+    return (
+      <Marker coordinate={coordinate} anchor={{x: 0.5, y: 1}}>
+        <View
+          style={styles.markerContainer}>
+          <View style={type === "event" ? styles.bubbleEvent : styles.bubbleEcoAction}>
+            <Text style={styles.text}>{displayType}</Text>
+          </View>
+          <View style={type === "event" ? styles.tailEvent : styles.tailEcoAction} />
+        </View>
+      </Marker>
+
+    )
+  };
 export default function Map() {
   const [userLocation, setUserLocation] = useState<{ latitude: number, longitude: number } | null>(null);
   const [markers, setMarkers] = useState<any[]>([]);
@@ -18,6 +39,8 @@ export default function Map() {
 
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['12%', '50%', '90%'], []);
+
+  
 
   async function geocodeAddress(address: string) {
     const res = await Location.geocodeAsync(address);
@@ -156,15 +179,11 @@ export default function Map() {
         } : undefined}
       >
       {markers.map((marker) => (
-          <Marker
+          <MapMarker
             key={`${marker.id}-${marker.type}`}
+            coordinate={{latitude: marker.latitude, longitude: marker.longitude}}
             title={marker.title}
-            coordinate={{
-              latitude: marker.latitude,
-              longitude: marker.longitude,
-            }}
-            pinColor={marker.type === "event" ? "#437CA1" : "#79B128"}
-          />
+            type={marker.type}/>
         ))}
       </MapView>
       
@@ -206,5 +225,45 @@ const styles = StyleSheet.create({
     backgroundColor: "#EAF2F6",
     padding: 12,
     borderRadius: 8,
+  },
+  markerContainer: {
+    alignItems: 'center',
+  },
+  bubbleEvent: {
+    backgroundColor: "#437CA1",
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  bubbleEcoAction: {
+    backgroundColor: "#79B128",
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  text: {
+    color: '#fff',
+    fontWeight: '300',
+    fontSize: 13,
+  },
+  tailEvent: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
+    borderTopWidth: 10,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderTopColor: "#437CA1",
+  },
+  tailEcoAction: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
+    borderTopWidth: 10,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderTopColor: "#79B128",
   }
 });
