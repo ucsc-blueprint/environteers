@@ -14,18 +14,24 @@ interface MapMarkerProps {
   coordinate: LatLng;
   type: string;
   onPress: () => void;
+  selected: boolean;
 }
 
-const MapMarker = ({ coordinate, type, onPress }: MapMarkerProps) => {
+const MapMarker = ({ coordinate, type, onPress, selected }: MapMarkerProps) => {
   const displayType = type === "event" ? "Event" : "Eco-Action";
     return (
-      <Marker coordinate={coordinate} anchor={{x: 0.5, y: 1}} centerOffset={{x: 0, y: -23}} onPress={onPress}>
+      <Marker coordinate={coordinate} anchor={{x: 0.5, y: 1}} centerOffset={{x: 0, y: -23}} onPress={onPress}
+        tracksViewChanges={false}>
         <View
           style={styles.markerContainer}>
-          <View style={type === "event" ? styles.bubbleEvent : styles.bubbleEcoAction}>
-            <Text style={styles.text}>{displayType}</Text>
+          <View style={[type === "event" ? styles.bubbleEvent : styles.bubbleEcoAction,
+            selected &&  (type === "event" ? styles.bubbleEventSelect : styles.bubbleEcoActionSelect)]
+          }>
+            <Text style={[styles.text,
+              selected && (type === "event" ? styles.textEventSelect : styles.textEcoActionSelect)]
+            }>{displayType}</Text>
           </View>
-          <View style={type === "event" ? styles.tailEvent : styles.tailEcoAction} />
+          <View style={type === "event" ? styles.tailEvent : styles.tailEcoAction}/>
         </View>
       </Marker>
 
@@ -199,7 +205,8 @@ export default function Map() {
             key={`${marker.id}-${marker.type}`}
             coordinate={{latitude: marker.latitude, longitude: marker.longitude}}
             type={marker.type}
-            onPress={() => handleMarkerPress(marker.id, marker.type)}/>
+            onPress={() => handleMarkerPress(marker.id, marker.type)}
+            selected={selectedId === `${marker.id}-${marker.type}`}/>
         ))}
       </MapView>
       
@@ -295,5 +302,24 @@ const styles = StyleSheet.create({
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
     borderTopColor: "#79B128",
-  }
+  },
+  bubbleEventSelect: {
+  backgroundColor: 'white',
+  borderWidth: 2,
+  borderColor: '#437CA1',
+},
+bubbleEcoActionSelect: {
+  backgroundColor: 'white',
+  borderWidth: 2,
+  borderColor: '#79B128',
+},
+textEventSelect: {
+  color: '#437CA1',
+},
+textEcoActionSelect: {
+  color: '#79B128',
+},
+tailSelected: {
+  borderTopColor: 'white',
+},
 });
