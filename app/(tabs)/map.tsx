@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput, View, Text, Image } from 'react-native';
+import { StyleSheet, TextInput, View, Text } from 'react-native';
 import MapView from 'react-native-maps';
 import { Marker, LatLng } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -19,7 +19,7 @@ interface MapMarkerProps {
 const MapMarker = ({ coordinate, title, type }: MapMarkerProps) => {
   const displayType = type === "event" ? "Event" : "Eco-Action";
     return (
-      <Marker coordinate={coordinate} anchor={{x: 0.5, y: 1}}>
+      <Marker coordinate={coordinate} anchor={{x: 0.5, y: 1}} centerOffset={{x: 0, y: -23}}>
         <View
           style={styles.markerContainer}>
           <View style={type === "event" ? styles.bubbleEvent : styles.bubbleEcoAction}>
