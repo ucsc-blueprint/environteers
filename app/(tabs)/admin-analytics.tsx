@@ -11,8 +11,11 @@ export default function AdminAnalytics() {
   if (loading) {
     return <ActivityIndicator size="large" color="#000000" />
   }
-  if (!profile || !profile?.is_admin) {
-    return <Redirect href="/(tabs)/home" />
+  if (!profile) {
+    return <Redirect href="/" />
+  }
+  if (!profile.is_admin) {
+    return <Redirect href="/(tabs)/volunteer" />
   }
 
   return (

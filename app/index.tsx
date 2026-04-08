@@ -12,7 +12,7 @@ export default function LandingIndex() {
     if (loading) return;
 
     if (user && profile) {
-      router.replace('/(tabs)/home');
+      router.replace('/(tabs)/volunteer');
     }
   }, [user, profile, loading, router]);
 
