@@ -9,12 +9,19 @@ import { EventCardDataProps } from "@/components/EventCard";
 import { CardProps } from "./volunteer";
 import { EcoFeed } from "@/components/EcoFeed";
 
+import { useRefresh } from "@/context/RefreshContext";
+
+
 export default function Activity() {
   const { user } = useAuth()
   const [likedCards, setLikedCards] = useState<CardProps[]>([]);
   const [signedUpCards, setSignedUpCards] = useState<CardProps[]>([]);
   const [completedCards, setCompletedCards] = useState<CardProps[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const { refreshKey } = useRefresh();
+
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -85,7 +92,7 @@ export default function Activity() {
     };
 
     fetchData();
-  }, [user?.id]);
+  }, [user?.id, refreshKey]);
 
   return (
     <View style={styles.container}>
@@ -116,3 +123,4 @@ const styles = StyleSheet.create({
     gap: '20',
   }
 });
+

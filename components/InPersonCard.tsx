@@ -14,6 +14,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
 import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp } from "@/app/utils/cards";
 
+import { useRefresh } from "@/context/RefreshContext";
+
 
 export type InPersonCardData = {
   id: string,
@@ -49,6 +51,8 @@ export const InPersonCard = ({
   const [signUpStatus, setSignUpStatus] = useState(initialSignUp);
   const { user } = useAuth();
 
+  const { triggerRefresh } = useRefresh();
+
   const toggleExpanded = () => {
     setExpanded(prev => !prev);
   };
@@ -69,15 +73,32 @@ export const InPersonCard = ({
   }
 
 
-  const handleLikes = (cardInfo: InPersonCardData) => {
+  // const handleLikes = (cardInfo: InPersonCardData) => {
+  //   if (user?.id) {
+  //     toggleLike("interactions_eco_inperson", cardInfo.id, user.id, liked, 'action_id');
+  //     setLiked(!liked);
+  //     return;
+  //   }
+  //   Alert.alert("Not signed in! Can't like post");
+  //   return;
+  // }
+  const handleLikes = async (cardInfo: InPersonCardData) => {
     if (user?.id) {
-      toggleLike("interactions_eco_inperson", cardInfo.id, user.id, liked, 'action_id');
+      await toggleLike(
+        "interactions_eco_inperson",
+        cardInfo.id,
+        user.id,
+        liked,
+        'action_id'
+      );
+  
       setLiked(!liked);
+      triggerRefresh(); 
       return;
     }
+  
     Alert.alert("Not signed in! Can't like post");
-    return;
-  }
+  };
 
 
   return (

@@ -10,6 +10,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
 import { renderIcon, renderCoverPhoto, toggleLike, addClick, addCompletion } from "@/app/utils/cards";
 
+import { useRefresh } from "@/context/RefreshContext";
+
 export type OnlineCardData = {
   id: string,
   created_at: string,
@@ -41,6 +43,8 @@ export const OnlineCard = ({
   const [completed, setCompleted] = useState(completionStatus);
   const { user } = useAuth();
 
+  const { triggerRefresh } = useRefresh();
+
   const toggleExpanded = () => {
     setExpanded(prev => !prev);
   };
@@ -52,25 +56,74 @@ export const OnlineCard = ({
 
   }
 
-  const handleUserInteraction = (cardInfo: OnlineCardData, interaction_type: string) => {
-    if (user?.id) {
-      switch (interaction_type) {
-        case 'liked':
-          toggleLike("interactions_eco_online", cardInfo.id, user.id, liked, 'action_id');
-          setLiked(!liked);
-          return;
-        case 'clicked':
-          addClick("interactions_eco_online", cardInfo.id, user.id, 'action_id');
-          return;
-        case 'completed':
-          addCompletion("interactions_eco_online", cardInfo.id, user.id, 'action_id');
-          setCompleted(true);
-          return;
-        default:
-          return;
+  // const handleUserInteraction = (cardInfo: OnlineCardData, interaction_type: string) => {
+  //   if (user?.id) {
+  //     switch (interaction_type) {
+  //       case 'liked':
+  //         toggleLike("interactions_eco_online", cardInfo.id, user.id, liked, 'action_id');
+  //         setLiked(!liked);
+  //         return;
+  //       case 'clicked':
+  //         addClick("interactions_eco_online", cardInfo.id, user.id, 'action_id');
+  //         return;
+  //       case 'completed':
+  //         addCompletion("interactions_eco_online", cardInfo.id, user.id, 'action_id');
+  //         setCompleted(true);
+  //         return;
+  //       default:
+  //         return;
+  //     }
+  //   }
+  // }
+  const handleUserInteraction = async (
+    cardInfo: OnlineCardData,
+    interaction_type: string
+  ) => {
+    if (!user?.id) return;
+  
+    switch (interaction_type) {
+      case "liked": {
+        await toggleLike(
+          "interactions_eco_online",
+          cardInfo.id,
+          user.id,
+          liked,
+          "action_id"
+        );
+  
+        setLiked(prev => !prev);
+        triggerRefresh();
+        break;
       }
+  
+      case "clicked": {
+        await addClick(
+          "interactions_eco_online",
+          cardInfo.id,
+          user.id,
+          "action_id"
+        );
+  
+        break;
+      }
+  
+      case "completed": {
+        await addCompletion(
+          "interactions_eco_online",
+          cardInfo.id,
+          user.id,
+          "action_id"
+        );
+  
+        setCompleted(true);
+        triggerRefresh(); 
+        break;
+      }
+  
+      default:
+        break;
     }
-  }
+  };
 
   // RENDER END DATE
   return (

@@ -10,12 +10,16 @@ import { OnlineCardDataProps } from "@/components/OnlineCard";
 import { EventCardDataProps } from "@/components/EventCard";
 import { router } from "expo-router";
 
+import { useRefresh } from "@/context/RefreshContext";
+
 export type CardProps = InPersonCardDataProps | OnlineCardDataProps | EventCardDataProps;
 
 export default function Volunteer() {
   const { user } = useAuth();
   const [items, setItems] = useState<CardProps[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const { refreshKey } = useRefresh();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -95,7 +99,7 @@ export default function Volunteer() {
       setLoading(false);
     };
     fetchData();
-  }, [user?.id]);
+  }, [user?.id, refreshKey]);
 
   return (
     <LinearGradient
@@ -107,9 +111,11 @@ export default function Volunteer() {
       >
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
         
-        <Header resultsCount={items.length}/>
+        <Header resultsCount={items.length}/> 
+        
+        
         { loading && <ActivityIndicator size="large" color="#0000ff" />}
-        { !loading && items.map((card) => (
+        { !loading && items.map((card) => ( 
           <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
         ))}
       </ScrollView>

@@ -6,6 +6,8 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { useAuth } from '@/context/AuthContext'
 import { Text } from 'react-native'
 
+
+
 export default function TabsLayout() {
   const router = useRouter();
   const { user, loading, profile } = useAuth()
@@ -116,4 +118,5 @@ export default function TabsLayout() {
     />
     </Tabs>
   );
+
 }

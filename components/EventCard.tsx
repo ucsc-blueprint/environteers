@@ -9,6 +9,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
 import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp } from "@/app/utils/cards";
 
+import { useRefresh } from "@/context/RefreshContext";
+
 export type EventCardData = {
   id: string,
   title: string,
@@ -43,6 +45,9 @@ export const EventCard = ({
   const [liked, setLiked] = useState(initialLike);
   const { user } = useAuth();
 
+  const { triggerRefresh } = useRefresh();
+
+
   const toggleExpanded = () => {
     setExpanded(prev => !prev);
   };
@@ -62,15 +67,36 @@ export const EventCard = ({
     return;
   }
 
-  const handleLikes = (cardInfo: EventCardData) => {
+
+  // const handleLikes = (cardInfo: EventCardData) => {
+  //   if (user?.id) {
+  //     toggleLike("interactions_events", cardInfo.id, user.id, liked, 'event_id');
+  //     setLiked(!liked);
+  //     return;
+  //   }
+  //   Alert.alert("Not signed in! Can't like post");
+  //   return;
+  // }
+
+  const handleLikes = async (cardInfo: EventCardData) => {
     if (user?.id) {
-      toggleLike("interactions_events", cardInfo.id, user.id, liked, 'event_id');
+      await toggleLike(
+        "interactions_events",
+        cardInfo.id,
+        user.id,
+        liked,
+        'event_id'
+      );
+  
       setLiked(!liked);
+      triggerRefresh(); 
       return;
     }
+  
     Alert.alert("Not signed in! Can't like post");
-    return;
-  }
+  };
+
+
 
   return (
     <View style={CardStyles.card}>
@@ -149,5 +175,4 @@ export const EventCard = ({
     </View>
   );
 }
-
 
