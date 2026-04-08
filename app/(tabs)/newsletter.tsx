@@ -11,7 +11,7 @@ export default function Newsletter(){
   }
   
   if (!profile) {
-      return <Redirect href="/(tabs)/home" />
+      return <Redirect href="/" />
   }
 
   return (

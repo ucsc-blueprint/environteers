@@ -14,7 +14,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { styled } from "storybook/theming";
 // import { EventCardProps } from "./EventCard";
 
-type OnlineEcoAction = {
+export type OnlineEcoAction = {
   type: "online",
   id: string,
   created_at: string,
@@ -26,7 +26,7 @@ type OnlineEcoAction = {
   summary?: string,
 }
 
-type InPersonEcoAction = {
+export type InPersonEcoAction = {
   type: "inperson",
   id: string,
   created_at: string,
@@ -39,7 +39,7 @@ type InPersonEcoAction = {
   summary?: string,
 }
 
-type Event = {
+export type Event = {
   type: "event",
   id: string,
   title: string,
