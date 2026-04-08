@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput, View, Text } from 'react-native';
+import { StyleSheet, TextInput, View, Text, Pressable } from 'react-native';
 import MapView from 'react-native-maps';
 import { Marker, LatLng } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -9,6 +9,8 @@ import { EcoFeed } from '@/components/EcoFeed';
 import { InPersonCardProps } from '@/components/InPersonCard';
 import { EventCardDataProps } from '@/components/EventCard';
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { useRouter } from 'expo-router';
+import { ChevronLeft } from 'lucide-react-native';
 
 type MapItem = InPersonCardProps | EventCardDataProps;
 
@@ -52,6 +54,8 @@ const MapMarker = ({ coordinate, type, onPress, selected }: MapMarkerProps) => {
     )
   };
 export default function Map() {
+  const router = useRouter();
+
   const [userLocation, setUserLocation] = useState<{ latitude: number, longitude: number } | null>(null);
   const [markers, setMarkers] = useState<any[]>([]);
   const [items, setItems] = useState<MapItem[]>([]);
@@ -63,7 +67,7 @@ export default function Map() {
   const snapPoints = useMemo(() => ['15%', '50%', '90%'], []);
 
   const handleMarkerPress = (id: string, type: string) => {
-    bottomSheetRef.current?.snapToIndex(1);
+    bottomSheetRef.current?.snapToIndex(2);
     const index = filteredItems.findIndex(
       item => item.cardInfo.id === id && item.cardType === type
     );
@@ -218,6 +222,10 @@ export default function Map() {
 
   return (
     <GestureHandlerRootView style={styles.container}>
+      <Pressable onPress={() => router.back()} style={styles.backButton}>
+        <ChevronLeft size={24} color="#000" />
+      </Pressable>
+
       <MapView
         style={styles.map}
         showsUserLocation
@@ -283,6 +291,12 @@ export default function Map() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  backButton: {
+    position: 'absolute', 
+    top: 30, 
+    left: 20, 
+    zIndex: 10,
   },
   map: {
     flex: 1,
