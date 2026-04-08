@@ -58,7 +58,7 @@ export default function Map() {
 
   const bottomSheetRef = useRef<BottomSheet>(null);
   const flatListRef = useRef<any>(null);
-  const snapPoints = useMemo(() => ['25%', '50%', '90%'], []);
+  const snapPoints = useMemo(() => ['15%', '50%', '90%'], []);
 
   const handleMarkerPress = (id: string, type: string) => {
     bottomSheetRef.current?.snapToIndex(1);
