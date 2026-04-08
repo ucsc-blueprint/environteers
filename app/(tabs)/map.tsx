@@ -17,22 +17,34 @@ interface MapMarkerProps {
   selected: boolean;
 }
 
-const MapMarker = ({ coordinate, type, onPress, selected }: MapMarkerProps) => {
+const MarkerContent = ({type, selected} : {type: string; selected: boolean}) => {
   const displayType = type === "event" ? "Event" : "Eco-Action";
+  return (
+    <View
+      style={styles.markerContainer}>
+      <View style={[type === "event" ? styles.bubbleEvent : styles.bubbleEcoAction,
+        selected &&  (type === "event" ? styles.bubbleEventSelect : styles.bubbleEcoActionSelect)]
+      }>
+        <Text style={[styles.text,
+          selected && (type === "event" ? styles.textEventSelect : styles.textEcoActionSelect)]
+        }>{displayType}</Text>
+      </View>
+      <View style={type === "event" ? styles.tailEvent : styles.tailEcoAction}/>
+    </View>
+  )
+}
+const MapMarker = ({ coordinate, type, onPress, selected }: MapMarkerProps) => {
     return (
-      <Marker coordinate={coordinate} anchor={{x: 0.5, y: 1}} centerOffset={{x: 0, y: -23}} onPress={onPress}
-        tracksViewChanges={false}>
-        <View
-          style={styles.markerContainer}>
-          <View style={[type === "event" ? styles.bubbleEvent : styles.bubbleEcoAction,
-            selected &&  (type === "event" ? styles.bubbleEventSelect : styles.bubbleEcoActionSelect)]
-          }>
-            <Text style={[styles.text,
-              selected && (type === "event" ? styles.textEventSelect : styles.textEcoActionSelect)]
-            }>{displayType}</Text>
-          </View>
-          <View style={type === "event" ? styles.tailEvent : styles.tailEcoAction}/>
-        </View>
+      <Marker
+        coordinate={coordinate}
+        anchor={{x: 0.5, y: 1}}
+        centerOffset={{x: 0, y: -23}} 
+        onPress={(e) => {
+          e.stopPropagation();
+          onPress();
+        }}
+        tracksViewChanges={selected}>
+        <MarkerContent type={type} selected={selected} />
       </Marker>
 
     )
@@ -46,10 +58,10 @@ export default function Map() {
 
   const bottomSheetRef = useRef<BottomSheet>(null);
   const flatListRef = useRef<any>(null);
-  const snapPoints = useMemo(() => ['12%', '50%', '90%'], []);
+  const snapPoints = useMemo(() => ['25%', '50%', '90%'], []);
 
   const handleMarkerPress = (id: string, type: string) => {
-    bottomSheetRef.current?.expand();
+    bottomSheetRef.current?.snapToIndex(1);
     const index = filteredItems.findIndex(
       item => item.id === id && item.type === type
     );
@@ -61,7 +73,7 @@ export default function Map() {
         viewPosition: 0
       });
       // timeout so it doesn't try to scroll before the bottom sheet expands
-    }, 700);
+    }, 800);
   }
 
   async function geocodeAddress(address: string) {
@@ -213,6 +225,7 @@ export default function Map() {
       <BottomSheet
         ref={bottomSheetRef}
         index={0}
+        enableContentPanningGesture={false}
         snapPoints={snapPoints}
         backgroundStyle={{ backgroundColor: 'white' }}
         handleIndicatorStyle={{ backgroundColor: "#ccc" }}
@@ -220,6 +233,7 @@ export default function Map() {
         <BottomSheetFlatList
           ref={flatListRef}
           data={filteredItems}
+          style={{flex: 1}}
           keyExtractor={(item: MapItem) => `${item.id}-${item.type}`}
           onScrollToIndexFailed={(info: {index: number; averageItemLength: number}) => {
             flatListRef.current?.scrollToOffset({
@@ -269,6 +283,8 @@ const styles = StyleSheet.create({
   bubbleEvent: {
     backgroundColor: "#437CA1",
     borderRadius: 20,
+    borderWidth: 2,
+    borderColor: 'transparent',
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
@@ -277,6 +293,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 8,
+    borderWidth: 2,
+    borderColor: 'transparent',
   },
   text: {
     color: '#fff',
@@ -304,22 +322,20 @@ const styles = StyleSheet.create({
     borderTopColor: "#79B128",
   },
   bubbleEventSelect: {
-  backgroundColor: 'white',
-  borderWidth: 2,
-  borderColor: '#437CA1',
-},
-bubbleEcoActionSelect: {
-  backgroundColor: 'white',
-  borderWidth: 2,
-  borderColor: '#79B128',
-},
-textEventSelect: {
-  color: '#437CA1',
-},
-textEcoActionSelect: {
-  color: '#79B128',
-},
-tailSelected: {
-  borderTopColor: 'white',
-},
+    backgroundColor: 'white',
+    borderColor: '#437CA1',
+  },
+  bubbleEcoActionSelect: {
+    backgroundColor: 'white',
+    borderColor: '#79B128',
+  },
+  textEventSelect: {
+    color: '#437CA1',
+  },
+  textEcoActionSelect: {
+    color: '#79B128',
+  },
+  tailSelected: {
+    borderTopColor: 'white',
+  },
 });
