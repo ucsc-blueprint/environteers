@@ -12,7 +12,7 @@ import {
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
-import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp } from "@/app/utils/cards";
+import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp, addClick } from "@/app/utils/cards";
 
 import { useRefresh } from "@/context/RefreshContext";
 
@@ -58,8 +58,11 @@ export const InPersonCard = ({
   };
 
   const openSignUpLink = (link: string) => {
+    if (user?.id) {
+      addClick("interactions_events", cardInfo.id, user.id, 'event_id');
+      setSignUpClicked(true);
+    }
     Linking.openURL(link);
-    setSignUpClicked(true);
   }
 
   const handleSignUp = (cardInfo: InPersonCardData) => {

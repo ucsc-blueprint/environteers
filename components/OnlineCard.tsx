@@ -166,7 +166,7 @@ export const OnlineCard = ({
               <View style={CardStyles.confirmationContainer}>
                 <Text style={{color: '#3A5513'}}>Did you complete this online eco-action?</Text>
                 <View style={CardStyles.confirmationButtons}>
-                  <Pressable style={CardStyles.confirmationButton} onPress={() => handleUserInteraction(cardInfo, 'clicked')}>
+                  <Pressable style={CardStyles.confirmationButton} onPress={() => setSignUpClicked(false)}>
                     <Text style={CardStyles.confirmationText} onPress={() => setExpanded(!expanded)}>No</Text>
                     <MaterialCommunityIcons name="close" size={20} color={'black'} />
                   </Pressable>

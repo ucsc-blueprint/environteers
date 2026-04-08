@@ -7,8 +7,8 @@ import {
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
-import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp } from "@/app/utils/cards";
-
+import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp, addClick } from "@/app/utils/cards";
+import { addClick } from "@/app/utils/cards";
 import { useRefresh } from "@/context/RefreshContext";
 
 export type EventCardData = {
@@ -53,14 +53,18 @@ export const EventCard = ({
   };
 
   const openSignUpLink = (link: string) => {
+    if (user?.id) {
+      addClick("interactions_events", cardInfo.id, user.id, 'event_id');
+      setSignUpClicked(true);
+    }
     Linking.openURL(link);
-    setSignUpClicked(true);
   }  
 
   const handleSignUp = (cardInfo: EventCardData) => {
     if (user?.id) {
       addSignUp("interactions_events", cardInfo.id, user.id, 'event_id');
       setSignUpStatus(true);
+      triggerRefresh();
       return;
     }
     Alert.alert("Not signed in! Can't sign up");
