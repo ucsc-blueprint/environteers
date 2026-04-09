@@ -59,7 +59,7 @@ export const InPersonCard = ({
 
   const openSignUpLink = (link: string) => {
     if (user?.id) {
-      addClick("interactions_events", cardInfo.id, user.id, 'event_id');
+      addClick("interactions_eco_inperson", cardInfo.id, user.id, 'action_id');
       setSignUpClicked(true);
     }
     Linking.openURL(link);
@@ -69,6 +69,7 @@ export const InPersonCard = ({
     if (user?.id) {
       addSignUp("interactions_eco_inperson", cardInfo.id, user.id, 'action_id');
       setSignUpStatus(true);
+      triggerRefresh();
       return;
     }
     Alert.alert("Not signed in! Can't sign up");
