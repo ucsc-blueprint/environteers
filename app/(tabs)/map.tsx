@@ -5,10 +5,12 @@ import * as Location from 'expo-location';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { supabase } from '@/constants/supabase';
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
-import { EcoFeed, InPersonEcoAction, Event } from '@/components/EcoFeed';
+import { EcoFeed } from '@/components/EcoFeed';
+import { InPersonCardProps } from '@/components/InPersonCard';
+import { EventCardDataProps } from '@/components/EventCard';
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-type MapItem = InPersonEcoAction | Event;
+type MapItem = InPersonCardProps | EventCardDataProps;
 
 interface MapMarkerProps {
   coordinate: LatLng;
@@ -63,7 +65,7 @@ export default function Map() {
   const handleMarkerPress = (id: string, type: string) => {
     bottomSheetRef.current?.snapToIndex(1);
     const index = filteredItems.findIndex(
-      item => item.id === id && item.type === type
+      item => item.cardInfo.id === id && item.cardType === type
     );
     setSelectedId(`${id}-${type}`);
     setTimeout(() => {
@@ -118,8 +120,8 @@ export default function Map() {
       if (ecoInPersonError) {
         console.error("Error fetching in-person eco-actions from supabase", ecoInPersonError);
       }
-      
-      const processLocation = async (item: any, type: "event" | "inperson") => {
+
+      const processLocation = async (item: any, type: "event" | "in_person") => {
         let coords = null;
         if (item.location_longitude && item.location_latitude) {
           coords = {
@@ -156,35 +158,48 @@ export default function Map() {
         };
       };
 
-      const events: Event[] = event?.map((e) => ({
-        type: "event",
-        id: e.id,
-        title: e.title,
-        start_time: e.start_time ?? undefined,
-        end_time: e.end_time ?? undefined,
-        location: e.location ?? undefined,
-        cover_photo: e.cover_photo ?? undefined,
-        google_calendar_link: e.google_calendar_link ?? undefined,
-        description: e.description ?? undefined,
-        sign_up_link: e.sign_up_link ?? undefined,
+      const events: EventCardDataProps[] = event?.map((e) => ({
+        cardType: "event",
+        cardInfo: {
+          id: e.id,
+          title: e.title,
+          start_time: e.start_time ?? undefined,
+          end_time: e.end_time ?? undefined,
+          location: e.location ?? undefined,
+          cover_photo: e.cover_photo ?? undefined,
+          google_calendar_link: e.google_calendar_link ?? undefined,
+          description: e.description ?? undefined,
+          sign_up_link: e.sign_up_link ?? undefined,
+        },
+        liked: e.liked ?? undefined,
+        signed_up: e.signed_up ?? undefined,
+        completed: e.completed ?? undefined,
+        clicked: e.clicked ?? undefined,
       })) ?? [];
 
-      const inPersonEcoItems: InPersonEcoAction[] = ecoInPerson?.map((e) => ({
-        type: "inperson",
-        id: e.id,
-        created_at: e.created_at,
-        cover_photo: e.cover_photo ?? undefined,
-        title: e.title,
-        location: e.location ?? undefined,
-        start_date: e.start_date,
-        end_date: e.end_date,
-        sign_up_link: e.sign_up_link,
-        summary: e.summary ?? undefined,
+
+      const inPersonEcoItems: InPersonCardProps[] = ecoInPerson?.map((e) => ({
+        cardType: "in_person",
+        cardInfo: {
+          id: e.id,
+          created_at: e.created_at,
+          cover_photo: e.cover_photo ?? undefined,
+          title: e.title,
+          location: e.location ?? undefined,
+          start_date: e.start_date,
+          end_date: e.end_date,
+          sign_up_link: e.sign_up_link,
+          summary: e.summary ?? undefined,
+        },
+        liked: e.liked ?? undefined,
+        signed_up: e.signed_up ?? undefined,
+        completed: e.completed ?? undefined,
+        clicked: e.clicked ?? undefined,
       })) ?? [];
 
       const markerResults = await Promise.all([
         ...((event || []).map((e) => processLocation(e, "event"))),
-        ...((ecoInPerson || []).map((e) => processLocation(e, "inperson"))),
+        ...((ecoInPerson || []).map((e) => processLocation(e, "in_person"))),
       ])
 
       const markers = markerResults.filter((m) => m !== null);
@@ -198,7 +213,7 @@ export default function Map() {
   }, []);
 
   const filteredItems = items.filter(item =>
-    item.title.toLowerCase().includes(search.toLowerCase())
+    item.cardInfo.title.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -234,7 +249,7 @@ export default function Map() {
           ref={flatListRef}
           data={filteredItems}
           style={{flex: 1}}
-          keyExtractor={(item: MapItem) => `${item.id}-${item.type}`}
+          keyExtractor={(item: MapItem) => `${item.cardInfo.id}-${item.cardType}`}
           onScrollToIndexFailed={(info: {index: number; averageItemLength: number}) => {
             flatListRef.current?.scrollToOffset({
               offset: info.averageItemLength * info.index,
@@ -253,9 +268,9 @@ export default function Map() {
           renderItem={({ item }: { item: MapItem }) => (
           <View style={[
             { borderRadius: 12, borderWidth: 2, borderColor: 'transparent' },
-            `${item.id}-${item.type}` === selectedId && { borderColor: item.type === 'event' ? '#437CA1' : '#79B128' }
+            `${item.cardInfo.id}-${item.cardType}` === selectedId && { borderColor: item.cardType === 'event' ? '#437CA1' : '#79B128' }
           ]}>
-            <EcoFeed {...item} />
+            { item && <EcoFeed card={item}/> }
           </View>
           )}
           contentContainerStyle={{ paddingBottom: 100, gap: 16, padding: 16 }}

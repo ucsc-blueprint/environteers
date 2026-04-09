@@ -6,6 +6,8 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { useAuth } from '@/context/AuthContext'
 import { Text } from 'react-native'
 
+
+
 export default function TabsLayout() {
   const router = useRouter();
   const { user, loading, profile } = useAuth()
@@ -22,6 +24,25 @@ export default function TabsLayout() {
 
   return (
     <Tabs>
+      <Tabs.Screen
+        name="home"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="activity"
+        options={{
+          title: 'Activity',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="analytics-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
       <Tabs.Screen
         name="volunteer"
         options={{
@@ -106,4 +127,5 @@ export default function TabsLayout() {
     />
     </Tabs>
   );
+
 }
