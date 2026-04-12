@@ -2,15 +2,19 @@ import React, {useState, useRef} from 'react';
 import {Alert} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import { supabase } from '@/constants/supabase';
 import { RichEditor} from 'react-native-pell-rich-editor';
+import { supabase } from '@/constants/supabase';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as FileSystem from 'expo-file-system'
 import { decode } from 'base64-arraybuffer';
 import { DisplayEcoAction } from '@/components/DisplayEcoAction';
-
-
-export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { // in-person or online
+import { useEffect } from 'react';
+type Props = 
+{
+    typeOfAction: string;
+    id: any; 
+};
+   export const EditEcoAction = ({ typeOfAction, id }: Props) => { 
     //values for supabase
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -88,6 +92,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
             alert('Upload failed');
           }
         };
+    
       
       const resetAll = () => 
       {
@@ -159,14 +164,18 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
           if (coverPhoto && !imageUrl) return;
 
           if (typeOfAction === "online") {
-            const { error } = await supabase.from("online_ecoactions").insert({
-              cover_photo: imageUrl,
-              title: title,
-              campaign_type: campaignType === 'Custom' ? customCampaignType : campaignType,
-              email_link: link,
-              summary: description,
-              host_organization: host,
-            });
+                const { data, error } = await supabase
+                .from("online_ecoactions")
+                .update({
+                    cover_photo: imageUrl,
+
+                    title: title,
+                    campaign_type: campaignType === 'Custom' ? customCampaignType : campaignType,
+                    email_link: link,
+                    summary: description,
+                    host_organization: host,
+                })
+                .eq('id', id);
             if (error) {
               Alert.alert(error.message);
               return;
@@ -174,7 +183,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
             Alert.alert("Eco action created successfully");
           }
           else if (typeOfAction === "in-person") {
-            const { error } = await supabase.from("inperson_ecoactions").insert({
+            const { data, error } = await supabase.from("inperson_ecoactions").update({
               title: title,
               summary: description,
               start_date: startTime!.toISOString(),
@@ -183,7 +192,8 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
               sign_up_link: link,
               cover_photo: imageUrl,
               host_organization: host,
-            });
+            })
+            .eq('id', id);
             if (error) {
                 Alert.alert(error.message);
                 return;
@@ -191,7 +201,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
             Alert.alert("Eco action created successfully");
           }
           else if (typeOfAction === "event") {
-            const { error } = await supabase.from("events").insert({
+            const { data, error } = await supabase.from("events").update({
               title: title,
               description: description,
               start_time: startTime!.toISOString(),
@@ -201,7 +211,8 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
               cover_photo: imageUrl,
               host_organization: host,
               google_calendar_link: googleCalendarLink,
-            });
+            })
+            .eq('id', id);
             if (error) {
                 Alert.alert(error.message);
                 return;
@@ -214,6 +225,43 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         setSubmitting(false);
       }
     };
+    useEffect(() => {
+        const fetchEcoAction = async () => {
+            let tableName = typeOfAction === 'online'
+            ? 'online_ecoactions'
+            : typeOfAction === 'in-person'
+            ? 'inperson_ecoactions'
+            : 'events';
+
+            const { data, error } = await supabase
+            .from(tableName)
+            .select('*')
+            .eq('id', id)
+            .single(); // get one row
+
+            if (error) {
+            console.error(error);
+            Alert.alert("Failed to load eco action");
+            return;
+            }
+
+            // set all your state variables
+            setTitle(data.title);
+            setDescription(data.description ?? data.summary ?? '');
+            setCoverPhoto(data.cover_photo ?? '');
+            setHost(data.host_organization ?? '');
+            setLocation(data.location ?? '');
+            setLink(data.sign_up_link ?? data.email_link ?? '');
+            setCampaignType(data.campaign_type ?? '');
+            setCustomCampaignType(data.campaign_type ?? '');
+            setGoogleCalendarLink(data.google_calendar_link ?? '');
+            setStartTime(data.start_time ? new Date(data.start_time) : null);
+            setEndTime(data.end_time ? new Date(data.end_time) : null);
+            setEventDate(data.start_date ? new Date(data.start_date) : null);
+        };
+
+    fetchEcoAction();
+    }, [id]);
     return (
       <SafeAreaView style={{flex: 1}}>
         <DisplayEcoAction
