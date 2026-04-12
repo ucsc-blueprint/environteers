@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { supabase } from '@/constants/supabase';
 import { RichEditor} from 'react-native-pell-rich-editor';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import * as FileSystem from 'expo-file-system'
+import * as FileSystem from 'expo-file-system/legacy'
 import { decode } from 'base64-arraybuffer';
 import { DisplayEcoAction } from '@/components/DisplayEcoAction';
 
@@ -33,9 +33,6 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
 
     //ui handling
     const [host, setHost] = useState("");
-    const [showPicker, setShowPicker] = useState(false);
-    const [pickerMode, setPickerMode] = useState<"date" | "start" |"end">("date");
-    const [filterOpen, setFilterOpen] = useState(false)
     const richText = useRef<RichEditor>(null);
     const [customCampaignType, setCustomCampaignType] = useState('')
 
@@ -59,7 +56,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         };
 
       const uploadImage = async(uri: string) => { // returns the public url for the supabase stroage
-        if (!uri || !coverPhoto) return;
+        if (!uri) return;
 
         try {
           const fileName = `${Date.now()}.jpg`;
@@ -113,7 +110,6 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
     
 
     const handleInsert = async () => {
-        setSubmitting(true);
         if (!title)
         {
           Alert.alert("Title required");
@@ -154,6 +150,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
           return;
         }
 
+        setSubmitting(true);
         try {
           const imageUrl = await uploadImage(coverPhoto)
           if (coverPhoto && !imageUrl) return;

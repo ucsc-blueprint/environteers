@@ -95,325 +95,327 @@ export const DisplayEcoAction = ({
     submitting,
     handleCancel,
     getImage,
-    }: Props) => {
+    }: Props) => 
+      {
         const [showPicker, setShowPicker] = useState(false);
         const [pickerMode, setPickerMode] = useState<"date" | "start" | "end">("date");
         const [filterOpen, setFilterOpen] = useState(false);
         const richText = useRef<RichEditor>(null);
 
     return (
-    <SafeAreaView style={{ flex: 1 }} edges = {['bottom']}>
-    <KeyboardAwareScrollView
-      style={{ flex: 1 }}
-      contentContainerStyle={{ paddingBottom: 100 }}
-      keyboardShouldPersistTaps="handled"
-      enableOnAndroid={true}
-      extraScrollHeight={40}
-    >
-    <Pressable
-      style={{ flex: 1 }}
-      onPress={() => Keyboard.dismiss()}
-    >
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Pressable style = {styles.leftButton} onPress={() => handleCancel()}>
-          <Ionicons name="close" size={28} color="black" />
-        </Pressable>
-        {typeOfAction === "in-person" || typeOfAction === "online" ? (
+      <SafeAreaView style={{ flex: 1 }} edges = {['bottom']}>
+      <KeyboardAwareScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        keyboardShouldPersistTaps="handled"
+        enableOnAndroid={true}
+        extraScrollHeight={40}
+      >
+      <Pressable
+        style={{ flex: 1 }}
+        onPress={() => Keyboard.dismiss()}
+      >
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Pressable style = {styles.leftButton} onPress={() => handleCancel()}>
+            <Ionicons name="close" size={28} color="black" />
+          </Pressable>
+          {typeOfAction === "in-person" || typeOfAction === "online" ? (
 
-            <Text style={styles.headerTitle}>Add {typeOfAction} eco-action</Text>
-          ) 
-          : typeOfAction === "event" ? (
-            <Text style={styles.headerTitle}>Add event</Text>
-          )
-          : null
-        }
+              <Text style={styles.headerTitle}>Add {typeOfAction} eco-action</Text>
+            ) 
+            : typeOfAction === "event" ? (
+              <Text style={styles.headerTitle}>Add event</Text>
+            )
+            : null
+          }
 
-        <Pressable
-          style={[styles.rightButton, submitting && { opacity: 0.5}]}
-          onPress={() => handleSubmit()}
-          disabled={submitting}
-        >
-          <Text style={styles.saveText}>{submitting ? 'Saving...' : 'Save'}</Text>
-        </Pressable>
-    </View>
-    
-      <View>
-        <View style={styles.photoCard}>
-          {coverPhoto ? (
-            <Image
-              source={{ uri: coverPhoto }}
-              style={styles.photo}
-              resizeMode="cover"
-            />
+          <Pressable
+            style={[styles.rightButton, submitting && { opacity: 0.5}]}
+            onPress={() => handleSubmit()}
+            disabled={submitting}
+          >
+            <Text style={styles.saveText}>{submitting ? 'Saving...' : 'Save'}</Text>
+          </Pressable>
+      </View>
+      
+        <View>
+          <View style={styles.photoCard}>
+            {coverPhoto ? (
+              <Image
+                source={{ uri: coverPhoto }}
+                style={styles.photo}
+                resizeMode="cover"
+              />
+            ) : (
+              <Pressable style={styles.photoPlaceholder} onPress={getImage}>
+                <Ionicons name="add-circle-outline" size={64} color="#8A8A8A" />
+                <Text style={styles.addPhotoText}>Add cover photo</Text>
+
+                <View style={styles.uploadButton}>
+                  <Text style={styles.uploadText}>Upload a picture</Text>
+                  <Ionicons name="cloud-upload-outline" size={18} color="#fff" />
+                </View>
+              </Pressable>
+            )}
+          </View>
+        <View style={styles.section}>
+          {typeOfAction === "in-person" || typeOfAction === "event"? (
+            <Text style={styles.label}>Set a Date<Text style={{ color: "red" }}> *</Text></Text>
           ) : (
-            <Pressable style={styles.photoPlaceholder} onPress={getImage}>
-              <Ionicons name="add-circle-outline" size={64} color="#8A8A8A" />
-              <Text style={styles.addPhotoText}>Add cover photo</Text>
+            <Text style={styles.label}>End Date {`(optional)`}</Text>
+          )}
 
-              <View style={styles.uploadButton}>
-                <Text style={styles.uploadText}>Upload a picture</Text>
-                <Ionicons name="cloud-upload-outline" size={18} color="#fff" />
-              </View>
+          <View style={styles.dateRow}>
+            {/* Pick the day */}
+            <Pressable
+              style={[
+                styles.datePill,
+                showPicker && pickerMode === "date" && styles.activeInput
+              ]}
+              onPress={() => { setPickerMode("date"); setShowPicker(!showPicker); }}
+            >
+              <Text>
+                {eventDate ? eventDate.toLocaleDateString() : "Select date"}
+              </Text>
             </Pressable>
-          )}
-        </View>
-      <View style={styles.section}>
-        {typeOfAction === "in-person" || typeOfAction === "event"? (
-          <Text style={styles.label}>Set a Date<Text style={{ color: "red" }}> *</Text></Text>
-        ) : (
-          <Text style={styles.label}>End Date {`(optional)`}</Text>
-        )}
-
-        <View style={styles.dateRow}>
-          {/* Pick the day */}
-          <Pressable
-            style={[
-              styles.datePill,
-              showPicker && pickerMode === "date" && styles.activeInput
-            ]}
-            onPress={() => { setPickerMode("date"); setShowPicker(!showPicker); }}
-          >
-            <Text>
-              {eventDate ? eventDate.toLocaleDateString() : "Select date"}
-            </Text>
-          </Pressable>
+            
+            {(typeOfAction === "in-person" || typeOfAction === "event") && ( // pick start time
+            <Pressable
+              style={[
+                styles.datePill,
+                showPicker && pickerMode === "start" && styles.activeInput
+              ]}
+              onPress={() => { setPickerMode("start"); setShowPicker(!showPicker); }}
+            >
+              <Text>{startTime!.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} -</Text>
+            </Pressable>
+            )}
           
-          {(typeOfAction === "in-person" || typeOfAction === "event") && ( // pick start time
-          <Pressable
-            style={[
-              styles.datePill,
-              showPicker && pickerMode === "start" && styles.activeInput
-            ]}
-            onPress={() => { setPickerMode("start"); setShowPicker(!showPicker); }}
-          >
-            <Text>{startTime!.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} -</Text>
-          </Pressable>
-          )}
-        
-          
-          {/* Pick end time */}
-          <Pressable
-            style={[
-              styles.datePill,
-              showPicker && pickerMode === "end" && styles.activeInput
-            ]}
-            onPress={() => { setPickerMode("end"); setShowPicker(!showPicker); }}
-          >
-            <Text>
-              {endTime
-                ? endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-                : "Select end"}
-            </Text>
-          </Pressable>
-        </View>
+            
+            {/* Pick end time */}
+            <Pressable
+              style={[
+                styles.datePill,
+                showPicker && pickerMode === "end" && styles.activeInput
+              ]}
+              onPress={() => { setPickerMode("end"); setShowPicker(!showPicker); }}
+            >
+              <Text>
+                {endTime
+                  ? endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                  : "Select end"}
+              </Text>
+            </Pressable>
+          </View>
 
-        {showPicker && (
-          <DateTimePicker
-            value={
-                  pickerMode === "date"
-                    ? eventDate || new Date()
-                    : pickerMode === "start"
-                    ? startTime || new Date()
-                    : endTime || new Date()
-                }
-            mode={pickerMode === "date" ? "date" : "time"}
-            display={Platform.OS === "ios" ? "spinner" : "default"}
-            textColor='black'
-            onChange={(event, selectedDate) => {
-              if (Platform.OS === "android") setShowPicker(false);
-              if (!selectedDate) return;
+          {showPicker && (
+            <DateTimePicker
+              value={
+                    pickerMode === "date"
+                      ? eventDate || new Date()
+                      : pickerMode === "start"
+                      ? startTime || new Date()
+                      : endTime || new Date()
+                  }
+              mode={pickerMode === "date" ? "date" : "time"}
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              textColor='black'
+              onChange={(event, selectedDate) => {
+                if (Platform.OS === "android") setShowPicker(false);
+                if (!selectedDate) return;
 
-              if (pickerMode === "date") {
-                setEventDate(selectedDate);
+                if (pickerMode === "date") {
+                  setEventDate(selectedDate);
 
-                // Only update times if they exist (in-person or event)
-                if (startTime) {
-                  const newStart = new Date(startTime);
+                  // Only update times if they exist (in-person or event)
+                  if (startTime) {
+                    const newStart = new Date(startTime);
+                    newStart.setFullYear(
+                      selectedDate.getFullYear(),
+                      selectedDate.getMonth(),
+                      selectedDate.getDate()
+                    );
+                    setStartTime(newStart);
+                  }
+
+                  if (endTime) {
+                    const newEnd = new Date(endTime);
+                    newEnd.setFullYear(
+                      selectedDate.getFullYear(),
+                      selectedDate.getMonth(),
+                      selectedDate.getDate()
+                    );
+                    setEndTime(newEnd);
+                  }
+
+                } else if (pickerMode === "start") {
+                  if (!eventDate) return;
+
+                  const newStart = new Date(selectedDate);
                   newStart.setFullYear(
-                    selectedDate.getFullYear(),
-                    selectedDate.getMonth(),
-                    selectedDate.getDate()
+                  eventDate.getFullYear(),
+                  eventDate.getMonth(),
+                  eventDate.getDate()
                   );
                   setStartTime(newStart);
-                }
 
-                if (endTime) {
-                  const newEnd = new Date(endTime);
+                } else if (pickerMode === "end") 
+                {
+                  if (!eventDate) return;
+
+                  const newEnd = new Date(selectedDate);
                   newEnd.setFullYear(
-                    selectedDate.getFullYear(),
-                    selectedDate.getMonth(),
-                    selectedDate.getDate()
+                  eventDate.getFullYear(),
+                  eventDate.getMonth(),
+                  eventDate.getDate()
                   );
                   setEndTime(newEnd);
                 }
-
-              } else if (pickerMode === "start") {
-                if (!eventDate) return;
-
-                const newStart = new Date(selectedDate);
-                newStart.setFullYear(
-                  eventDate.getFullYear(),
-                  eventDate.getMonth(),
-                  eventDate.getDate()
-                );
-                setStartTime(newStart);
-
-              } else if (pickerMode === "end") {
-                if (!eventDate) return;
-
-                const newEnd = new Date(selectedDate);
-                newEnd.setFullYear(
-                  eventDate.getFullYear(),
-                  eventDate.getMonth(),
-                  eventDate.getDate()
-                );
-                setEndTime(newEnd);
-              }
-            }}
-          />
-        )}
-      </View>
-
-        <View style={styles.section}>
-          <Text style={styles.label}>
-
-            {typeOfAction === "in-person" || typeOfAction === "online"
-              ? "Eco-Action Title"
-              : typeOfAction === "event"
-              ? "Event Title"
-              : ""}
-          <Text style={{ color: "red" }}> *</Text>
-          </Text>
-          <TextInput
-            style={styles.input}
-            placeholder={typeOfAction === "event" ? "Enter event title" : "Enter eco-action title"}
-            placeholderTextColor="#888"
-            value={title}
-            onChangeText={setTitle}
-          />
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.label}>Host organization</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Host Organization"
-            placeholderTextColor="#888"
-            value={host}
-            onChangeText={setHost}
-          />
-        </View>
-        {(typeOfAction === "in-person" || typeOfAction === "event") && ( // location for in person
-        <View style={styles.section}>
-          
-          <Text style={styles.label}>Location<Text style={{ color: "red" }}> *</Text></Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Select Location Address"
-            placeholderTextColor= "#888"
-            value={location}
-            onChangeText={setLocation}
-          />
-        </View>
-        )}
-        
-        <View style={styles.section}>
-          <Text style={styles.label}>
-            {typeOfAction === "online" ? "Link/Email" : "Sign Up Link"}
-          </Text> 
-          <TextInput
-            style={styles.input}
-            placeholder= {(typeOfAction === "in-person" || typeOfAction === "event") ? "Paste Sign up Link" : "Add link or email"}
-            placeholderTextColor="#888"
-            value={link}
-            onChangeText={setLink}
-          />
-        </View>
-        
-        {typeOfAction === "event" && (
-        <View style={styles.section}>
-          <Text style={styles.label}>Google Calendar Link</Text>
-          <TextInput
-            style={styles.input}
-            placeholder= "Paste Calendar Link"
-            placeholderTextColor= "#888"
-            value={googleCalendarLink}
-            onChangeText={setGoogleCalendarLink}
-          />
-        </View>
-        )}
-
-        {typeOfAction === "online" && (
-        <View style={styles.section}>
-          
-          <Text style={styles.label}>Campaign Type<Text style={{ color: "red" }}> *</Text></Text>
-          <DropDownPicker
-            open={filterOpen}
-            setOpen = {setFilterOpen}
-            value={campaignType}
-            setValue={setCampaignType}
-            listMode = "SCROLLVIEW"
-    
-            items={[
-              { label: 'Petition', value: 'Petition' },
-              { label: 'Constituent Advocacy', value: 'Constituent Advocacy' },
-              { label: 'Public Commenting', value: 'Public Commenting' },
-              { label: 'Custom', value: 'Custom' },
-
-            ]}
-            style={{
-              backgroundColor: "#F2F2F2",
-              borderRadius: 10,
-              borderWidth: 0,
-              paddingHorizontal: 12,
-              paddingVertical: 12,
-            }}
-            dropDownContainerStyle={{
-              backgroundColor: "#F2F2F2",
-              borderRadius: 10,
-              borderWidth: 0,
-            }}
-            textStyle={{ color: "#000" }}
-            selectedItemContainerStyle = {{backgroundColor : "#E4EFD4"}}
-            
-            
+              }}
             />
-
-          {campaignType === "Custom" && (
-            <View style={styles.section}>
-              <Text style={styles.label}>
-                Enter Custom Campaign Type<Text style={{ color: "red" }}> *</Text>
-              </Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter custom campaign type"
-                value={customCampaignType}
-                onChangeText={setCustomCampaignType}
-              />
-            </View>
           )}
+        </View>
+
+          <View style={styles.section}>
+            <Text style={styles.label}>
+
+              {typeOfAction === "in-person" || typeOfAction === "online"
+                ? "Eco-Action Title"
+                : typeOfAction === "event"
+                ? "Event Title"
+                : ""}
+            <Text style={{ color: "red" }}> *</Text>
+            </Text>
+            <TextInput
+              style={styles.input}
+              placeholder={typeOfAction === "event" ? "Enter event title" : "Enter eco-action title"}
+              placeholderTextColor="#888"
+              value={title}
+              onChangeText={setTitle}
+            />
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.label}>Host organization</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Host Organization"
+              placeholderTextColor="#888"
+              value={host}
+              onChangeText={setHost}
+            />
+          </View>
+          {(typeOfAction === "in-person" || typeOfAction === "event") && ( // location for in person
+          <View style={styles.section}>
+            
+            <Text style={styles.label}>Location<Text style={{ color: "red" }}> *</Text></Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Select Location Address"
+              placeholderTextColor= "#888"
+              value={location}
+              onChangeText={setLocation}
+            />
+          </View>
+          )}
+          
+          <View style={styles.section}>
+            <Text style={styles.label}>
+              {typeOfAction === "online" ? "Link/Email" : "Sign Up Link"}
+            </Text> 
+            <TextInput
+              style={styles.input}
+              placeholder= {(typeOfAction === "in-person" || typeOfAction === "event") ? "Paste Sign up Link" : "Add link or email"}
+              placeholderTextColor="#888"
+              value={link}
+              onChangeText={setLink}
+            />
           </View>
           
+          {typeOfAction === "event" && (
+          <View style={styles.section}>
+            <Text style={styles.label}>Google Calendar Link</Text>
+            <TextInput
+              style={styles.input}
+              placeholder= "Paste Calendar Link"
+              placeholderTextColor= "#888"
+              value={googleCalendarLink}
+              onChangeText={setGoogleCalendarLink}
+            />
+          </View>
           )}
-        <Text style={styles.label}>Description<Text style={{ color: "red" }}> *</Text></Text>         
-        <RichToolbar
-          editor={richText}
-          actions={['bold', 'italic', 'underline', 'unorderedList', 'orderedList', actions.insertLink]}
-          style={{ backgroundColor: '#eee', borderRadius: 10, marginBottom: 8 }}
-        />
 
-        <RichEditor
-          ref={richText}
-          placeholder="Enter description..."
-          onChange={setDescription}
-          style={{ minHeight: 150, backgroundColor: '#F2F2F2', borderRadius: 12, padding: 14 }}
-        />
+          {typeOfAction === "online" && (
+          <View style={styles.section}>
+            
+            <Text style={styles.label}>Campaign Type<Text style={{ color: "red" }}> *</Text></Text>
+            <DropDownPicker
+              open={filterOpen}
+              setOpen = {setFilterOpen}
+              value={campaignType}
+              setValue={setCampaignType}
+              listMode = "SCROLLVIEW"
+      
+              items={[
+                { label: 'Petition', value: 'Petition' },
+                { label: 'Constituent Advocacy', value: 'Constituent Advocacy' },
+                { label: 'Public Commenting', value: 'Public Commenting' },
+                { label: 'Custom', value: 'Custom' },
+
+              ]}
+              style={{
+                backgroundColor: "#F2F2F2",
+                borderRadius: 10,
+                borderWidth: 0,
+                paddingHorizontal: 12,
+                paddingVertical: 12,
+              }}
+              dropDownContainerStyle={{
+                backgroundColor: "#F2F2F2",
+                borderRadius: 10,
+                borderWidth: 0,
+              }}
+              textStyle={{ color: "#000" }}
+              selectedItemContainerStyle = {{backgroundColor : "#E4EFD4"}}
+              
+              
+              />
+
+            {campaignType === "Custom" && (
+              <View style={styles.section}>
+                <Text style={styles.label}>
+                  Enter Custom Campaign Type<Text style={{ color: "red" }}> *</Text>
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter custom campaign type"
+                  value={customCampaignType}
+                  onChangeText={setCustomCampaignType}
+                />
+              </View>
+            )}
+            </View>
+            
+            )}
+          <Text style={styles.label}>Description<Text style={{ color: "red" }}> *</Text></Text>         
+          <RichToolbar
+            editor={richText}
+            actions={['bold', 'italic', 'underline', 'unorderedList', 'orderedList', actions.insertLink]}
+            style={{ backgroundColor: '#eee', borderRadius: 10, marginBottom: 8 }}
+          />
+
+          <RichEditor
+            ref={richText}
+            placeholder="Enter description..."
+            onChange={setDescription}
+            style={{ minHeight: 150, backgroundColor: '#F2F2F2', borderRadius: 12, padding: 14 }}
+          />
+      </View>
     </View>
-  </View>
-  </Pressable>
-  </KeyboardAwareScrollView>
-  </SafeAreaView>
+    </Pressable>
+    </KeyboardAwareScrollView>
+    </SafeAreaView>
   );
 };
         

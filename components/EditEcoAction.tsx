@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { RichEditor} from 'react-native-pell-rich-editor';
 import { supabase } from '@/constants/supabase';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import * as FileSystem from 'expo-file-system'
+import * as FileSystem from 'expo-file-system/legacy'
 import { decode } from 'base64-arraybuffer';
 import { DisplayEcoAction } from '@/components/DisplayEcoAction';
 import { useEffect } from 'react';
@@ -37,9 +37,6 @@ type Props =
 
     //ui handling
     const [host, setHost] = useState("");
-    const [showPicker, setShowPicker] = useState(false);
-    const [pickerMode, setPickerMode] = useState<"date" | "start" |"end">("date");
-    const [filterOpen, setFilterOpen] = useState(false)
     const richText = useRef<RichEditor>(null);
     const [customCampaignType, setCustomCampaignType] = useState('')
 
@@ -63,8 +60,12 @@ type Props =
         };
 
       const uploadImage = async(uri: string) => { // returns the public url for the supabase stroage
-        if (!uri || !coverPhoto) return;
-
+        if (!uri) return;
+        // If it's already a remote URL (unchanged from Supabase), return that url
+        if (uri.startsWith('http://') || uri.startsWith('https://')) 
+        {
+          return uri;
+        }
         try {
           const fileName = `${Date.now()}.jpg`;
           const filePath = `user_uploads/${fileName}`;
@@ -118,7 +119,6 @@ type Props =
     
 
     const handleInsert = async () => {
-        setSubmitting(true);
         if (!title)
         {
           Alert.alert("Title required");
@@ -158,6 +158,8 @@ type Props =
           Alert.alert("Campaign type required for online eco actions");
           return;
         }
+
+        setSubmitting(true);
 
         try {
           const imageUrl = await uploadImage(coverPhoto)
@@ -217,7 +219,7 @@ type Props =
                 Alert.alert(error.message);
                 return;
             }
-          Alert.alert("Event created successfully");
+          Alert.alert("Event updated successfully");
           }
 
         resetAll();
@@ -247,7 +249,15 @@ type Props =
 
             // set all your state variables
             setTitle(data.title);
-            setDescription(data.description ?? data.summary ?? '');
+            const content = data.description ?? data.summary ?? '';
+
+            setDescription(content);
+
+            setTimeout(() => 
+            {
+                richText.current?.setContentHTML(content);
+            }, 0);
+
             setCoverPhoto(data.cover_photo ?? '');
             setHost(data.host_organization ?? '');
             setLocation(data.location ?? '');
@@ -255,9 +265,27 @@ type Props =
             setCampaignType(data.campaign_type ?? '');
             setCustomCampaignType(data.campaign_type ?? '');
             setGoogleCalendarLink(data.google_calendar_link ?? '');
-            setStartTime(data.start_time ? new Date(data.start_time) : null);
-            setEndTime(data.end_time ? new Date(data.end_time) : null);
+            if (typeOfAction === 'in-person') 
+            {
+            setStartTime(data.start_date ? new Date(data.start_date) : null);
+            setEndTime(data.end_date ? new Date(data.end_date) : null);
             setEventDate(data.start_date ? new Date(data.start_date) : null);
+            } 
+            else if (typeOfAction === 'event') 
+            {
+                setStartTime(data.start_time ? new Date(data.start_time) : null);
+                setEndTime(data.end_time ? new Date(data.end_time) : null);
+                setEventDate(data.start_time ? new Date(data.start_time) : null);
+            } 
+            else 
+            {
+              setStartTime(null);
+              setEndTime(data.end_time ? new Date(data.end_time) : null);
+              setEventDate(null);
+            }
+
+
+
         };
 
     fetchEcoAction();
