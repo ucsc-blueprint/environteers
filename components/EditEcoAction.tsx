@@ -182,7 +182,7 @@ type Props =
               Alert.alert(error.message);
               return;
             }
-            Alert.alert("Eco action created successfully");
+            Alert.alert("Eco action updated successfully");
           }
           else if (typeOfAction === "in-person") {
             const { data, error } = await supabase.from("inperson_ecoactions").update({
@@ -200,7 +200,7 @@ type Props =
                 Alert.alert(error.message);
                 return;
             }
-            Alert.alert("Eco action created successfully");
+            Alert.alert("Eco action updated successfully");
           }
           else if (typeOfAction === "event") {
             const { data, error } = await supabase.from("events").update({
@@ -227,7 +227,8 @@ type Props =
         setSubmitting(false);
       }
     };
-    useEffect(() => {
+    useEffect(() => 
+      {
         const fetchEcoAction = async () => {
             let tableName = typeOfAction === 'online'
             ? 'online_ecoactions'
@@ -288,8 +289,8 @@ type Props =
 
         };
 
-    fetchEcoAction();
-    }, [id]);
+        fetchEcoAction();
+      }, [id]);
     return (
       <SafeAreaView style={{flex: 1}}>
         <DisplayEcoAction

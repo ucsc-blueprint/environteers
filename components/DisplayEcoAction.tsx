@@ -7,6 +7,7 @@ import { actions, RichEditor, RichToolbar } from 'react-native-pell-rich-editor'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Dispatch, SetStateAction } from 'react';
+import { useEffect } from 'react';
 type Props = {
   typeOfAction: string;
 
@@ -101,6 +102,12 @@ export const DisplayEcoAction = ({
         const [pickerMode, setPickerMode] = useState<"date" | "start" | "end">("date");
         const [filterOpen, setFilterOpen] = useState(false);
         const richText = useRef<RichEditor>(null);
+        useEffect(() => 
+        {
+          if (description) {
+            richText.current?.setContentHTML(description);
+          }
+        }, [description]);
 
     return (
       <SafeAreaView style={{ flex: 1 }} edges = {['bottom']}>
