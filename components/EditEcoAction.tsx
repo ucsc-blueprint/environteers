@@ -1,14 +1,12 @@
-import React, {useState, useRef} from 'react';
+import React, {useState,} from 'react';
 import {Alert} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
-import { RichEditor} from 'react-native-pell-rich-editor';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { supabase } from '@/constants/supabase';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as FileSystem from 'expo-file-system/legacy'
 import { decode } from 'base64-arraybuffer';
 import { DisplayEcoAction } from '@/components/DisplayEcoAction';
-import { useEffect } from 'react';
 type Props = 
 {
     typeOfAction: string;
@@ -37,12 +35,12 @@ type Props =
 
     //ui handling
     const [host, setHost] = useState("");
-    const richText = useRef<RichEditor>(null);
     const [customCampaignType, setCustomCampaignType] = useState('')
 
     const [submitting, setSubmitting] = useState(false);
     const router = useRouter();
     const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
+    const [loading, setLoading] = useState(true);
 
     const getImage = async() => 
         {
@@ -109,8 +107,6 @@ type Props =
         setEventDate((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
         setStartTime((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
         setEndTime((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
-        if (richText.current)
-          richText.current.setContentHTML("");
       }
       const handleCancel = () => {
         resetAll()
@@ -220,6 +216,7 @@ type Props =
                 return;
             }
           Alert.alert("Event updated successfully");
+          router.push("/(tabs)/volunteer")
           }
 
         resetAll();
@@ -227,7 +224,7 @@ type Props =
         setSubmitting(false);
       }
     };
-    useEffect(() => 
+    useFocusEffect(() => 
       {
         const fetchEcoAction = async () => {
             let tableName = typeOfAction === 'online'
@@ -240,7 +237,7 @@ type Props =
             .from(tableName)
             .select('*')
             .eq('id', id)
-            .single(); // get one row
+            .single();
 
             if (error) {
             console.error(error);
@@ -248,16 +245,11 @@ type Props =
             return;
             }
 
-            // set all your state variables
             setTitle(data.title);
             const content = data.description ?? data.summary ?? '';
 
             setDescription(content);
 
-            setTimeout(() => 
-            {
-                richText.current?.setContentHTML(content);
-            }, 0);
 
             setCoverPhoto(data.cover_photo ?? '');
             setHost(data.host_organization ?? '');
@@ -266,6 +258,7 @@ type Props =
             setCampaignType(data.campaign_type ?? '');
             setCustomCampaignType(data.campaign_type ?? '');
             setGoogleCalendarLink(data.google_calendar_link ?? '');
+            setLoading(false);
             if (typeOfAction === 'in-person') 
             {
             setStartTime(data.start_date ? new Date(data.start_date) : null);
@@ -290,7 +283,7 @@ type Props =
         };
 
         fetchEcoAction();
-      }, [id]);
+      }, );
     return (
       <SafeAreaView style={{flex: 1}}>
         <DisplayEcoAction
@@ -332,6 +325,7 @@ type Props =
           customCampaignType={customCampaignType}
           setCustomCampaignType={setCustomCampaignType}
 
+          loading = {loading}
           handleSubmit={handleInsert}
           submitting={submitting}
           handleCancel={handleCancel}
@@ -342,4 +336,3 @@ type Props =
 
 
         
-

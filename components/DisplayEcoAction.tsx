@@ -7,7 +7,6 @@ import { actions, RichEditor, RichToolbar } from 'react-native-pell-rich-editor'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Dispatch, SetStateAction } from 'react';
-import { useEffect } from 'react';
 type Props = {
   typeOfAction: string;
 
@@ -47,6 +46,7 @@ type Props = {
   customCampaignType: string;
   setCustomCampaignType: Dispatch<SetStateAction<string>>;
 
+  loading?: boolean;
   handleSubmit: () => void;
   handleCancel: () => void;
   getImage: () => void;
@@ -92,6 +92,7 @@ export const DisplayEcoAction = ({
     customCampaignType,
     setCustomCampaignType,
 
+    loading,
     handleSubmit,
     submitting,
     handleCancel,
@@ -102,12 +103,7 @@ export const DisplayEcoAction = ({
         const [pickerMode, setPickerMode] = useState<"date" | "start" | "end">("date");
         const [filterOpen, setFilterOpen] = useState(false);
         const richText = useRef<RichEditor>(null);
-        useEffect(() => 
-        {
-          if (description) {
-            richText.current?.setContentHTML(description);
-          }
-        }, [description]);
+
 
     return (
       <SafeAreaView style={{ flex: 1 }} edges = {['bottom']}>
@@ -411,19 +407,25 @@ export const DisplayEcoAction = ({
             </View>
             
             )}
-          <Text style={styles.label}>Description<Text style={{ color: "red" }}> *</Text></Text>         
-          <RichToolbar
-            editor={richText}
-            actions={['bold', 'italic', 'underline', 'unorderedList', 'orderedList', actions.insertLink]}
-            style={{ backgroundColor: '#eee', borderRadius: 10, marginBottom: 8 }}
-          />
-
-          <RichEditor
-            ref={richText}
-            placeholder="Enter description..."
-            onChange={setDescription}
-            style={{ minHeight: 150, backgroundColor: '#F2F2F2', borderRadius: 12, padding: 14 }}
-          />
+            <Text style={styles.label}>Description<Text style={{ color: "red" }}> *</Text></Text>
+              {!loading ? 
+              (
+                <>
+                  <RichToolbar
+                    editor={richText}
+                    actions={['bold', 'italic', 'underline', 'unorderedList', 'orderedList', actions.insertLink]}
+                    style={{ backgroundColor: '#eee', borderRadius: 10, marginBottom: 8 }}
+                  />
+                  <RichEditor
+                    ref={richText}
+                    placeholder="Enter description..."
+                    onChange={setDescription}
+                    initialContentHTML={description}
+                    style={{ minHeight: 150, backgroundColor: '#F2F2F2', borderRadius: 12, padding: 14 }}
+                  />
+                </>
+              )
+              : null}
       </View>
     </View>
     </Pressable>

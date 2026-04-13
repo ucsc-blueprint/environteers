@@ -33,12 +33,12 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
 
     //ui handling
     const [host, setHost] = useState("");
-    const richText = useRef<RichEditor>(null);
     const [customCampaignType, setCustomCampaignType] = useState('')
 
     const [submitting, setSubmitting] = useState(false);
     const router = useRouter();
     const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
+    const [resetKey, setResetKey] = useState(0); // used to reset the rich text component
 
     const getImage = async() => 
         {
@@ -97,16 +97,18 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         setLink("")
         setCampaignType("")
         setCustomCampaignType("")
+        setGoogleCalendarLink("")
         setEventDate((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
         setStartTime((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
         setEndTime((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
-        if (richText.current)
-          richText.current.setContentHTML("");
+        setResetKey(prev => prev + 1) // resets rich text editor  
       }
-      const handleCancel = () => {
+      
+      const handleCancel = () => 
+      {
         resetAll()
         router.push("/(tabs)/volunteer")
-    }
+      }
     
 
     const handleInsert = async () => {
@@ -204,16 +206,20 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
                 return;
             }
           Alert.alert("Event created successfully");
+          router.push("/(tabs)/volunteer")
           }
 
         resetAll();
-      } finally {
+      }
+      finally 
+      {
         setSubmitting(false);
       }
     };
     return (
       <SafeAreaView style={{flex: 1}}>
         <DisplayEcoAction
+          key = {resetKey}// forces remount of component to reset the rich text editor
           typeOfAction={typeOfAction}
 
           title={title}
