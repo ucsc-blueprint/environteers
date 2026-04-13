@@ -142,11 +142,17 @@ export const DisplayEcoAction = ({
         <View>
           <View style={styles.photoCard}>
             {coverPhoto ? (
-              <Image
-                source={{ uri: coverPhoto }}
-                style={styles.photo}
-                resizeMode="cover"
-              />
+              <Pressable onPress={getImage} style={{width: "100%", height: "100%"}}>
+                <Image
+                  source={{ uri: coverPhoto }}
+                  style={styles.photo}
+                  resizeMode="cover"
+                />
+                
+                <View style={{ position: 'absolute', bottom: 8, right: 8, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 20, padding: 6 }}>
+                  <Ionicons name="camera-outline" size={18} color="white" />
+                </View>
+              </Pressable>
             ) : (
               <Pressable style={styles.photoPlaceholder} onPress={getImage}>
                 <Ionicons name="add-circle-outline" size={64} color="#8A8A8A" />
