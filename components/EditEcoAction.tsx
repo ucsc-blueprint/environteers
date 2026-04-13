@@ -1,4 +1,4 @@
-import React, {useState,} from 'react';
+import React, {useCallback, useState,} from 'react';
 import {Alert} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -224,66 +224,67 @@ type Props =
         setSubmitting(false);
       }
     };
-    useFocusEffect(() => 
+    useFocusEffect
+    (
+      useCallback(() => 
       {
         const fetchEcoAction = async () => {
-            let tableName = typeOfAction === 'online'
+          setLoading(true);
+
+          let tableName = typeOfAction === 'online'
             ? 'online_ecoactions'
             : typeOfAction === 'in-person'
             ? 'inperson_ecoactions'
             : 'events';
 
-            const { data, error } = await supabase
+          const { data, error } = await supabase
             .from(tableName)
             .select('*')
             .eq('id', id)
             .single();
 
-            if (error) {
+          if (error) {
             console.error(error);
             Alert.alert("Failed to load eco action");
             return;
-            }
+          }
 
-            setTitle(data.title);
-            const content = data.description ?? data.summary ?? '';
+          setTitle(data.title);
+          setDescription(data.description ?? data.summary ?? '');
+          setCoverPhoto(data.cover_photo ?? '');
+          setHost(data.host_organization ?? '');
+          setLocation(data.location ?? '');
+          setLink(data.sign_up_link ?? data.email_link ?? '');
+          setCampaignType(data.campaign_type ?? '');
+          setCustomCampaignType(data.campaign_type ?? '');
+          setGoogleCalendarLink(data.google_calendar_link ?? '');
 
-            setDescription(content);
-
-
-            setCoverPhoto(data.cover_photo ?? '');
-            setHost(data.host_organization ?? '');
-            setLocation(data.location ?? '');
-            setLink(data.sign_up_link ?? data.email_link ?? '');
-            setCampaignType(data.campaign_type ?? '');
-            setCustomCampaignType(data.campaign_type ?? '');
-            setGoogleCalendarLink(data.google_calendar_link ?? '');
-            setLoading(false);
-            if (typeOfAction === 'in-person') 
-            {
+          if (typeOfAction === 'in-person') 
+          {
             setStartTime(data.start_date ? new Date(data.start_date) : null);
             setEndTime(data.end_date ? new Date(data.end_date) : null);
             setEventDate(data.start_date ? new Date(data.start_date) : null);
-            } 
-            else if (typeOfAction === 'event') 
-            {
-                setStartTime(data.start_time ? new Date(data.start_time) : null);
-                setEndTime(data.end_time ? new Date(data.end_time) : null);
-                setEventDate(data.start_time ? new Date(data.start_time) : null);
-            } 
-            else 
-            {
-              setStartTime(null);
-              setEndTime(data.end_time ? new Date(data.end_time) : null);
-              setEventDate(null);
-            }
+          }
+          else if (typeOfAction === 'event') 
+          {
+            setStartTime(data.start_time ? new Date(data.start_time) : null);
+            setEndTime(data.end_time ? new Date(data.end_time) : null);
+            setEventDate(data.start_time ? new Date(data.start_time) : null);
+          } 
+          else 
+          {
+            setStartTime(null);
+            setEndTime(data.end_time ? new Date(data.end_time) : null);
+            setEventDate(null);
+          }
 
-
-
+          setLoading(false);
         };
 
         fetchEcoAction();
-      }, );
+      }, [id])
+    );
+        
     return (
       <SafeAreaView style={{flex: 1}}>
         <DisplayEcoAction
