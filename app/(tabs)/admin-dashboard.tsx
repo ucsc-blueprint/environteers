@@ -35,6 +35,14 @@ export default function AdminDashboard() {
   fetchUsers();
 }, []);
 
+if (loading) {
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <ActivityIndicator size="large" />
+    </View>
+  );
+}
+
 return (
   <ScrollView
     style={styles.container}
@@ -50,11 +58,7 @@ return (
           </View>
 
           <View style={styles.numberContainer}>
-            {loading ? (
-              <ActivityIndicator size="small" color="#000" />
-            ) : (
-              <Text style={styles.numberText}>{activeUsers}</Text>
-            )}
+            <Text style={styles.numberText}>{activeUsers}</Text>
 
             <View style={{ marginLeft: 8, alignItems: 'center' }}>
               <TrendingUp size={16} color="#22c55e" />
