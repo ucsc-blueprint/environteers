@@ -5,14 +5,14 @@ import { supabase } from "@/constants/supabase";
 import { LinearGradient } from 'expo-linear-gradient';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { useAuth } from "@/context/AuthContext";
-import { InPersonCardProps } from "@/components/InPersonCard";
+import { InPersonCardDataProps } from "@/components/InPersonCard";
 import { OnlineCardDataProps } from "@/components/OnlineCard";
 import { EventCardDataProps } from "@/components/EventCard";
 import { router } from "expo-router";
 
 import { useRefresh } from "@/context/RefreshContext";
 
-export type CardProps = InPersonCardProps | OnlineCardDataProps | EventCardDataProps;
+export type CardProps = InPersonCardDataProps | OnlineCardDataProps | EventCardDataProps;
 
 export default function Volunteer() {
   const { user } = useAuth();
