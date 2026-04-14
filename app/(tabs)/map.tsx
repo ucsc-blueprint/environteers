@@ -61,6 +61,8 @@ export default function Map() {
   const [items, setItems] = useState<MapItem[]>([]);
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [filterType, setFilterType] = useState<"all" | "event" | "in_person">("all");
+  const [maxDistance, setMaxDistance] = useState<number | null>(null);
 
   const bottomSheetRef = useRef<BottomSheet>(null);
   const flatListRef = useRef<any>(null);
@@ -220,9 +222,38 @@ export default function Map() {
     fetchMapData();
   }, []);
 
-  const filteredItems = items.filter(item =>
-    item.cardInfo.title.toLowerCase().includes(search.toLowerCase())
-  );
+  const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    
+    return R * c;
+  }
+
+  const filteredItems = items.filter(item => {
+    const matchesSearch = item.cardInfo.title.toLowerCase().includes(search.toLowerCase())
+    const matchesType = filterType === "all" || item.cardType === filterType;
+
+    const matchesDistance =
+      !maxDistance || !userLocation
+        ? true
+        : markers.find(m => m.id === item.cardInfo.id)
+          ? getDistance(
+              userLocation.latitude,
+              userLocation.longitude,
+              markers.find(m => m.id === item.cardInfo.id)!.latitude,
+              markers.find(m => m.id === item.cardInfo.id)!.longitude
+            ) <= maxDistance
+          : true;
+
+    return matchesSearch && matchesType && matchesDistance;
+  });
 
   return (
     <GestureHandlerRootView style={styles.container}>
@@ -269,13 +300,15 @@ export default function Map() {
             });
           }}
           ListHeaderComponent={
-            <TextInput
-              placeholder="Search..."
-              placeholderTextColor="#868E8B"
-              value={search}
-              onChangeText={setSearch}
-              style={styles.searchInput}
-            />
+            <View style={styles.searchContainer}>
+              <TextInput
+                placeholder="Search..."
+                placeholderTextColor="#868E8B"
+                value={search}
+                onChangeText={setSearch}
+                style={styles.searchInput}
+              />
+            </View>
           }
           renderItem={({ item }: { item: MapItem }) => (
           <View style={[
@@ -299,13 +332,18 @@ const styles = StyleSheet.create({
   backButton: {
     position: 'absolute', 
     top: 30, 
-    left: 20, 
-    zIndex: 10,
+    left: 20,
+    zIndex: 5,
   },
   map: {
     flex: 1,
   },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   searchInput: {
+    flex: 1,
     backgroundColor: "#EAF2F6",
     padding: 12,
     borderRadius: 8,
