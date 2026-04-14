@@ -12,7 +12,7 @@ export default function SignupScreen() {
     
   React.useEffect(() => {
     if (user && profile) {
-      router.push('/(tabs)/home')
+      router.push('/(tabs)/volunteer')
     }
   }, [user, profile, router])
 
