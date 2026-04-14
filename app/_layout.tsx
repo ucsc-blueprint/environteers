@@ -2,11 +2,23 @@ import { Stack } from 'expo-router';
 import { AuthProvider } from '@/context/AuthContext';
 import Toast from 'react-native-toast-message'
 import React from 'react';
+
+import { RefreshProvider } from '@/context/RefreshContext';
+
 export default function RootLayout() {
   return (
+  // <AuthProvider>
+  //   <Stack screenOptions={{ headerShown: false }} />
+  //   <Toast />
+  // </AuthProvider>)
+  <RefreshProvider>
   <AuthProvider>
     <Stack screenOptions={{ headerShown: false }} />
     <Toast />
-  </AuthProvider>)
+  </AuthProvider>
+</RefreshProvider>)
   ;
 }
+
+
+

@@ -1,116 +1,105 @@
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { EcoFeed, Header } from "@/components/EcoFeed";
+import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator } from "react-native";
+import { Header, EcoFeed } from "@/components/EcoFeed";
 import { useEffect, useState } from "react";
 import { supabase } from "@/constants/supabase";
 import { LinearGradient } from 'expo-linear-gradient';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
-import { useRouter } from 'expo-router';
+import { useAuth } from "@/context/AuthContext";
+import { InPersonCardProps } from "@/components/InPersonCard";
+import { OnlineCardDataProps } from "@/components/OnlineCard";
+import { EventCardDataProps } from "@/components/EventCard";
+import { router } from "expo-router";
 
-type OnlineEcoAction = {
-  type: "online",
-  id: string,
-  created_at: string,
-  cover_photo?: string,
-  title: string,
-  end_date?: Date,
-  campaign_type?: string,
-  email_link?: string,
-  summary?: string,
-}
+import { useRefresh } from "@/context/RefreshContext";
 
-type InPersonEcoAction = {
-  type: "inperson",
-  id: string,
-  created_at: string,
-  cover_photo?: string,
-  title: string,
-  location?: string,
-  start_date: Date,
-  end_date: Date,
-  sign_up_link: string,
-  summary?: string,
-}
-
-type Event = {
-  type: "event",
-  id: string,
-  title: string,
-  start_time?: Date,
-  end_time?: Date,
-  location?: string,
-  cover_photo?: string,
-  google_calendar_link?: string,
-  description?: string,
-  sign_up_link?: string,
-}
-
-type VolunteerItem = OnlineEcoAction | InPersonEcoAction | Event
+export type CardProps = InPersonCardProps | OnlineCardDataProps | EventCardDataProps;
 
 export default function Volunteer() {
-  const [items, setItems] = useState<VolunteerItem[]>([]);
+  const { user } = useAuth();
+  const [items, setItems] = useState<CardProps[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const router = useRouter();
+  const { refreshKey } = useRefresh();
 
   useEffect(() => {
-    const fetchVolunteerData = async () => {
+    const fetchData = async () => {
+      setLoading(true);
+
+      if (!user?.id) {
+        setLoading(false);
+        return;
+      };
+
+      const [inPersonRes, onlineRes, eventRes] = await Promise.all([
+        supabase
+          .from("inperson_ecoactions")
+          .select(`*, interactions_eco_inperson!left(*)`)
+          .eq("interactions_eco_inperson.user_id", user.id),
+
+        supabase
+          .from("online_ecoactions")
+          .select(`*, interactions_eco_online!left(*)`)
+          .eq("interactions_eco_online.user_id", user.id),
+
+        supabase
+          .from("events")
+          .select(`*, interactions_events!left(*)`)
+          .eq("interactions_events.user_id", user.id)
+      ]);
+
+      if (inPersonRes.error) console.error(inPersonRes.error);
+      if (onlineRes.error) console.error(onlineRes.error);
+      if (eventRes.error) console.error(eventRes.error);
+
+      const inPersonData = inPersonRes.data ?? [];
+      const onlineData = onlineRes.data ?? [];
+      const eventData = eventRes.data ?? [];
     
-    // EVENTS
-    const { data: event } = await supabase
-      .from("events")
-      .select("id, title, start_time, end_time, location, cover_photo, google_calendar_link, description, sign_up_link");
+      const inPersonCardData: CardProps[] = (inPersonData ?? []).map(card => {
+        const interaction = card.interactions_eco_inperson?.[0];
 
-    // ONLINE ECO-ACTIONS
-    const { data: ecoInPerson } = await supabase
-      .from("inperson_eco-actions")
-      .select("id, created_at, cover_photo, title, end_date, sign_up_link, summary, start_date, location");
+        return {
+          cardType: "in_person",
+          cardInfo: card,
+          liked: interaction?.liked ?? false,
+          signed_up: interaction?.signed_up ?? false,
+          completed: interaction?.completed ?? false,
+          clicked: interaction?.clicked ?? false,
+        };
+      }); 
+    
+      const onlineCardData: CardProps[] = (onlineData ?? []).map(card => {
+        const interaction = card.interactions_eco_online?.[0];
 
-    const { data: ecoOnline } = await supabase
-      .from("online_eco-actions")
-      .select("id, created_at, cover_photo, title, end_date, campaign_type, email_link, summary");
+        return {
+          cardType: "online",
+          cardInfo: card,
+          liked: interaction?.liked ?? false,
+          signed_up: interaction?.signed_up ?? false,
+          completed: interaction?.completed ?? false,
+          clicked: interaction?.clicked ?? false,
+        };
+      }); 
+    
+      const eventCardData: CardProps[] = (eventData ?? []).map(event => {
+        const interaction = event.interactions_events?.[0];
 
-    const events: Event[] = event?.map((e) => ({
-      type: "event",
-      id: e.id,
-      title: e.title,
-      start_time: e.start_time ?? undefined,
-      end_time: e.end_time ?? undefined,
-      location: e.location ?? undefined,
-      cover_photo: e.cover_photo ?? undefined,
-      google_calendar_link: e.google_calendar_link ?? undefined,
-      description: e.description ?? undefined,
-      sign_up_link: e.sign_up_link ?? undefined,
-    })) ?? [];
+        return {
+          cardType: "event",
+          cardInfo: event,
+          liked: interaction?.liked ?? false,
+          signed_up: interaction?.signed_up ?? false,
+          completed: interaction?.completed ?? false,
+          clicked: interaction?.clicked ?? false,
+        };
+      });
 
-    const inPersonEcoItems: InPersonEcoAction[] = ecoInPerson?.map((e) => ({
-      type: "inperson",
-      id: e.id,
-      created_at: e.created_at,
-      cover_photo: e.cover_photo ?? undefined,
-      title: e.title,
-      location: e.location ?? undefined,
-      start_date: e.start_date,
-      end_date: e.end_date,
-      sign_up_link: e.sign_up_link,
-      summary: e.summary ?? undefined,
-    })) ?? [];
-
-    const onlineEcoItems: OnlineEcoAction[] = ecoOnline?.map((e) => ({
-      type: "online",
-      id: e.id,
-      created_at: e.created_at,
-      cover_photo: e.cover_photo ?? undefined,
-      title: e.title,
-      end_date: e.end_date ?? undefined,
-      campaign_type: e.campaign_type ?? undefined,
-      email_link: e.email_link ?? undefined,
-      summary: e.summary ?? undefined,
-    })) ?? [];
-
-    setItems([...events, ...inPersonEcoItems, ...onlineEcoItems]);
+      const fullData = [...inPersonCardData, ...onlineCardData, ...eventCardData]
+      setItems(fullData);
+      setLoading(false);
     };
-
-    fetchVolunteerData();
-  }, []);
+    fetchData();
+  }, [user?.id, refreshKey]);
 
   return (
     <LinearGradient
@@ -121,12 +110,13 @@ export default function Volunteer() {
         style={styles.gradient}
       >
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
-        <Header resultsCount={items.length}/>
-        { items.map((item) => (
-          <EcoFeed
-            key={`${item.id}-${item.type}`}
-            {...item}
-          />
+        
+        <Header resultsCount={items.length}/> 
+        
+        
+        { loading && <ActivityIndicator size="large" color="#0000ff" />}
+        { !loading && items.map((card) => ( 
+          <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
         ))}
       </ScrollView>
         <View style={styles.mapBackground}>
