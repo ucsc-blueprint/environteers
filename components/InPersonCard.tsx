@@ -29,7 +29,7 @@ export type InPersonCardData = {
   summary?: string,
 }
 
-export type InPersonCardProps = {
+export type InPersonCardDataProps = {
   cardType: "in_person";
   cardInfo: InPersonCardData,
   liked: boolean,
@@ -38,14 +38,20 @@ export type InPersonCardProps = {
   clicked: boolean,
 }
 
+type InPersonCardProps = InPersonCardDataProps & {
+  expanded: boolean;
+  onToggle: () => void;
+};
+
 export const InPersonCard = ({
   cardInfo, 
   liked: initialLike, 
   signed_up: initialSignUp,
   completed,
   clicked,
+  expanded,
+  onToggle
 }: InPersonCardProps) => {
-  const [expanded, setExpanded] = useState(false);
   const [signUpClick, setSignUpClicked] = useState(false);
   const [liked, setLiked] = useState(initialLike);
   const [signUpStatus, setSignUpStatus] = useState(initialSignUp);
@@ -53,9 +59,7 @@ export const InPersonCard = ({
 
   const { triggerRefresh } = useRefresh();
 
-  const toggleExpanded = () => {
-    setExpanded(prev => !prev);
-  };
+  const toggleExpanded = onToggle
 
   const openSignUpLink = (link: string) => {
     if (user?.id) {
@@ -156,7 +160,7 @@ export const InPersonCard = ({
                 <Text style={{color: '#3A5513'}}>Did you sign up for this in person eco action?</Text>
                 <View style={CardStyles.confirmationButtons}>
                   <Pressable style={CardStyles.confirmationButton} onPress={() => (setSignUpClicked(false))}>
-                    <Text style={CardStyles.confirmationText} onPress={() => setExpanded(!expanded)}>No</Text>
+                    <Text style={CardStyles.confirmationText} onPress={toggleExpanded}>No</Text>
                     <MaterialCommunityIcons name="close" size={20} color={'black'} />
                   </Pressable>
                   <Pressable style={CardStyles.confirmationButton}>

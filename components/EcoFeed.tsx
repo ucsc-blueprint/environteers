@@ -1,5 +1,8 @@
 import { useAuth } from "@/context/AuthContext";
-import { View, Text, Pressable } from 'react-native';
+import { View, Image, Text, StyleSheet, Pressable, Linking, Alert } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
+import React, { useState, useEffect} from "react";
+import { supabase } from "@/constants/supabase";
 import { 
   mdiMenu,
   mdiBell,
@@ -12,10 +15,15 @@ import { CardProps } from "@/app/(tabs)/volunteer";
 import { renderIcon } from "@/app/utils/cards";
 
 type HeaderProps = {
-  resultsCount: number,
-}
+  resultsCount: number;
+};
 
-export const Header = ({resultsCount}: HeaderProps) => {
+type ExpandableProps = {
+  isSelected?: boolean,
+  setSelectedId?: React.Dispatch<React.SetStateAction<string | null>>; 
+};
+
+export const Header = ({ resultsCount }: HeaderProps) => {
   const { profile } = useAuth();
   return (
     <View style={CardStyles.feedHeader}>
@@ -42,8 +50,15 @@ export const Header = ({resultsCount}: HeaderProps) => {
     );
 };
 
-export const EcoFeed = (props: { card: CardProps }) => {
+export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
   const { card } = props;
+  const expanded = props.isSelected ?? false;
+
+  const toggleExpanded = () => {
+    if (!props.setSelectedId) return;
+    const key = `${card.cardInfo.id}-${card.cardType}`;
+    props.setSelectedId(prev => (prev === key ? null : key));
+  };
 
   if (!card) return null;
 
@@ -56,6 +71,8 @@ export const EcoFeed = (props: { card: CardProps }) => {
           signed_up={card.signed_up} 
           completed={card.completed} 
           clicked={card.clicked}
+          expanded={expanded}
+          onToggle={toggleExpanded}
         />
       );
     case "online":
@@ -75,6 +92,8 @@ export const EcoFeed = (props: { card: CardProps }) => {
           signed_up={card.signed_up} 
           completed={card.completed} 
           clicked={card.clicked}
+          expanded={expanded}
+          onToggle={toggleExpanded}
         />
       );
     default:

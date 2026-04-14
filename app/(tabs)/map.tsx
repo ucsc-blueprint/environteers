@@ -6,13 +6,13 @@ import { useEffect, useState, useMemo, useRef } from 'react';
 import { supabase } from '@/constants/supabase';
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { EcoFeed } from '@/components/EcoFeed';
-import { InPersonCardProps } from '@/components/InPersonCard';
+import { InPersonCardDataProps } from '@/components/InPersonCard';
 import { EventCardDataProps } from '@/components/EventCard';
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useRouter } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 
-type MapItem = InPersonCardProps | EventCardDataProps;
+type MapItem = InPersonCardDataProps | EventCardDataProps;
 
 interface MapMarkerProps {
   coordinate: LatLng;
@@ -72,6 +72,7 @@ export default function Map() {
       item => item.cardInfo.id === id && item.cardType === type
     );
     setSelectedId(`${id}-${type}`);
+    if (index === -1) return;
     setTimeout(() => {
       flatListRef.current?.scrollToIndex({
         index,
@@ -86,7 +87,7 @@ export default function Map() {
     const res = await Location.geocodeAsync(address);
 
     if (!res || res.length === 0) {
-      console.error('Failed to geocode', res);
+      console.warn('Failed to geocode', address);
       return null;
     }
 
@@ -133,6 +134,9 @@ export default function Map() {
             longitude: item.location_longitude,
           };
         } else {
+          if (!item.location || item.location.trim() === "") {
+            return null;
+          }
           coords = await geocodeAddress(item.location);
 
           if (coords) {
@@ -182,7 +186,7 @@ export default function Map() {
       })) ?? [];
 
 
-      const inPersonEcoItems: InPersonCardProps[] = ecoInPerson?.map((e) => ({
+      const inPersonEcoItems: InPersonCardDataProps[] = ecoInPerson?.map((e) => ({
         cardType: "in_person",
         cardInfo: {
           id: e.id,
@@ -278,7 +282,7 @@ export default function Map() {
             { borderRadius: 12, borderWidth: 2, borderColor: 'transparent' },
             `${item.cardInfo.id}-${item.cardType}` === selectedId && { borderColor: item.cardType === 'event' ? '#437CA1' : '#79B128' }
           ]}>
-            { item && <EcoFeed card={item}/> }
+            { item && <EcoFeed card={item} isSelected={`${item.cardInfo.id}-${item.cardType}` === selectedId} setSelectedId={setSelectedId}/> }
           </View>
           )}
           contentContainerStyle={{ paddingBottom: 100, gap: 16, padding: 16 }}
