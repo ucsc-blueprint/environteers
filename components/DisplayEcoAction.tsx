@@ -7,6 +7,8 @@ import { actions, RichEditor, RichToolbar } from 'react-native-pell-rich-editor'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Dispatch, SetStateAction } from 'react';
+import { Activity } from 'lucide-react-native';
+import { ActivityIndicator } from 'react-native-paper';
 type Props = {
   typeOfAction: string;
 
@@ -104,7 +106,10 @@ export const DisplayEcoAction = ({
         const [filterOpen, setFilterOpen] = useState(false);
         const richText = useRef<RichEditor>(null);
 
-
+    if (loading)
+    {
+      return (<ActivityIndicator animating={true} color="#86AE42" size="large" style={{flex: 1, justifyContent: "center", alignItems: "center"}}/>);
+    }   
     return (
       <SafeAreaView style={{ flex: 1 }} edges = {['bottom']}>
       <KeyboardAwareScrollView
