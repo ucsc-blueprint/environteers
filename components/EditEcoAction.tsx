@@ -104,6 +104,7 @@ type Props =
         setLink("")
         setCampaignType("")
         setCustomCampaignType("")
+        setGoogleCalendarLink("")
         setEventDate((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
         setStartTime((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
         setEndTime((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
