@@ -9,6 +9,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
 import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp, addClick } from "@/app/utils/cards";
 import { useRefresh } from "@/context/RefreshContext";
+import { router, useRouter } from "expo-router";
 
 export type EventCardData = {
   id: string,
@@ -42,7 +43,10 @@ export const EventCard = ({
   const [signUpClick, setSignUpClicked] = useState(false);
   const [signUpStatus, setSignUpStatus] = useState(initialSignUp);
   const [liked, setLiked] = useState(initialLike);
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const isAdmin = profile?.is_admin === true;
+  const router = useRouter();
+  
 
   const { triggerRefresh } = useRefresh();
 
@@ -127,9 +131,22 @@ export const EventCard = ({
             }
           </View>
           {/* Like/Share Icons */}
+          {isAdmin ? (
+            <View style={CardStyles.iconsColumn}>
+              <View style={CardStyles.iconBackgrounds}> 
+              <MaterialCommunityIcons
+                name="pencil-outline"
+                size={25}
+                color={'#0282D3'}
+                onPress={() => router.push('/(tabs)/AddEcoAction')}
+              />
+              </View>
+              <View style={CardStyles.deleteIconBackground}><MaterialCommunityIcons name="trash-can-outline" size={25} color="#EA4335" /></View>    
+              </View>
+          ): (
           <View style={CardStyles.iconsColumn}>
             <View style={CardStyles.iconBackgrounds}>
-              <MaterialCommunityIcons
+            <MaterialCommunityIcons
                 name={liked ? "cards-heart" : "cards-heart-outline"}
                 size={25}
                 color={'#0282D3'}
@@ -139,6 +156,7 @@ export const EventCard = ({
             </View>
             <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>
           </View>
+          )}
         </View>
           {/* Expanded Content */}
           { expanded && 

@@ -9,7 +9,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
 import { renderIcon, renderCoverPhoto, toggleLike, addClick, addCompletion } from "@/app/utils/cards";
-
+import { router, useRouter } from "expo-router";
 import { useRefresh } from "@/context/RefreshContext";
 
 export type OnlineCardData = {
@@ -41,7 +41,9 @@ export const OnlineCard = ({
   const [signUpClick, setSignUpClicked] = useState(false);
   const [liked, setLiked] = useState(initialLike);
   const [completed, setCompleted] = useState(completionStatus);
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const isAdmin = profile?.is_admin === true;
+  const router = useRouter();
 
   const { triggerRefresh } = useRefresh();
 
@@ -144,18 +146,32 @@ export const OnlineCard = ({
             </View>
           </View>
           {/* Like/Share Icons */}
+          {isAdmin ? (
+            <View style={CardStyles.iconsColumn}>
+              <View style={CardStyles.iconBackgrounds}> 
+              <MaterialCommunityIcons
+                name="pencil-outline"
+                size={25}
+                color={'#0282D3'}
+                onPress={() => router.push('/(tabs)/AddEcoAction')}
+              />
+              </View>
+              <View style={CardStyles.deleteIconBackground}><MaterialCommunityIcons name="trash-can-outline" size={25} color="#EA4335" /></View>    
+              </View>
+          ): (
           <View style={CardStyles.iconsColumn}>
             <View style={CardStyles.iconBackgrounds}>
-              <MaterialCommunityIcons
+            <MaterialCommunityIcons
                 name={liked ? "cards-heart" : "cards-heart-outline"}
                 size={25}
                 color={'#0282D3'}
                 onPress={() => handleUserInteraction(cardInfo, 'liked')}
                 disabled={!user?.id}
               />
-              </View>
+            </View>
             <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>
           </View>
+          )}
         </View>
         {/* Expanded Content */}
         { expanded && 

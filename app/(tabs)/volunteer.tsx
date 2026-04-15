@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator } from "react-native";
+import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator, Text } from "react-native";
 import { Header, EcoFeed } from "@/components/EcoFeed";
 import { useEffect, useState } from "react";
 import { supabase } from "@/constants/supabase";
@@ -15,9 +15,10 @@ import { useRefresh } from "@/context/RefreshContext";
 export type CardProps = InPersonCardProps | OnlineCardDataProps | EventCardDataProps;
 
 export default function Volunteer() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [items, setItems] = useState<CardProps[]>([]);
   const [loading, setLoading] = useState(false);
+  const isAdmin = profile?.is_admin === true;
 
   const { refreshKey } = useRefresh();
 
@@ -112,7 +113,7 @@ export default function Volunteer() {
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
         
         <Header resultsCount={items.length}/> 
-        
+
         
         { loading && <ActivityIndicator size="large" color="#0000ff" />}
         { !loading && items.map((card) => ( 
@@ -124,6 +125,13 @@ export default function Volunteer() {
             <MaterialCommunityIcons name="map" size={30} color={'#0282D3'} />
           </Pressable>
         </View>
+          {isAdmin && (
+                <Pressable
+                  style={styles.addButton}
+                  onPress={() => router.push({pathname: '/(tabs)/AddEcoAction'})}>
+                  <Text style={styles.addButtonText}>+ Add</Text>
+                </Pressable>
+            )}
     </LinearGradient>
   );
 }
@@ -145,5 +153,25 @@ const styles = StyleSheet.create({
     bottom: 10,
     right: 20,
     boxShadow: '0px 0px 10px 0px #0282D333',
-  }
+  },
+
+  addButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+
+  addButton: {
+    position: 'absolute',
+    bottom: 15,
+    right: 100,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    zIndex: 10,
+    backgroundColor: '#94C153',
+    height: 35,
+    width: 80,
+  },
 });
