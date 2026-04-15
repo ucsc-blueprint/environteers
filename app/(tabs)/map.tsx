@@ -275,7 +275,7 @@ export default function Map() {
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <Pressable onPress={() => router.back()} style={styles.backButton}>
+      <Pressable onPress={() => router.replace("/(tabs)/volunteer")} style={styles.backButton}>
         <ChevronLeft size={24} color="#000" />
       </Pressable>
 
