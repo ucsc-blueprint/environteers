@@ -1,6 +1,5 @@
 import { StyleSheet, TextInput, View, Text, Pressable } from 'react-native';
-import MapView from 'react-native-maps';
-import { Marker, LatLng } from 'react-native-maps';
+import MapView, { Marker, LatLng } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { supabase } from '@/constants/supabase';
@@ -38,22 +37,38 @@ const MarkerContent = ({type, selected} : {type: string; selected: boolean}) => 
     </View>
   )
 }
-const MapMarker = ({ coordinate, type, onPress, selected }: MapMarkerProps) => {
-    return (
-      <Marker
-        coordinate={coordinate}
-        anchor={{x: 0.5, y: 1}}
-        centerOffset={{x: 0, y: -23}} 
-        onPress={(e) => {
-          e.stopPropagation();
-          onPress();
-        }}
-        tracksViewChanges={selected}>
-        <MarkerContent type={type} selected={selected} />
-      </Marker>
 
-    )
-  };
+const MapMarker = ({ coordinate, type, onPress, selected }: MapMarkerProps) => {
+  return (
+    <Marker
+      coordinate={coordinate}
+      anchor={{x: 0.5, y: 1}}
+      centerOffset={{x: 0, y: -23}} 
+      onPress={(e) => {
+        e.stopPropagation();
+        onPress();
+      }}
+      tracksViewChanges={selected}>
+      <MarkerContent type={type} selected={selected} />
+    </Marker>
+
+  )
+};
+
+const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const R = 3958.8;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  
+  return R * c;
+};
+
 export default function Map() {
   const router = useRouter();
 
@@ -224,40 +239,26 @@ export default function Map() {
     fetchMapData();
   }, []);
 
-  const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const R = 3958.8;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    
-    return R * c;
-  }
-
-  const filteredItems = items.filter(item => {
+  const filteredItems = useMemo(() => items.filter(item => {
     const matchesSearch = item.cardInfo.title.toLowerCase().includes(search.toLowerCase())
     const matchesType = filterTypes.length === 0 || filterTypes.includes(item.cardType);
 
     const matchesDistance =
       !maxDistance || !userLocation
         ? true
-        : markers.find(m => m.id === item.cardInfo.id)
+        : markers.find(m => m.id === item.cardInfo.id && m.type === item.cardType)
           ? getDistance(
               userLocation.latitude,
               userLocation.longitude,
-              markers.find(m => m.id === item.cardInfo.id)!.latitude,
-              markers.find(m => m.id === item.cardInfo.id)!.longitude
+              markers.find(m => m.id === item.cardInfo.id && m.type === item.cardType)!.latitude,
+              markers.find(m => m.id === item.cardInfo.id && m.type === item.cardType)!.longitude
             ) <= maxDistance
           : true;
 
     return matchesSearch && matchesType && matchesDistance;
-  });
+  }), [items, search, filterTypes, maxDistance, userLocation, markers]);
 
-  const filteredMarkers = markers.filter(marker => {
+  const filteredMarkers = useMemo(() => markers.filter(marker => {
     const matchesType = filterTypes.length === 0 || filterTypes.includes(marker.type);
 
     const matchesDistance =
@@ -271,7 +272,7 @@ export default function Map() {
           ) <= maxDistance
 
     return matchesType && matchesDistance;
-  })
+  }), [markers, filterTypes, maxDistance, userLocation]);
 
   return (
     <GestureHandlerRootView style={styles.container}>
