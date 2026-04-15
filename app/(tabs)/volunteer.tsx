@@ -1,90 +1,105 @@
-import { ScrollView, StyleSheet, View } from "react-native";
-import { EcoFeed, Header } from "@/components/EcoFeed";
+import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator } from "react-native";
+import { Header, EcoFeed } from "@/components/EcoFeed";
 import { useEffect, useState } from "react";
 import { supabase } from "@/constants/supabase";
 import { LinearGradient } from 'expo-linear-gradient';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
+import { useAuth } from "@/context/AuthContext";
+import { InPersonCardProps } from "@/components/InPersonCard";
+import { OnlineCardDataProps } from "@/components/OnlineCard";
+import { EventCardDataProps } from "@/components/EventCard";
+import { router } from "expo-router";
 
-type VolunteerItem = {
-  id: string;
-  type: "Eco-Action" | "Event";
-  title: string;
-  liked: boolean;
-  cover_photo: string;
-  description: string;
-  time_taken?: string;
-  date?: string;
-  location?: string;
-  spotsLeft?: number;
-};
+import { useRefresh } from "@/context/RefreshContext";
 
-function formatEventDate(start: string, end: string) {
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-
-  // Format day
-  const day = startDate.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-
-  // Format time range
-  const startTime = startDate.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: undefined,
-  });
-  const endTime = endDate.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: undefined,
-  });
-
-  return `${day} | ${startTime}–${endTime}`;
-}
-
+export type CardProps = InPersonCardProps | OnlineCardDataProps | EventCardDataProps;
 
 export default function Volunteer() {
-  const [items, setItems] = useState<VolunteerItem[]>([]);
+  const { user } = useAuth();
+  const [items, setItems] = useState<CardProps[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const { refreshKey } = useRefresh();
 
   useEffect(() => {
-    const fetchVolunteerData = async () => {
+    const fetchData = async () => {
+      setLoading(true);
 
-    // EVENTS
-    const { data: events } = await supabase
-      .from("events")
-      .select("event_id, event_name, start_time, end_time, location, type, cover_photo, liked, description");
+      if (!user?.id) {
+        setLoading(false);
+        return;
+      };
 
-    // PETITIONS / CAMPAIGNS
-    const { data: petitions } = await supabase
-      .from("petitions_campaigns")
-      .select("id, title, time_taken, type, cover_photo, liked, description");
+      const [inPersonRes, onlineRes, eventRes] = await Promise.all([
+        supabase
+          .from("inperson_ecoactions")
+          .select(`*, interactions_eco_inperson!left(*)`)
+          .eq("interactions_eco_inperson.user_id", user.id),
+
+        supabase
+          .from("online_ecoactions")
+          .select(`*, interactions_eco_online!left(*)`)
+          .eq("interactions_eco_online.user_id", user.id),
+
+        supabase
+          .from("events")
+          .select(`*, interactions_events!left(*)`)
+          .eq("interactions_events.user_id", user.id)
+      ]);
+
+      if (inPersonRes.error) console.error(inPersonRes.error);
+      if (onlineRes.error) console.error(onlineRes.error);
+      if (eventRes.error) console.error(eventRes.error);
+
+      const inPersonData = inPersonRes.data ?? [];
+      const onlineData = onlineRes.data ?? [];
+      const eventData = eventRes.data ?? [];
     
-    const eventItems: VolunteerItem[] = events?.map((e) => ({
-      id: e.event_id,
-      type: e.type,
-      title: e.event_name,
-      date: formatEventDate(e.start_time, e.end_time),
-      location: e.location,
-      cover_photo: e.cover_photo,
-      liked: e.liked ?? false,
-      description: e.description,
-    })) ?? [];
+      const inPersonCardData: CardProps[] = (inPersonData ?? []).map(card => {
+        const interaction = card.interactions_eco_inperson?.[0];
 
-    const otherItems: VolunteerItem[] = petitions?.map((p) => ({
-      id: p.id,
-      type: p.type,
-      title: p.title,
-      time_taken: p.time_taken ?? '',
-      cover_photo: p.cover_photo,
-      liked: p.liked ?? false,
-      description: p.description,
-    })) ?? [];
+        return {
+          cardType: "in_person",
+          cardInfo: card,
+          liked: interaction?.liked ?? false,
+          signed_up: interaction?.signed_up ?? false,
+          completed: interaction?.completed ?? false,
+          clicked: interaction?.clicked ?? false,
+        };
+      }); 
+    
+      const onlineCardData: CardProps[] = (onlineData ?? []).map(card => {
+        const interaction = card.interactions_eco_online?.[0];
 
-      setItems([...eventItems, ...otherItems]);
-      // setLoading(false);
+        return {
+          cardType: "online",
+          cardInfo: card,
+          liked: interaction?.liked ?? false,
+          signed_up: interaction?.signed_up ?? false,
+          completed: interaction?.completed ?? false,
+          clicked: interaction?.clicked ?? false,
+        };
+      }); 
+    
+      const eventCardData: CardProps[] = (eventData ?? []).map(event => {
+        const interaction = event.interactions_events?.[0];
+
+        return {
+          cardType: "event",
+          cardInfo: event,
+          liked: interaction?.liked ?? false,
+          signed_up: interaction?.signed_up ?? false,
+          completed: interaction?.completed ?? false,
+          clicked: interaction?.clicked ?? false,
+        };
+      });
+
+      const fullData = [...inPersonCardData, ...onlineCardData, ...eventCardData]
+      setItems(fullData);
+      setLoading(false);
     };
-
-    fetchVolunteerData();
-  }, []);
+    fetchData();
+  }, [user?.id, refreshKey]);
 
   return (
     <LinearGradient
@@ -95,18 +110,19 @@ export default function Volunteer() {
         style={styles.gradient}
       >
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
-        <Header resultsCount={items.length}/>
-        { items.map((item) => (
-          <EcoFeed
-            key={`${item.type}-${item.id}`}
-            {...item}
-            onLearnMore={() => {}}
-            onSignUp={() => {}}
-          />
+        
+        <Header resultsCount={items.length}/> 
+        
+        
+        { loading && <ActivityIndicator size="large" color="#0000ff" />}
+        { !loading && items.map((card) => ( 
+          <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
         ))}
       </ScrollView>
         <View style={styles.mapBackground}>
-          <MaterialCommunityIcons name="map" size={30} color={'#0282D3'}></MaterialCommunityIcons>          
+          <Pressable onPress={() => router.push('/(tabs)/map')}>
+            <MaterialCommunityIcons name="map" size={30} color={'#0282D3'} />
+          </Pressable>
         </View>
     </LinearGradient>
   );

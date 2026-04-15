@@ -6,6 +6,8 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { useAuth } from '@/context/AuthContext'
 import { Text } from 'react-native'
 
+
+
 export default function TabsLayout() {
   const router = useRouter();
   const { user, loading, profile } = useAuth()
@@ -32,11 +34,31 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="activity"
+        options={{
+          title: 'Activity',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="analytics-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
         name="volunteer"
         options={{
           title: 'Volunteer',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="hand-extended" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="map"
+        options={{
+          title: 'Map',
+          href: null,
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="map" size={size} color={color} />
           ),
         }}
       />
@@ -50,15 +72,6 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="admin-analytics"
-        options={{
-          title: 'Analytics',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="chart-bar" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
@@ -67,16 +80,52 @@ export default function TabsLayout() {
           ),
         }}
       />
+
+      {/* Admin only tabs */}
+      <Tabs.Screen
+        name="admin-analytics"
+        options={{
+          href: null,
+          title: 'Analytics',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="chart-bar" size={size} color={color} />
+          ),
+        }}
+      />
       <Tabs.Screen
         name="VolunteerView"
         options={{
+          href: profile?.is_admin ? undefined : null,
           title: 'Volunteer View',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="bar-chart" size = {size} color = {color}></Ionicons>
           ),
         }}
       />
-
+      <Tabs.Screen
+       name = "AddEcoAction"
+        options = {{
+          title: 'Add Eco Action',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="add-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="AdminNewsAddFormView"
+        options={{
+          href: null,
+          title: 'News Add Form',
+        }}
+      />
+      <Tabs.Screen
+      name="AdminNewsEditFormView"
+      options={{
+        href: null,
+        title: 'Edit Newsletter',
+      }}
+    />
     </Tabs>
   );
+
 }

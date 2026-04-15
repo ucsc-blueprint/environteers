@@ -1,131 +1,208 @@
 import React, { useState } from 'react';
 import { View, TextInput, Text, Pressable, StyleSheet} from 'react-native';
 import { useRouter } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
 
 export interface LoginFormProps {
     onSubmit: (email: string, password: string) => void;
+    isAdmin?: boolean;
 }
-const LoginForm = ({ onSubmit }: LoginFormProps) => {
+
+const LoginForm = ({ onSubmit, isAdmin = false }: LoginFormProps) => {
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleSubmit = () => {
+        setError('');
+        if (!email || !password) {
+            setError('Please fill out all fields.');
+            return;
+        }
+        onSubmit(email, password);
+    };
+
     return (
         <View style={styles.container}>
-            <View style={styles.textBox}>
-                <Text style={styles.title}>Welcome back!</Text>
-                <Text style={styles.subtitle}>Log into your account</Text>
+            <View style={styles.content}>
+                <Pressable style={styles.backButton} onPress={() => router.push('/')}>
+                    <ChevronLeft size={20} color="#757575" />
+                    <Text style={styles.backText}>
+                        {isAdmin ? 'Not an admin? Click to go back' : 'Go back'}
+                    </Text>
+                </Pressable>
 
-                <View style={styles.textInputBox}>
-                    <Text>email</Text>
-                    <View style={styles.inputWithIcon}>
-                        <MaterialCommunityIcons name="email-outline" size={20} color="#75786C" style={styles.icon}/>
-                        <TextInput
-                            style={styles.textInput}
-                            value={email}
-                            onChangeText={setEmail}
-                        />
-                    </View>
+                <Text style={styles.title}>
+                    {isAdmin ? 'Welcome Admin!' : 'Welcome Back!'}
+                </Text>
+                <Text style={styles.subtitle}>
+                {isAdmin
+                    ? 'Log into your account to monitor environmental activities.'
+                    : 'Log into your account to check the latest updates!'}
+                </Text>
 
-                    <Text>password</Text>
-                    <View style={styles.inputWithIcon}>
-                        <MaterialCommunityIcons name="lock-outline" size={20} color="#75786C" style={styles.icon}/>
+                <View style={styles.fields}>
+                    <Text style={styles.label}>Email</Text>
+                    <TextInput
+                        value={email}
+                        onChangeText={setEmail}
+                        placeholder="Email"
+                        placeholderTextColor="#868E8B"
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        style={styles.input}
+                    />
+
+                    <Text style={styles.label}>Password</Text>
+                    <View style={styles.inputContainer}>
                         <TextInput
-                            style={styles.textInput}
                             value={password}
                             onChangeText={setPassword}
-                            secureTextEntry
+                            placeholder="Password"
+                            placeholderTextColor="#868E8B"
+                            secureTextEntry={!showPassword}
+                            style={[styles.input, { flex: 1, marginBottom: 0 }]}
                         />
+                        <Pressable style={styles.eyeIcon} onPress={() => setShowPassword(prev => !prev)}>
+                            {showPassword ? <EyeOff size={18} color="#868E8B" /> : <Eye size={18} color="#868E8B" />}
+                        </Pressable>
                     </View>
                 </View>
 
-                <Pressable
-                    style={styles.loginButton}
-                    onPress={() => {
-                        if (email !== '' && password !== '') {
-                            onSubmit(email, password);
-                        }
-                    }}
-                >
-                    <Text style={styles.buttonText}>Login</Text>
-                </Pressable>
-            </View>
+                {error !== '' && <Text style={styles.error}>{error}</Text>}
 
-            <View style={styles.signupFooter}>
-                <Text>
-                    Don&apos;t have an account? <Pressable onPress={() => router.push('/signup')}><Text style={styles.signupLink}>Sign up</Text></Pressable>
-                </Text>
+                <Pressable
+                    style={({ pressed }) => [
+                        styles.loginButton,
+                        pressed && styles.loginButtonPressed,
+                    ]}
+                    onPress={handleSubmit}
+                >
+                    <Text style={styles.loginButtonText}>Login</Text>
+                </Pressable>
+
+                <Pressable>
+                    <Text style={styles.forgotPassword}>Forgot password?</Text>
+                </Pressable>
             </View>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    loginButton: {
-        borderRadius: 8,
-        backgroundColor: "#4F6629",
-        padding: 10,
-        width: 288,
-        marginTop: 40
-    },
-    buttonText: {
-        fontSize: 20,
-        color: "white",
-        textAlign: "center"
-    },
-    signupLink: {
-        fontWeight: 'bold',
-        textDecorationLine: 'underline',
-    },
     container: {
-        display: 'flex',
-        flexDirection: "column",
-        alignItems: 'center',
-        backgroundColor: '#DDE6C6',
-        flex: 1
-    },
-    textBox: {
-        marginTop: '30%',
-    },
-    textInputBox: {
-        marginTop: 30,
-    },
-    title: {
-        fontWeight: '500',
-        color: '#1A1C15',
-        fontSize: 40,
-    },
-    subtitle: {
-        color: "#414A32",
-        fontSize: 20,
-        marginTop: 10
-    },
-    textInput: {
         flex: 1,
-        marginTop: 0,
-        padding: 10
+        backgroundColor: '#F6FBF2',
     },
-    inputWithIcon: {
+
+    content: {
+        paddingHorizontal: 40,
+        paddingBottom: 40,
+    },
+
+    backButton: {
+        marginTop: 72,
+        marginBottom: 24,
         flexDirection: 'row',
         alignItems: 'center',
+        gap: 4,
+        marginLeft: -4,
+    },
+
+    backText: {
+        fontSize: 16,
+        fontWeight: '500',
+        color: '#757575',
+    },
+
+    title: {
+        fontSize: 36,
+        fontWeight: '600',
+        color: '#86AE42',
+        lineHeight: 46,
+        marginTop: 100,
+        marginBottom: 12,
+    },
+
+    subtitle: {
+        fontSize: 20,
+        fontWeight: '400',
+        color: 'black',
+        lineHeight: 21,
+        marginBottom: 64,
+    },
+
+    fields: {
+        gap: 12,
+        marginBottom: 64,
+    },
+
+    label: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#525856',
+        lineHeight: 20,
+    },
+
+    input: {
+        height: 40,
         borderWidth: 1,
-        borderColor: "#1A1C15",
-        borderRadius: 2,
-        paddingHorizontal: 10,
-        backgroundColor: '#FAFAEE',
-        marginTop: 10,
-        marginBottom: 10,
-        width: 288,
-        height: 48
+        borderColor: '#D9E0DE',
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        backgroundColor: '#fff',
+        fontSize: 14,
+        color: '#172A36',
     },
-    icon: {
-        marginRight: 8
+
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#D9E0DE',
+        borderRadius: 8,
     },
-    signupFooter: {
-        color: '#1A1C15',
-        marginTop: 30,
-        fontSize: 20
-    }
+
+    eyeIcon: {
+        position: 'absolute',
+        right: 12,
+    },
+
+    error: {
+        color: 'red',
+        marginBottom: 12,
+        textAlign: 'center',
+    },
+
+    loginButton: {
+        backgroundColor: '#3A5513',
+        height: 40,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 8,
+    },
+
+    loginButtonPressed: {
+        backgroundColor: '#2d4210',
+    },
+
+    loginButtonText: {
+        color: '#F2F7F5',
+        fontSize: 14,
+        fontWeight: '700',
+        lineHeight: 20,
+    },
+
+    forgotPassword: {
+        textAlign: 'center',
+        fontSize: 14,
+        color: '#3A5513',
+        lineHeight: 36,
+    },
 });
 
 export default LoginForm;

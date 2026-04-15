@@ -1,14 +1,23 @@
 import React from 'react';
-import { Text, View, ScrollView, StyleSheet, Image } from "react-native";
+import { ActivityIndicator, Text, View, ScrollView, StyleSheet, Image } from "react-native";
+import { LogoutButton } from "@/components/LogoutButton";
 import { ProfileButtons } from "@/components/ProfileButtons";
-import { LogHours } from '@/components/LogHours';
+import { useAuth } from '@/context/AuthContext';
+import { Redirect } from 'expo-router';
 
 export default function Profile() {
+  const { profile, loading } = useAuth();
+  if (loading) {
+    return <ActivityIndicator size="large" color="#000000" />
+  }
+  if (!profile) {
+    return <Redirect href="/" />
+  }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ justifyContent: "center" }}>
       <Text style={styles.header}>Hello
-        <Text style={{ fontWeight: "bold" }}> Name</Text>
+        <Text style={{ fontWeight: "bold" }}> {profile?.first_name} {profile?.last_name}</Text>
       </Text>
 
       <View style={styles.profilePicContainer}>
@@ -27,7 +36,7 @@ export default function Profile() {
         <ProfileButtons />
       </View>
 
-      <LogHours onSubmit={() => {}} />
+      <LogoutButton/>
     </ScrollView>
   );
 }

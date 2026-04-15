@@ -8,7 +8,7 @@ import { supabase } from "@/constants/supabase";
 
 type Volunteer = {
   id: string;
-  username: string;
+  name: string;
   membership: string;
 };
 
@@ -47,7 +47,7 @@ export const AdminVolunteersView = () => {
       try {
         const { data, error } = await supabase
           .from('users')
-          .select('user_id, username, created_at')
+          .select('user_id, first_name, last_name, created_at')
           .eq("is_admin", false);
         
         if (error) {
@@ -58,7 +58,7 @@ export const AdminVolunteersView = () => {
         const users: Volunteer[] = (data ?? []).map(user => {
           return {
             id: user.user_id,
-            username: user.username,
+            name: `${user.first_name} ${user.last_name}`,
             membership: formatMembership(user.created_at)
           };
         });
@@ -76,7 +76,7 @@ export const AdminVolunteersView = () => {
     if (!searchText.trim()) return allVolunteers;
 
     return allVolunteers.filter(user => 
-      includesText(user.username, searchText)
+      includesText(user.name, searchText)
     );
   }, [allVolunteers, searchText]);
 
@@ -90,7 +90,7 @@ export const AdminVolunteersView = () => {
         <TextInput
           placeholderTextColor='#999'
           
-          placeholder="Search for a username"
+          placeholder="Search..."
           
 
           style={styles.search}
@@ -108,13 +108,13 @@ export const AdminVolunteersView = () => {
               style={styles.row}
               onPress={() => router.push({
                 pathname: '/(tabs)/admin-analytics',
-                params: { volunteerName: item.username, membershipStatus: item.membership }
+                params: { volunteerName: item.name, membershipStatus: item.membership }
               })}
             >
               <View style={styles.avatar} />
 
               <View style={{ flex: 1 }}>
-                <Text style={styles.name}>{item.username}</Text>
+                <Text style={styles.name}>{item.name}</Text>
                 <Text style={styles.subtext}>{item.membership}
                 </Text>
               </View>
