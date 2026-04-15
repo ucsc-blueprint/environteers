@@ -9,8 +9,8 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
 import { renderIcon, renderCoverPhoto, toggleLike, addClick, addCompletion } from "@/app/utils/cards";
-
 import { useRefresh } from "@/context/RefreshContext";
+import { useEffect } from "react";
 
 export type OnlineCardData = {
   id: string,
@@ -27,7 +27,7 @@ export type OnlineCardDataProps = {
   cardType: "online";
   cardInfo: OnlineCardData,
   liked: boolean,
-  completed: boolean,
+  completed: boolean | null,
   clicked: boolean,
 }
 
@@ -38,10 +38,19 @@ export const OnlineCard = ({
   clicked,
 }: OnlineCardDataProps) => {
   const [expanded, setExpanded] = useState(false);
-  const [signUpClick, setSignUpClicked] = useState(false);
+  //const [signUpClick, setSignUpClicked] = useState(false);
   const [liked, setLiked] = useState(initialLike);
   const [completed, setCompleted] = useState(completionStatus);
   const { user } = useAuth();
+
+  useEffect(() => {
+    setCompleted(completionStatus);
+  }, [completionStatus]);
+
+  const shouldShowPrompt =
+  expanded &&
+  clicked &&
+  completed === null;
 
   const { triggerRefresh } = useRefresh();
 
@@ -49,12 +58,44 @@ export const OnlineCard = ({
     setExpanded(prev => !prev);
   };
 
-  const openSignUpLink = (cardInfo: OnlineCardData) => {
-    Linking.openURL(cardInfo.email_link!);
-    handleUserInteraction(cardInfo, 'clicked');
-    setSignUpClicked(true);
+  // const openSignUpLink = async (cardInfo: OnlineCardData) => {
+  //   if (user?.id) {
+  //     await handleUserInteraction(cardInfo, 'clicked');
+  //     triggerRefresh();
+  //   }
+  
+  //   Linking.openURL(cardInfo.email_link!);
+  // };
 
-  }
+  const openSignUpLink = async (cardInfo: OnlineCardData) => {
+    if (user?.id) {
+  
+      // Reset completion ONLY if previously false
+      if (completed === false) {
+        await addCompletion(
+          "interactions_eco_online",
+          cardInfo.id,
+          user.id,
+          "action_id",
+          null
+        );
+  
+        setCompleted(null);
+      }
+  
+      await handleUserInteraction(cardInfo, 'clicked');
+      triggerRefresh();
+    }
+  
+    Linking.openURL(cardInfo.email_link!);
+  };
+
+  // const openSignUpLink = async (cardInfo: OnlineCardData) => {
+  //   Linking.openURL(cardInfo.email_link!);
+  //   handleUserInteraction(cardInfo, 'clicked');
+  //   setSignUpClicked(true);
+
+  // }
 
   // const handleUserInteraction = (cardInfo: OnlineCardData, interaction_type: string) => {
   //   if (user?.id) {
@@ -106,19 +147,47 @@ export const OnlineCard = ({
   
         break;
       }
-  
+
       case "completed": {
         await addCompletion(
           "interactions_eco_online",
           cardInfo.id,
           user.id,
-          "action_id"
+          "action_id",
+          true 
         );
-  
+      
         setCompleted(true);
-        triggerRefresh(); 
+        triggerRefresh();
         break;
       }
+
+      case "not_completed": {
+        await addCompletion(
+          "interactions_eco_online",
+          cardInfo.id,
+          user.id,
+          "action_id",
+          false
+        );
+      
+        setCompleted(false);
+        triggerRefresh();
+        break;
+      }
+  
+      // case "completed": {
+      //   await addCompletion(
+      //     "interactions_eco_online",
+      //     cardInfo.id,
+      //     user.id,
+      //     "action_id"
+      //   );
+  
+      //   setCompleted(true);
+      //   triggerRefresh(); 
+      //   break;
+      // }
   
       default:
         break;
@@ -162,18 +231,38 @@ export const OnlineCard = ({
           <View style={CardStyles.signUpContainer}>
             <Text style={{ marginTop: 20 }}>{cardInfo.summary}</Text>
             {/* Verify If User Signed-up */}
-            { signUpClick && !completed &&
+            {  /* signUpClick && !completed && */
+            shouldShowPrompt &&
               <View style={CardStyles.confirmationContainer}>
                 <Text style={{color: '#3A5513'}}>Did you complete this online eco-action?</Text>
                 <View style={CardStyles.confirmationButtons}>
-                  <Pressable style={CardStyles.confirmationButton} onPress={() => setSignUpClicked(false)}>
+
+                <Pressable
+                  style={CardStyles.confirmationButton}
+                  onPress={() => handleUserInteraction(cardInfo, 'completed')}
+                >
+                  <Text style={CardStyles.confirmationText}>Yes</Text>
+                  <MaterialCommunityIcons name="check" size={20} color={'black'} />
+                </Pressable>
+
+                <Pressable
+                  style={CardStyles.confirmationButton}
+                  onPress={() => handleUserInteraction(cardInfo, 'not_completed')}
+                >
+                  <Text style={CardStyles.confirmationText}>No</Text>
+                  <MaterialCommunityIcons name="close" size={20} color={'black'} />
+                </Pressable>
+
+                  {/* <Pressable style={CardStyles.confirmationButton} onPress={() => setSignUpClicked(false)}>
                     <Text style={CardStyles.confirmationText} onPress={() => setExpanded(!expanded)}>No</Text>
                     <MaterialCommunityIcons name="close" size={20} color={'black'} />
                   </Pressable>
+
                   <Pressable style={CardStyles.confirmationButton} onPress={() => handleUserInteraction(cardInfo, 'completed')}>
                     <Text style={CardStyles.confirmationText}>Yes</Text>
                     <MaterialCommunityIcons name="check" size={20} color={'black'} />
-                  </Pressable>
+                  </Pressable> */}
+
                 </View>
               </View>
             }

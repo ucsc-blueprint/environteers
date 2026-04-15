@@ -96,28 +96,58 @@ export async function addSignUp (
 };
 
 
+// export async function addCompletion (
+//   tableName: string,
+//   foreign_id: string,
+//   user_id: string,
+//   foreign_field_name: string // Expected Values: "event_id" or "action_id"
+// ) {
+//   const { data, error} = await supabase
+//     .from(tableName)
+//     .upsert([{
+//         [foreign_field_name]: foreign_id,
+//         user_id: user_id,
+//         completed: true,
+//         completed_timestamp: new Date().toISOString(),
+//       }],
+//       { onConflict: `${foreign_field_name},user_id`}
+//     );
+//     console.log('added?');
+//     if (error) { 
+//       console.log(data);
+//       console.log(error);
+//       Alert.alert('Error. Something went wrong. Please try again');
+//     }
+// };
 export async function addCompletion (
   tableName: string,
   foreign_id: string,
   user_id: string,
-  foreign_field_name: string // Expected Values: "event_id" or "action_id"
+  foreign_field_name: string,
+  value: boolean | null
 ) {
-  const { data, error} = await supabase
+  const { data, error } = await supabase
     .from(tableName)
-    .upsert([{
+    .upsert([
+      {
         [foreign_field_name]: foreign_id,
         user_id: user_id,
-        completed: true,
-        completed_timestamp: new Date().toISOString(),
-      }],
-      { onConflict: `${foreign_field_name},user_id`}
-    );
-    console.log('added?');
-    if (error) { 
-      console.log(data);
-      console.log(error);
-      Alert.alert('Error. Something went wrong. Please try again');
-    }
+        completed: value,
+        completed_timestamp: value
+          ? new Date().toISOString()
+          : null,
+      }
+    ],
+    { onConflict: `${foreign_field_name},user_id` }
+  );
+
+  console.log('added?');
+
+  if (error) {
+    console.log(data);
+    console.log(error);
+    Alert.alert('Error. Something went wrong. Please try again');
+  }
 };
 
 // Tracks external link click

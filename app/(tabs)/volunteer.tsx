@@ -61,10 +61,10 @@ export default function Volunteer() {
         return {
           cardType: "in_person",
           cardInfo: card,
-          liked: interaction?.liked ?? false,
-          signed_up: interaction?.signed_up ?? false,
-          completed: interaction?.completed ?? false,
-          clicked: interaction?.clicked ?? false,
+          liked: interaction?.liked ?? null,
+          signed_up: interaction?.signed_up ?? null,
+          completed: interaction?.completed ?? null,
+          clicked: interaction?.clicked ?? null,
         };
       }); 
     
@@ -74,10 +74,10 @@ export default function Volunteer() {
         return {
           cardType: "online",
           cardInfo: card,
-          liked: interaction?.liked ?? false,
-          signed_up: interaction?.signed_up ?? false,
-          completed: interaction?.completed ?? false,
-          clicked: interaction?.clicked ?? false,
+          liked: interaction?.liked ?? null,
+          signed_up: interaction?.signed_up ?? null,
+          completed: interaction?.completed ?? null,
+          clicked: interaction?.clicked ?? null,
         };
       }); 
     
@@ -87,10 +87,10 @@ export default function Volunteer() {
         return {
           cardType: "event",
           cardInfo: event,
-          liked: interaction?.liked ?? false,
-          signed_up: interaction?.signed_up ?? false,
-          completed: interaction?.completed ?? false,
-          clicked: interaction?.clicked ?? false,
+          liked: interaction?.liked ?? null,
+          signed_up: interaction?.signed_up ?? null,
+          completed: interaction?.completed ?? null,
+          clicked: interaction?.clicked ?? null,
         };
       });
 

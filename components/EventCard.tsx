@@ -9,12 +9,14 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
 import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp, addClick } from "@/app/utils/cards";
 import { useRefresh } from "@/context/RefreshContext";
+import { supabase } from "@/constants/supabase";
+import { useEffect } from "react";
 
 export type EventCardData = {
   id: string,
   title: string,
-  start_time?: Date,
-  end_time?: Date,
+  start_date?: Date,
+  end_date?: Date,
   location?: string,
   cover_photo?: string,
   google_calendar_link?: string,
@@ -26,8 +28,8 @@ export type EventCardDataProps = {
   cardType: "event";
   cardInfo: EventCardData,
   liked: boolean,
-  signed_up: boolean,
-  completed: boolean,
+  signed_up: boolean | null,
+  completed: boolean | null,
   clicked: boolean,
 }
 
@@ -39,36 +41,109 @@ export const EventCard = ({
   clicked,
 }: EventCardDataProps) => {
   const [expanded, setExpanded] = useState(false);
-  const [signUpClick, setSignUpClicked] = useState(false);
+  //const [signUpClick, setSignUpClicked] = useState(false);
   const [signUpStatus, setSignUpStatus] = useState(initialSignUp);
   const [liked, setLiked] = useState(initialLike);
   const { user } = useAuth();
 
-  const { triggerRefresh } = useRefresh();
+  const isPastEvent =
+  cardInfo.end_date
+    ? new Date(cardInfo.end_date).getTime() < Date.now()
+    : false;
 
+  const shouldShowCompletionPrompt =
+    expanded &&
+    clicked &&
+    signUpStatus === true &&
+    completed === null &&
+    isPastEvent;
+
+  const shouldShowPrompt =
+  expanded &&
+  clicked &&
+  signUpStatus === null;
+
+  useEffect(() => {
+    setSignUpStatus(initialSignUp);
+  }, [initialSignUp]);
+
+  const { triggerRefresh } = useRefresh();
 
   const toggleExpanded = () => {
     setExpanded(prev => !prev);
   };
 
-  const openSignUpLink = (link: string) => {
-    if (user?.id) {
-      addClick("interactions_events", cardInfo.id, user.id, 'event_id');
-      setSignUpClicked(true);
-    }
-    Linking.openURL(link);
-  }  
+  // const openSignUpLink = async (link: string) => {
+  //   if (user?.id) {
+  //     await addClick("interactions_events", cardInfo.id, user.id, 'event_id');
+  //     triggerRefresh();
+  //     //setSignUpClicked(true);
+  //   }
+  //   Linking.openURL(link);
+  // }  
 
-  const handleSignUp = (cardInfo: EventCardData) => {
+  const openSignUpLink = async (link: string) => {
     if (user?.id) {
-      addSignUp("interactions_events", cardInfo.id, user.id, 'event_id');
-      setSignUpStatus(true);
+  
+      // Reset signed_up ONLY if it was false
+      if (signUpStatus === false) {
+        await supabase
+          .from("interactions_events") 
+          .update({ signed_up: null })
+          .eq("event_id", cardInfo.id)
+          .eq("user_id", user.id);
+  
+        setSignUpStatus(null);
+      }
+  
+      await addClick("interactions_events", cardInfo.id, user.id, 'event_id');
+  
       triggerRefresh();
-      return;
     }
-    Alert.alert("Not signed in! Can't sign up");
-    return;
-  }
+  
+    Linking.openURL(link);
+  };
+  
+
+    const handleSignUp = async (response: boolean) => {
+      if (!user?.id) return;
+    
+      await supabase
+        .from("interactions_events")
+        .update({ signed_up: response })
+        .eq("event_id", cardInfo.id)
+        .eq("user_id", user.id);
+    
+      if (response) {
+        setSignUpStatus(true);
+      } else {
+        setSignUpStatus(false);
+        setExpanded(false);
+      }
+    
+      //setSignUpClicked(false);
+    
+      triggerRefresh(); 
+    };
+
+    const handleCompletion = async (response: boolean) => {
+      if (!user?.id) return;
+    
+      await supabase
+        .from("interactions_events")
+        .update({ completed: response })
+        .eq("event_id", cardInfo.id)
+        .eq("user_id", user.id);
+    
+      if (response) {
+        setExpanded(false); 
+      } else {
+        setExpanded(false);
+      }
+    
+      triggerRefresh();
+    };
+
 
 
   // const handleLikes = (cardInfo: EventCardData) => {
@@ -110,13 +185,13 @@ export const EventCard = ({
           </View>
           <View style={CardStyles.contentColumn}>
             <Text>{cardInfo.title}</Text>
-            { cardInfo.start_time && cardInfo.end_time &&
+            { cardInfo.start_date && cardInfo.end_date &&
               <View style={[CardStyles.formatRow, CardStyles.date]}>
                 <Image
                   source={require("../assets/images/google-calendar.png")}
                   style={{ width: 18, height: 18 }}
                 />
-                <Text>{formatEventDate(cardInfo.start_time, cardInfo.end_time)}</Text>
+                <Text>{formatEventDate(cardInfo.start_date, cardInfo.end_date)}</Text>
               </View>
             }
             { cardInfo.location &&
@@ -145,21 +220,58 @@ export const EventCard = ({
             <View style={CardStyles.signUpContainer}>
               { cardInfo.description && <Text style={{ marginTop: 20 }}>{cardInfo.description}</Text>}
               {/* Verify If User Signed-up */}
-              { signUpClick && !signUpStatus &&
+              { /* signUpClick && !signUpStatus && */ 
+               shouldShowPrompt &&
                 <View style={CardStyles.confirmationContainer}>
                   <Text style={{color: '#3A5513'}}>Did you sign up for this event?</Text>
                   <View style={CardStyles.confirmationButtons}>
-                    <Pressable style={CardStyles.confirmationButton} onPress={() => setSignUpClicked(false)}>
-                      <Text style={CardStyles.confirmationText} onPress={() => setExpanded(!expanded)}>No</Text>
-                      <MaterialCommunityIcons name="close" size={20} color={'black'} />
-                    </Pressable>
-                    <Pressable style={CardStyles.confirmationButton}>
-                      <Text style={CardStyles.confirmationText} onPress={() => handleSignUp(cardInfo)}>Yes</Text>
-                      <MaterialCommunityIcons name="check" size={20} color={'black'} />
-                    </Pressable>
+                  <Pressable
+                    style={CardStyles.confirmationButton}
+                    onPress={() => handleSignUp(true)}
+                  >
+                    <Text style={CardStyles.confirmationText}>Yes</Text>
+                    <MaterialCommunityIcons name="check" size={20} color={'black'} />
+                  </Pressable>
+
+                  <Pressable
+                    style={CardStyles.confirmationButton}
+                    onPress={() => handleSignUp(false)}
+                  >
+                    <Text style={CardStyles.confirmationText}>No</Text>
+                    <MaterialCommunityIcons name="close" size={20} color={'black'} />
+                  </Pressable>
+
                   </View>
                 </View>
               }
+
+              {shouldShowCompletionPrompt && (
+                <View style={CardStyles.confirmationContainer}>
+                  <Text style={{ color: '#3A5513' }}>
+                    Did you complete this event?
+                  </Text>
+
+                  <View style={CardStyles.confirmationButtons}>
+                  <Pressable
+                    style={CardStyles.confirmationButton}
+                    onPress={() => handleCompletion(true)}
+                  >
+                    <Text style={CardStyles.confirmationText}>Yes</Text>
+                    <MaterialCommunityIcons name="check" size={20} color={'black'} />
+                  </Pressable>
+
+                  <Pressable
+                    style={CardStyles.confirmationButton}
+                    onPress={() => handleCompletion(false)}
+                  >
+                    <Text style={CardStyles.confirmationText}>No</Text>
+                    <MaterialCommunityIcons name="close" size={20} color={'black'} />
+                  </Pressable>
+
+                  </View>
+                </View>
+              )}
+
               {/* Sign Up Button */}
               { cardInfo.sign_up_link &&
                 <View style={CardStyles.signUpButtonContainer}>

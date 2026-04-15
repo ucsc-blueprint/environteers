@@ -8,13 +8,14 @@ import {
   // mdiListBoxOutline,
   mdiOpenInNew,
 } from '@mdi/js';
-// import { supabase } from "@/constants/supabase";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
 import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp, addClick } from "@/app/utils/cards";
 
 import { useRefresh } from "@/context/RefreshContext";
+import { supabase } from "@/constants/supabase";
+import { useEffect } from "react";
 
 
 export type InPersonCardData = {
@@ -33,8 +34,8 @@ export type InPersonCardProps = {
   cardType: "in_person";
   cardInfo: InPersonCardData,
   liked: boolean,
-  signed_up: boolean,
-  completed: boolean,
+  signed_up: boolean | null,
+  completed: boolean | null,
   clicked: boolean,
 }
 
@@ -46,35 +47,116 @@ export const InPersonCard = ({
   clicked,
 }: InPersonCardProps) => {
   const [expanded, setExpanded] = useState(false);
-  const [signUpClick, setSignUpClicked] = useState(false);
+  //const [signUpClick, setSignUpClicked] = useState(false);
+
   const [liked, setLiked] = useState(initialLike);
   const [signUpStatus, setSignUpStatus] = useState(initialSignUp);
   const { user } = useAuth();
-
   const { triggerRefresh } = useRefresh();
+
+  useEffect(() => {
+    setSignUpStatus(initialSignUp);
+  }, [initialSignUp]);
 
   const toggleExpanded = () => {
     setExpanded(prev => !prev);
   };
 
-  const openSignUpLink = (link: string) => {
-    if (user?.id) {
-      addClick("interactions_eco_inperson", cardInfo.id, user.id, 'action_id');
-      setSignUpClicked(true);
-    }
-    Linking.openURL(link);
-  }
+  const isPastEvent =
+  cardInfo.end_date
+    ? new Date(cardInfo.end_date).getTime() < Date.now()
+    : false;
 
-  const handleSignUp = (cardInfo: InPersonCardData) => {
+  const shouldShowCompletionPrompt =
+    expanded &&
+    clicked &&
+    signUpStatus === true &&
+    completed === null &&
+    isPastEvent;
+
+  const shouldShowPrompt =
+    expanded &&
+    clicked &&
+    signUpStatus === null;
+
+  // const openSignUpLink = async (link: string) => {
+  //   if (user?.id) {
+  //     await addClick("interactions_eco_inperson", cardInfo.id, user.id, 'action_id');
+  //     triggerRefresh();
+  //     //setSignUpClicked(true);
+  //   }
+  //   Linking.openURL(link);
+  // }
+  const openSignUpLink = async (link: string) => {
     if (user?.id) {
-      addSignUp("interactions_eco_inperson", cardInfo.id, user.id, 'action_id');
-      setSignUpStatus(true);
+  
+      // Reset signed_up ONLY if it was false
+      if (signUpStatus === false) {
+        await supabase
+          .from("interactions_eco_inperson") 
+          .update({ signed_up: null })
+          .eq("action_id", cardInfo.id)
+          .eq("user_id", user.id);
+  
+        setSignUpStatus(null);
+      }
+  
+      await addClick("interactions_eco_inperson", cardInfo.id, user.id, 'action_id');
+  
       triggerRefresh();
-      return;
     }
-    Alert.alert("Not signed in! Can't sign up");
-    return;
-  }
+  
+    Linking.openURL(link);
+  };
+
+  // const handleSignUp = (cardInfo: InPersonCardData) => {
+  //   if (user?.id) {
+  //     addSignUp("interactions_eco_inperson", cardInfo.id, user.id, 'action_id');
+  //     setSignUpStatus(true);
+  //     triggerRefresh();
+  //     return;
+  //   }
+  //   Alert.alert("Not signed in! Can't sign up");
+  //   return;
+  // }
+    const handleSignUp = async (response: boolean) => {
+      if (!user?.id) return;
+    
+      await supabase
+        .from("interactions_eco_inperson")
+        .update({ signed_up: response })
+        .eq("action_id", cardInfo.id)
+        .eq("user_id", user.id);
+    
+      if (response) {
+        setSignUpStatus(true);
+      } else {
+        setSignUpStatus(false);
+        setExpanded(false);
+      }
+    
+      //setSignUpClicked(false);
+    
+      triggerRefresh();
+    };
+
+    const handleCompletion = async (response: boolean) => {
+      if (!user?.id) return;
+    
+      await supabase
+        .from("interactions_eco_inperson")
+        .update({ completed: response })
+        .eq("action_id", cardInfo.id)
+        .eq("user_id", user.id);
+    
+      if (response) {
+        setExpanded(false); 
+      } else {
+        setExpanded(false);
+      }
+    
+      triggerRefresh();
+    };
 
 
   // const handleLikes = (cardInfo: InPersonCardData) => {
@@ -151,21 +233,64 @@ export const InPersonCard = ({
           <View style={CardStyles.signUpContainer}>
             { cardInfo.summary && <Text style={{ marginTop: 20 }}>{cardInfo.summary}</Text>}
             {/* Verify If User Signed-up */}
-            { signUpClick && !signUpStatus &&
+            { /* { signUpClick && !signUpStatus && */ }
+            { shouldShowPrompt &&
               <View style={CardStyles.confirmationContainer}>
                 <Text style={{color: '#3A5513'}}>Did you sign up for this in person eco action?</Text>
                 <View style={CardStyles.confirmationButtons}>
-                  <Pressable style={CardStyles.confirmationButton} onPress={() => (setSignUpClicked(false))}>
+                <Pressable
+                  style={CardStyles.confirmationButton}
+                  onPress={() => handleSignUp(true)}
+                >
+                  <Text style={CardStyles.confirmationText}>Yes</Text>
+                  <MaterialCommunityIcons name="check" size={20} color={'black'} />
+                </Pressable>
+
+                <Pressable
+                  style={CardStyles.confirmationButton}
+                  onPress={() => handleSignUp(false)}
+                >
+                  <Text style={CardStyles.confirmationText}>No</Text>
+                  <MaterialCommunityIcons name="close" size={20} color={'black'} />
+                </Pressable>
+                
+
+                   { /* <Pressable style={CardStyles.confirmationButton} onPress={() => (setSignUpClicked(false))}>
                     <Text style={CardStyles.confirmationText} onPress={() => setExpanded(!expanded)}>No</Text>
                     <MaterialCommunityIcons name="close" size={20} color={'black'} />
-                  </Pressable>
-                  <Pressable style={CardStyles.confirmationButton}>
+                  </Pressable> */ }
+
+                  { /* <Pressable style={CardStyles.confirmationButton}>
                     <Text style={CardStyles.confirmationText} onPress={() => (handleSignUp(cardInfo))}>Yes</Text>
                     <MaterialCommunityIcons name="check" size={20} color={'black'} />
-                  </Pressable>
+                  </Pressable> */ }
+
                 </View>
               </View>
             }
+
+            {shouldShowCompletionPrompt && (
+              <View style={CardStyles.confirmationContainer}>
+                <Text style={{ color: '#3A5513' }}>
+                  Did you complete this eco action?
+                </Text>
+
+                <View style={CardStyles.confirmationButtons}>
+
+                  <Pressable onPress={() => handleCompletion(true)}>
+                    <Text>Yes</Text>
+                    <MaterialCommunityIcons name="check" size={20} color="black" />
+                  </Pressable>
+
+                  <Pressable onPress={() => handleCompletion(false)}>
+                    <Text>No</Text>
+                    <MaterialCommunityIcons name="close" size={20} color="black" />
+                  </Pressable>
+
+                </View>
+              </View>
+            )}
+
             {/* Sign Up Button */}
             { cardInfo.sign_up_link &&
               <View style={CardStyles.signUpButtonContainer}>
