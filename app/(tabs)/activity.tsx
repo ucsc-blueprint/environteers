@@ -3,7 +3,7 @@ import { LogoutButton } from "@/components/LogoutButton";
 import { useAuth } from "@/context/AuthContext";
 import { useState, useEffect } from "react";
 import { supabase } from "@/constants/supabase";
-import { InPersonCardDataProps } from "@/components/InPersonCard";
+import { InPersonCardProps } from "@/components/InPersonCard";
 import { OnlineCardDataProps } from "@/components/OnlineCard";
 import { EventCardDataProps } from "@/components/EventCard";
 import { CardProps } from "./volunteer";
@@ -73,7 +73,7 @@ export default function Activity() {
       const onlineData = onlineRes.data ?? [];
       const eventData = eventRes.data ?? [];
     
-      const inPersonCardData: InPersonCardDataProps[] = (inPersonData ?? []).map(interaction => ({
+      const inPersonCardData: InPersonCardProps[] = (inPersonData ?? []).map(interaction => ({
         cardType: 'in_person',
         cardInfo: interaction["inperson_ecoactions"],
         liked: interaction.liked,
