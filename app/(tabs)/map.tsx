@@ -10,7 +10,8 @@ import { InPersonCardDataProps } from '@/components/InPersonCard';
 import { EventCardDataProps } from '@/components/EventCard';
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useRouter } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
+import { ChevronLeft, SlidersHorizontal } from 'lucide-react-native';
+import { EcoFeedFilterDropdown } from '@/components/EcoFeedFilterDropdown';
 
 type MapItem = InPersonCardDataProps | EventCardDataProps;
 
@@ -61,8 +62,9 @@ export default function Map() {
   const [items, setItems] = useState<MapItem[]>([]);
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [filterType, setFilterType] = useState<"all" | "event" | "in_person">("all");
+  const [filterTypes, setFilterTypes] = useState<string[]>([]);
   const [maxDistance, setMaxDistance] = useState<number | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
 
   const bottomSheetRef = useRef<BottomSheet>(null);
   const flatListRef = useRef<any>(null);
@@ -223,7 +225,7 @@ export default function Map() {
   }, []);
 
   const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const R = 6371;
+    const R = 3958.8;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
 
@@ -238,7 +240,7 @@ export default function Map() {
 
   const filteredItems = items.filter(item => {
     const matchesSearch = item.cardInfo.title.toLowerCase().includes(search.toLowerCase())
-    const matchesType = filterType === "all" || item.cardType === filterType;
+    const matchesType = filterTypes.length === 0 || filterTypes.includes(item.cardType);
 
     const matchesDistance =
       !maxDistance || !userLocation
@@ -255,6 +257,22 @@ export default function Map() {
     return matchesSearch && matchesType && matchesDistance;
   });
 
+  const filteredMarkers = markers.filter(marker => {
+    const matchesType = filterTypes.length === 0 || filterTypes.includes(marker.type);
+
+    const matchesDistance =
+      !maxDistance || !userLocation
+        ? true
+        : getDistance(
+            userLocation.latitude,
+            userLocation.longitude,
+            marker.latitude,
+            marker.longitude
+          ) <= maxDistance
+
+    return matchesType && matchesDistance;
+  })
+
   return (
     <GestureHandlerRootView style={styles.container}>
       <Pressable onPress={() => router.back()} style={styles.backButton}>
@@ -270,7 +288,7 @@ export default function Map() {
           longitudeDelta: 0.0421,
         } : undefined}
       >
-      {markers.map((marker) => (
+      {filteredMarkers.map((marker) => (
           <MapMarker
             key={`${marker.id}-${marker.type}`}
             coordinate={{latitude: marker.latitude, longitude: marker.longitude}}
@@ -300,23 +318,50 @@ export default function Map() {
             });
           }}
           ListHeaderComponent={
-            <View style={styles.searchContainer}>
-              <TextInput
-                placeholder="Search..."
-                placeholderTextColor="#868E8B"
-                value={search}
-                onChangeText={setSearch}
-                style={styles.searchInput}
-              />
+            <View>
+              <View style={styles.searchRow}>
+                <TextInput
+                  placeholder="Search..."
+                  placeholderTextColor="#868E8B"
+                  value={search}
+                  onChangeText={setSearch}
+                  style={styles.searchInput}
+                />
+
+                <Pressable
+                  onPress={() => setShowFilters(prev => !prev)}
+                  style={styles.filterButton}
+                >
+                  <SlidersHorizontal size={18} color="black" />
+                </Pressable>
+              </View>
+
+              {showFilters && (
+                <View style={{ marginTop: 16 }}>
+                  <EcoFeedFilterDropdown
+                    typeOptions={[
+                      { label: "Eco Actions", value: "in_person" },
+                      { label: "Events", value: "event" },
+                    ]}
+                    selectedTypes={filterTypes}
+                    selectedDistance={maxDistance}
+                    onApply={(types, distance) => {
+                      setFilterTypes(types);
+                      setMaxDistance(distance);
+                      setShowFilters(false);
+                    }}
+                  />
+                </View>
+              )}
             </View>
           }
           renderItem={({ item }: { item: MapItem }) => (
-          <View style={[
-            { borderRadius: 12, borderWidth: 2, borderColor: 'transparent' },
-            `${item.cardInfo.id}-${item.cardType}` === selectedId && { borderColor: item.cardType === 'event' ? '#437CA1' : '#79B128' }
-          ]}>
-            { item && <EcoFeed card={item} isSelected={`${item.cardInfo.id}-${item.cardType}` === selectedId} setSelectedId={setSelectedId}/> }
-          </View>
+            <View style={[
+              { borderRadius: 12, borderWidth: 2, borderColor: 'transparent' },
+              `${item.cardInfo.id}-${item.cardType}` === selectedId && { borderColor: item.cardType === 'event' ? '#437CA1' : '#79B128' }
+            ]}>
+              { item && <EcoFeed card={item} isSelected={`${item.cardInfo.id}-${item.cardType}` === selectedId} setSelectedId={setSelectedId}/> }
+            </View>
           )}
           contentContainerStyle={{ paddingBottom: 100, gap: 16, padding: 16 }}
         />
@@ -338,15 +383,24 @@ const styles = StyleSheet.create({
   map: {
     flex: 1,
   },
-  searchContainer: {
+  searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: "#EAF2F6",
+    borderRadius: 8,
   },
   searchInput: {
     flex: 1,
-    backgroundColor: "#EAF2F6",
     padding: 12,
-    borderRadius: 8,
+  },
+  filterButton: {
+    width: 35,
+    height: 28,
+    borderRadius: 50,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
   },
   markerContainer: {
     alignItems: 'center',

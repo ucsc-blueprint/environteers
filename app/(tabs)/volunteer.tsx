@@ -1,6 +1,6 @@
 import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator } from "react-native";
 import { Header, EcoFeed } from "@/components/EcoFeed";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/constants/supabase";
 import { LinearGradient } from 'expo-linear-gradient';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
@@ -18,6 +18,10 @@ export default function Volunteer() {
   const { user } = useAuth();
   const [items, setItems] = useState<CardProps[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const [search, setSearch] = useState("");
+  const [filterTypes, setFilterTypes] = useState<string[]>([]);
+  const [maxDistance, setMaxDistance] = useState<number | null>(null);
 
   const { refreshKey } = useRefresh();
 
@@ -101,6 +105,20 @@ export default function Volunteer() {
     fetchData();
   }, [user?.id, refreshKey]);
 
+  const filteredItems = useMemo(() => {
+    return items.filter((item) => {
+      const matchesSearch =
+        item.cardInfo.title
+          ?.toLowerCase()
+          .includes(search.toLowerCase()) ?? true;
+
+      const matchesType =
+        filterTypes.length === 0 || filterTypes.includes(item.cardType);
+
+      return matchesSearch && matchesType;
+    });
+  }, [items, search, filterTypes]);
+
   return (
     <LinearGradient
         colors={['white','#EDF3F7', '#EAF2F6']}
@@ -111,11 +129,19 @@ export default function Volunteer() {
       >
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
         
-        <Header resultsCount={items.length}/> 
+        <Header 
+          resultsCount={items.length}
+          search={search}
+          setSearch={setSearch}
+          filterTypes={filterTypes}
+          setFilterTypes={setFilterTypes}
+          maxDistance={maxDistance}
+          setMaxDistance={setMaxDistance}
+        />
         
         
         { loading && <ActivityIndicator size="large" color="#0000ff" />}
-        { !loading && items.map((card) => ( 
+        { !loading && filteredItems.map((card) => ( 
           <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
         ))}
       </ScrollView>
