@@ -31,14 +31,20 @@ export type EventCardDataProps = {
   clicked: boolean,
 }
 
+type EventCardProps = EventCardDataProps & {
+  expanded: boolean;
+  onToggle: () => void;
+};
+
 export const EventCard = ({
   cardInfo, 
   liked: initialLike, 
   signed_up: initialSignUp,
   completed,
   clicked,
-}: EventCardDataProps) => {
-  const [expanded, setExpanded] = useState(false);
+  expanded,
+  onToggle
+}: EventCardProps) => {
   const [signUpClick, setSignUpClicked] = useState(false);
   const [signUpStatus, setSignUpStatus] = useState(initialSignUp);
   const [liked, setLiked] = useState(initialLike);
@@ -46,10 +52,7 @@ export const EventCard = ({
 
   const { triggerRefresh } = useRefresh();
 
-
-  const toggleExpanded = () => {
-    setExpanded(prev => !prev);
-  };
+  const toggleExpanded = onToggle;
 
   const openSignUpLink = (link: string) => {
     if (user?.id) {
@@ -150,7 +153,7 @@ export const EventCard = ({
                   <Text style={{color: '#3A5513'}}>Did you sign up for this event?</Text>
                   <View style={CardStyles.confirmationButtons}>
                     <Pressable style={CardStyles.confirmationButton} onPress={() => setSignUpClicked(false)}>
-                      <Text style={CardStyles.confirmationText} onPress={() => setExpanded(!expanded)}>No</Text>
+                      <Text style={CardStyles.confirmationText} onPress={toggleExpanded}>No</Text>
                       <MaterialCommunityIcons name="close" size={20} color={'black'} />
                     </Pressable>
                     <Pressable style={CardStyles.confirmationButton}>
