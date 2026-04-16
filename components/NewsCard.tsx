@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Trash, Pencil } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { supabase } from "@/constants/supabase";
+import { useAuth } from "@/context/AuthContext";
 
 export interface NewsCardProps {
   newsId: string;
@@ -31,13 +32,15 @@ export const NewsCard = ({
   onEdit,
 }: NewsCardProps) => {
 
+  const { user } = useAuth();
+
   const handlePress = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      await supabase.from('interaction_news').insert({
+      const { error } = await supabase.from('interaction_news').insert({
         user_id: user.id,
         news_id: newsId,
       });
+      if (error) console.error("Failed to track newsletter read:", error);
     }
     onPress();
   };
