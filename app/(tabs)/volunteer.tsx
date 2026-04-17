@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator } from "react-native";
+import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator, Text} from "react-native";
 import { Header, EcoFeed } from "@/components/EcoFeed";
 import { useEffect, useState } from "react";
 import { supabase } from "@/constants/supabase";
@@ -9,6 +9,8 @@ import { InPersonCardProps } from "@/components/InPersonCard";
 import { OnlineCardDataProps } from "@/components/OnlineCard";
 import { EventCardDataProps } from "@/components/EventCard";
 import { router } from "expo-router";
+import { Modal } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import { useRefresh } from "@/context/RefreshContext";
 
@@ -18,8 +20,18 @@ export default function Volunteer() {
   const { user } = useAuth();
   const [items, setItems] = useState<CardProps[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showAddMenu, setShowAddMenu] = useState(false);
 
   const { refreshKey } = useRefresh();
+  const goToAddForm = (type: "event" | "in-person" | "online") => 
+  {
+    setShowAddMenu(false);    
+    router.push({
+      pathname: "/(tabs)/AddEcoAction",
+      params: { typeOfAction: type },
+    });
+  };
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -111,7 +123,7 @@ export default function Volunteer() {
       >
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
         
-        <Header resultsCount={items.length}/> 
+        <Header resultsCount={items.length} onOpenAddMenu={() => setShowAddMenu(true)}/> 
         
         
         { loading && <ActivityIndicator size="large" color="#0000ff" />}
@@ -119,11 +131,30 @@ export default function Volunteer() {
           <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
         ))}
       </ScrollView>
+      <Pressable style={styles.fab} onPress={() => setShowAddMenu(true)}>
+        <Ionicons name="add" size={28} color="white" />
+      </Pressable>
         <View style={styles.mapBackground}>
           <Pressable onPress={() => router.push('/(tabs)/map')}>
             <MaterialCommunityIcons name="map" size={30} color={'#0282D3'} />
           </Pressable>
         </View>
+        <Modal visible={showAddMenu} transparent animationType="fade" onRequestClose={() => setShowAddMenu(false)}>
+          <Pressable style={styles.backdrop} onPress={() => setShowAddMenu(false)}>
+            <Pressable style={styles.popup} onPress={() => {}}>
+              <Text style={styles.popupTitle}>Add something new</Text>
+              <Pressable style={styles.popupButton} onPress={() => goToAddForm("event")}>
+                <Text>Add Event</Text>
+              </Pressable>
+              <Pressable style={styles.popupButton} onPress={() => goToAddForm("in-person")}>
+                <Text>Add In-Person Eco-Action</Text>
+              </Pressable>
+              <Pressable style={styles.popupButton} onPress={() => goToAddForm("online")}>
+                <Text>Add Online Eco-Action</Text>
+              </Pressable>
+            </Pressable>
+          </Pressable>
+        </Modal>
     </LinearGradient>
   );
 }
@@ -145,5 +176,31 @@ const styles = StyleSheet.create({
     bottom: 10,
     right: 20,
     boxShadow: '0px 0px 10px 0px #0282D333',
-  }
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 85,        //above map button
+    right: 20,
+    backgroundColor: '#86AE42',
+    width: 60, height: 60,
+    borderRadius: 30,
+    justifyContent: 'center', alignItems: 'center',
+    elevation: 5,
+    shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  backdrop: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.35)',
+    justifyContent: 'center', alignItems: 'center', padding: 20,
+  },
+  popup: {
+    width: '100%', backgroundColor: 'white',
+    borderRadius: 16, padding: 16, gap: 12,
+  },
+  popupTitle: { fontSize: 18, fontWeight: '600', marginBottom: 6 },
+  popupButton: {
+    paddingVertical: 14, paddingHorizontal: 12,
+    borderRadius: 12, backgroundColor: '#F2F2F2',
+  },
+
 });

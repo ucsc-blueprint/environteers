@@ -13,9 +13,10 @@ import { renderIcon } from "@/app/utils/cards";
 
 type HeaderProps = {
   resultsCount: number,
+  onOpenAddMenu: () => void,
 }
 
-export const Header = ({resultsCount}: HeaderProps) => {
+export const Header = ({resultsCount, onOpenAddMenu}: HeaderProps) => {
   const { profile } = useAuth();
   return (
     <View style={CardStyles.feedHeader}>
@@ -38,11 +39,12 @@ export const Header = ({resultsCount}: HeaderProps) => {
         <Pressable style={CardStyles.button} onPress={() => {}}><Text style={CardStyles.buttonText}>Eco Actions: Online</Text></Pressable>
         <Text style={CardStyles.results}>{resultsCount} results</Text>
       </View>
-    </View>
+  </View>
     );
 };
 
 export const EcoFeed = (props: { card: CardProps }) => {
+
   const { card } = props;
 
   if (!card) return null;
@@ -80,5 +82,4 @@ export const EcoFeed = (props: { card: CardProps }) => {
     default:
       return null;
   }
-};
-
+}  
