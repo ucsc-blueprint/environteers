@@ -105,22 +105,12 @@ export const InPersonCard = ({
       .update({ signed_up: response, signed_up_timestamp: new Date().toISOString() })
       .eq("action_id", cardInfo.id)
       .eq("user_id", user.id);
-
-    if (response) {
-      updateSignUp(
-        { cardType: "in_person", cardInfo, liked, signed_up: signed_up, completed, clicked }, true
-      );
-    } else {
-      updateSignUp(
-        { cardType: "in_person", cardInfo, liked, signed_up: signed_up, completed, clicked }, false
-      );
-      setExpanded(false);
-    }
-
-    // Update context
+    
+      // Update context
     updateSignUp (
       { cardType: "in_person", cardInfo, liked, signed_up: response, completed, clicked }, response
     );
+    setExpanded(response);
   };
       
 
