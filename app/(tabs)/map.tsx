@@ -1,7 +1,7 @@
 import { StyleSheet, TextInput, View, Text, Pressable } from 'react-native';
 import MapView, { Marker, LatLng } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { supabase } from '@/constants/supabase';
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { EcoFeed } from '@/components/EcoFeed';
@@ -11,6 +11,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useRouter } from 'expo-router';
 import { ChevronLeft, SlidersHorizontal } from 'lucide-react-native';
 import { EcoFeedFilterDropdown } from '@/components/EcoFeedFilterDropdown';
+import { useInteractions } from '@/context/InteractionsContext'
 
 type MapItem = InPersonCardDataProps | EventCardDataProps;
 
@@ -81,6 +82,8 @@ export default function Map() {
   const [maxDistance, setMaxDistance] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
+  const { cards: interactionCards } = useInteractions();
+
   const bottomSheetRef = useRef<BottomSheet>(null);
   const flatListRef = useRef<any>(null);
   const snapPoints = useMemo(() => ['15%', '50%', '90%'], []);
@@ -115,6 +118,19 @@ export default function Map() {
         longitude: res[0].longitude,
     };
   }
+
+  // Helper to get interaction state for a card
+  const getInteractionState = useCallback((id: string, type: string) => {
+    const match = interactionCards.find(
+      c => c.cardInfo.id === id && c.cardType === type
+    );
+    return {
+      liked: match?.liked ?? false,
+      signed_up: match && 'signed_up' in match ? match.signed_up : null,
+      completed: match?.completed ?? null,
+      clicked: match?.clicked ?? false,
+    };
+  }, [interactionCards]);
 
   // Request user location
   useEffect(() => {
@@ -190,18 +206,18 @@ export default function Map() {
         cardInfo: {
           id: e.id,
           title: e.title,
-          start_time: e.start_time ?? undefined,
-          end_time: e.end_time ?? undefined,
+          start_date: e.start_date ?? undefined,
+          end_date: e.end_date ?? undefined,
           location: e.location ?? undefined,
           cover_photo: e.cover_photo ?? undefined,
           google_calendar_link: e.google_calendar_link ?? undefined,
           description: e.description ?? undefined,
           sign_up_link: e.sign_up_link ?? undefined,
         },
-        liked: e.liked ?? undefined,
-        signed_up: e.signed_up ?? undefined,
-        completed: e.completed ?? undefined,
-        clicked: e.clicked ?? undefined,
+        liked: false,
+        signed_up: null,
+        completed: null,
+        clicked: false,
       })) ?? [];
 
 
@@ -218,10 +234,10 @@ export default function Map() {
           sign_up_link: e.sign_up_link,
           summary: e.summary ?? undefined,
         },
-        liked: e.liked ?? undefined,
-        signed_up: e.signed_up ?? undefined,
-        completed: e.completed ?? undefined,
-        clicked: e.clicked ?? undefined,
+        liked: false,
+        signed_up: null,
+        completed: null,
+        clicked: false,
       })) ?? [];
 
       const markerResults = await Promise.all([
@@ -239,24 +255,30 @@ export default function Map() {
     fetchMapData();
   }, []);
 
-  const filteredItems = useMemo(() => items.filter(item => {
-    const matchesSearch = item.cardInfo.title.toLowerCase().includes(search.toLowerCase())
-    const matchesType = filterTypes.length === 0 || filterTypes.includes(item.cardType);
+  const filteredItems = useMemo(() => items
+    .filter(item => {
+      const matchesSearch = item.cardInfo.title.toLowerCase().includes(search.toLowerCase())
+      const matchesType = filterTypes.length === 0 || filterTypes.includes(item.cardType);
 
-    const matchesDistance =
-      !maxDistance || !userLocation
-        ? true
-        : markers.find(m => m.id === item.cardInfo.id && m.type === item.cardType)
-          ? getDistance(
-              userLocation.latitude,
-              userLocation.longitude,
-              markers.find(m => m.id === item.cardInfo.id && m.type === item.cardType)!.latitude,
-              markers.find(m => m.id === item.cardInfo.id && m.type === item.cardType)!.longitude
-            ) <= maxDistance
-          : true;
+      const matchesDistance =
+        !maxDistance || !userLocation
+          ? true
+          : markers.find(m => m.id === item.cardInfo.id && m.type === item.cardType)
+            ? getDistance(
+                userLocation.latitude,
+                userLocation.longitude,
+                markers.find(m => m.id === item.cardInfo.id && m.type === item.cardType)!.latitude,
+                markers.find(m => m.id === item.cardInfo.id && m.type === item.cardType)!.longitude
+              ) <= maxDistance
+            : true;
 
-    return matchesSearch && matchesType && matchesDistance;
-  }), [items, search, filterTypes, maxDistance, userLocation, markers]);
+      return matchesSearch && matchesType && matchesDistance;
+    })
+    .map(item => ({
+      ...item,
+      ...getInteractionState(item.cardInfo.id, item.cardType)
+    })),
+  [items, search, filterTypes, maxDistance, userLocation, markers, getInteractionState]);
 
   const filteredMarkers = useMemo(() => markers.filter(marker => {
     const matchesType = filterTypes.length === 0 || filterTypes.includes(marker.type);

@@ -1,20 +1,19 @@
 import { useAuth } from "@/context/AuthContext";
 import { View, Image, Text, Pressable, Linking, Alert } from 'react-native';
 import { useState } from "react";
-import { 
-  mdiOpenInNew,
-} from '@mdi/js';
+import { mdiOpenInNew } from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
-import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp, addClick } from "@/app/utils/cards";
-import { useRefresh } from "@/context/RefreshContext";
+import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addClick } from "@/app/utils/cards";
+import { supabase } from "@/constants/supabase";
+import { useInteractions } from "@/context/InteractionsContext";
 
 export type EventCardData = {
   id: string,
   title: string,
-  start_time?: Date,
-  end_time?: Date,
+  start_date?: Date,
+  end_date?: Date,
   location?: string,
   cover_photo?: string,
   google_calendar_link?: string,
@@ -26,83 +25,142 @@ export type EventCardDataProps = {
   cardType: "event";
   cardInfo: EventCardData,
   liked: boolean,
-  signed_up: boolean,
-  completed: boolean,
+  signed_up: boolean | null,
+  completed: boolean | null,
   clicked: boolean,
 }
 
 type EventCardProps = EventCardDataProps & {
-  expanded: boolean;
-  onToggle: () => void;
+  expanded?: boolean;
+  onToggle?: () => void;
 };
 
 export const EventCard = ({
   cardInfo, 
-  liked: initialLike, 
-  signed_up: initialSignUp,
+  liked, 
+  signed_up,
   completed,
   clicked,
-  expanded,
-  onToggle
+  expanded: externalExpanded,
+  onToggle,
 }: EventCardProps) => {
-  const [signUpClick, setSignUpClicked] = useState(false);
-  const [signUpStatus, setSignUpStatus] = useState(initialSignUp);
-  const [liked, setLiked] = useState(initialLike);
   const { user } = useAuth();
 
-  const { triggerRefresh } = useRefresh();
+  const { updateLike, updateSignUp, updateCompleted, updateClicked } = useInteractions();
 
-  const toggleExpanded = onToggle;
-
-  const openSignUpLink = (link: string) => {
-    if (user?.id) {
-      addClick("interactions_events", cardInfo.id, user.id, 'event_id');
-      setSignUpClicked(true);
+  const [internalExpanded, setInternalExpanded] = useState(false);
+  const expanded = externalExpanded !== undefined ? externalExpanded : internalExpanded;
+  const toggleExpanded = () => {
+    if (onToggle) {
+      onToggle();
+    } else {
+      setInternalExpanded(prev => !prev);
     }
-    Linking.openURL(link);
-  }  
+  };
 
-  const handleSignUp = (cardInfo: EventCardData) => {
+  const isPastEvent =
+    cardInfo.end_date
+      ? new Date(cardInfo.end_date).getTime() < Date.now()
+      : false;
+
+  const shouldShowCompletionPrompt =
+    expanded &&
+    clicked &&
+    signed_up === true &&
+    completed === null &&
+    isPastEvent;
+
+  const shouldShowPrompt =
+    expanded &&
+    clicked &&
+    signed_up === null;
+
+  const openSignUpLink = async (link: string) => {
     if (user?.id) {
-      addSignUp("interactions_events", cardInfo.id, user.id, 'event_id');
-      setSignUpStatus(true);
-      triggerRefresh();
-      return;
-    }
-    Alert.alert("Not signed in! Can't sign up");
-    return;
-  }
 
+      // Reset signed_up ONLY if it was false
+      if (signed_up === false) {
+        await supabase
+          .from("interactions_events") 
+          .update({ signed_up: null })
+          .eq("event_id", cardInfo.id)
+          .eq("user_id", user.id);
 
-  // const handleLikes = (cardInfo: EventCardData) => {
-  //   if (user?.id) {
-  //     toggleLike("interactions_events", cardInfo.id, user.id, liked, 'event_id');
-  //     setLiked(!liked);
-  //     return;
-  //   }
-  //   Alert.alert("Not signed in! Can't like post");
-  //   return;
-  // }
+        updateSignUp(
+          { cardType: "event", cardInfo, liked, signed_up, completed, clicked },
+          null
+        );
+      }
 
-  const handleLikes = async (cardInfo: EventCardData) => {
-    if (user?.id) {
-      await toggleLike(
+      await addClick(
         "interactions_events",
         cardInfo.id,
         user.id,
-        liked,
         'event_id'
       );
-  
-      setLiked(!liked);
-      triggerRefresh(); 
-      return;
+
+      updateClicked(
+        { cardType: "event", cardInfo, liked, signed_up, completed, clicked }
+      );
     }
-  
-    Alert.alert("Not signed in! Can't like post");
+
+    Linking.openURL(link);
   };
 
+  const handleSignUp = async (response: boolean) => {
+    if (!user?.id) return;
 
+    await supabase
+      .from("interactions_events")
+      .update({ signed_up: response, signed_up_timestamp: new Date().toISOString() })
+      .eq("event_id", cardInfo.id)
+      .eq("user_id", user.id);
+
+    updateSignUp(
+      { cardType: "event", cardInfo, liked, signed_up, completed, clicked },
+      response
+    );
+
+    if (!response) {
+      toggleExpanded();
+    }
+  };
+
+  const handleCompletion = async (response: boolean) => {
+    if (!user?.id) return;
+
+    await supabase
+      .from("interactions_events")
+      .update({ completed: response, completed_timestamp: new Date().toISOString(), })
+      .eq("event_id", cardInfo.id)
+      .eq("user_id", user.id);
+
+    updateCompleted(
+      { cardType: "event", cardInfo, liked, signed_up, completed, clicked },
+      response
+    );
+
+    toggleExpanded();
+  };
+
+  const handleLikes = async () => {
+    if (!user?.id) {
+      Alert.alert("Not signed in! Can't like post");
+      return;
+    }
+
+    await toggleLike(
+      "interactions_events",
+      cardInfo.id,
+      user.id,
+      liked,
+      'event_id'
+    );
+    
+    updateLike(
+      { cardType: "event", cardInfo, liked, signed_up, completed, clicked }, !liked
+    );
+  };
 
   return (
     <View style={CardStyles.card}>
@@ -113,13 +171,13 @@ export const EventCard = ({
           </View>
           <View style={CardStyles.contentColumn}>
             <Text>{cardInfo.title}</Text>
-            { cardInfo.start_time && cardInfo.end_time &&
+            { cardInfo.start_date && cardInfo.end_date &&
               <View style={[CardStyles.formatRow, CardStyles.date]}>
                 <Image
                   source={require("../assets/images/google-calendar.png")}
                   style={{ width: 18, height: 18 }}
                 />
-                <Text>{formatEventDate(cardInfo.start_time, cardInfo.end_time)}</Text>
+                <Text>{formatEventDate(cardInfo.start_date, cardInfo.end_date)}</Text>
               </View>
             }
             { cardInfo.location &&
@@ -136,7 +194,7 @@ export const EventCard = ({
                 name={liked ? "cards-heart" : "cards-heart-outline"}
                 size={25}
                 color={'#0282D3'}
-                onPress={() => handleLikes(cardInfo)}
+                onPress={handleLikes}
                 disabled={!user?.id}
               />
             </View>
@@ -148,26 +206,63 @@ export const EventCard = ({
             <View style={CardStyles.signUpContainer}>
               { cardInfo.description && <Text style={{ marginTop: 20 }}>{cardInfo.description}</Text>}
               {/* Verify If User Signed-up */}
-              { signUpClick && !signUpStatus &&
+              { /* signUpClick && !signUpStatus && */ 
+               shouldShowPrompt &&
                 <View style={CardStyles.confirmationContainer}>
                   <Text style={{color: '#3A5513'}}>Did you sign up for this event?</Text>
                   <View style={CardStyles.confirmationButtons}>
-                    <Pressable style={CardStyles.confirmationButton} onPress={() => setSignUpClicked(false)}>
-                      <Text style={CardStyles.confirmationText} onPress={toggleExpanded}>No</Text>
-                      <MaterialCommunityIcons name="close" size={20} color={'black'} />
-                    </Pressable>
-                    <Pressable style={CardStyles.confirmationButton}>
-                      <Text style={CardStyles.confirmationText} onPress={() => handleSignUp(cardInfo)}>Yes</Text>
-                      <MaterialCommunityIcons name="check" size={20} color={'black'} />
-                    </Pressable>
+                  <Pressable
+                    style={CardStyles.confirmationButton}
+                    onPress={() => handleSignUp(true)}
+                  >
+                    <Text style={CardStyles.confirmationText}>Yes</Text>
+                    <MaterialCommunityIcons name="check" size={20} color={'black'} />
+                  </Pressable>
+
+                  <Pressable
+                    style={CardStyles.confirmationButton}
+                    onPress={() => handleSignUp(false)}
+                  >
+                    <Text style={CardStyles.confirmationText}>No</Text>
+                    <MaterialCommunityIcons name="close" size={20} color={'black'} />
+                  </Pressable>
+
                   </View>
                 </View>
               }
+
+              {shouldShowCompletionPrompt && (
+                <View style={CardStyles.confirmationContainer}>
+                  <Text style={{ color: '#3A5513' }}>
+                    Did you complete this event?
+                  </Text>
+
+                  <View style={CardStyles.confirmationButtons}>
+                  <Pressable
+                    style={CardStyles.confirmationButton}
+                    onPress={() => handleCompletion(true)}
+                  >
+                    <Text style={CardStyles.confirmationText}>Yes</Text>
+                    <MaterialCommunityIcons name="check" size={20} color={'black'} />
+                  </Pressable>
+
+                  <Pressable
+                    style={CardStyles.confirmationButton}
+                    onPress={() => handleCompletion(false)}
+                  >
+                    <Text style={CardStyles.confirmationText}>No</Text>
+                    <MaterialCommunityIcons name="close" size={20} color={'black'} />
+                  </Pressable>
+
+                  </View>
+                </View>
+              )}
+
               {/* Sign Up Button */}
               { cardInfo.sign_up_link &&
                 <View style={CardStyles.signUpButtonContainer}>
                   <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => openSignUpLink(cardInfo.sign_up_link!)}> 
-                    { signUpStatus ? 
+                    { signed_up ? 
                       <Text style={CardStyles.signUpText}>Revisit Link</Text> : 
                       <Text style={CardStyles.signUpText}>Take Action</Text> 
                     }
@@ -181,4 +276,3 @@ export const EventCard = ({
     </View>
   );
 }
-

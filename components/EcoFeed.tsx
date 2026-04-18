@@ -1,8 +1,6 @@
 import { useAuth } from "@/context/AuthContext";
-import { View, Image, Text, StyleSheet, Pressable, Linking, Alert, TextInput } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
-import React, { useState, useEffect} from "react";
-import { supabase } from "@/constants/supabase";
+import { View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
+import React, { useState } from "react";
 import { 
   mdiMenu,
   mdiBell,
@@ -100,10 +98,11 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
   const expanded = props.isSelected ?? false;
 
   const toggleExpanded = () => {
-    if (!props.setSelectedId) return;
-    const key = `${card.cardInfo.id}-${card.cardType}`;
-    props.setSelectedId(prev => (prev === key ? null : key));
-  };
+    if (props.setSelectedId) {
+      const key = `${card.cardInfo.id}-${card.cardType}`;
+      props.setSelectedId(prev => (prev === key ? null : key));
+    }
+   };
 
   if (!card) return null;
 
@@ -116,8 +115,7 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
           signed_up={card.signed_up} 
           completed={card.completed} 
           clicked={card.clicked}
-          expanded={expanded}
-          onToggle={toggleExpanded}
+          {...(props.setSelectedId ? { expanded, onToggle: toggleExpanded } : {})}
         />
       );
     case "online":
@@ -137,8 +135,7 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
           signed_up={card.signed_up} 
           completed={card.completed} 
           clicked={card.clicked}
-          expanded={expanded}
-          onToggle={toggleExpanded}
+          {...(props.setSelectedId ? { expanded, onToggle: toggleExpanded } : {})}
         />
       );
     default:
