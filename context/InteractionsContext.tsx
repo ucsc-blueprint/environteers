@@ -70,47 +70,79 @@ export const InteractionsProvider = ({ children }: { children: React.ReactNode }
   }, [user?.id]);
 
   const updateLike = (card: CardProps, liked: boolean) => {
-    setCards(prev =>
-      prev.map(c =>
-        c.cardInfo.id === card.cardInfo.id &&
-        c.cardType === card.cardType
-          ? { ...c, liked }
-          : c
-      )
-    );
+    setCards(prev => {
+      const exists = prev.some(
+        c => c.cardInfo.id === card.cardInfo.id && c.cardType === card.cardType
+      );
+      // Update card if already has been interacted with
+      if (exists) {
+        return prev.map(c =>
+          c.cardInfo.id === card.cardInfo.id &&
+          c.cardType === card.cardType
+            ? { ...c, liked }
+            : c
+        );
+      }
+      // If not, add new interaction card
+      return [...prev, { ...card, liked }];
+    });
   };
 
   const updateSignUp = (card: CardProps, value: boolean | null) => {
-    setCards(prev =>
-      prev.map(c =>
-        c.cardInfo.id === card.cardInfo.id &&
-        c.cardType === card.cardType
-          ? { ...c, signed_up: value }
-          : c
-      )
-    );
+    setCards(prev => {
+      const exists = prev.some(
+        c => c.cardInfo.id === card.cardInfo.id && c.cardType === card.cardType
+      );
+      // Update card if already has been interacted with
+      if (exists) {
+        return prev.map(c =>
+          c.cardInfo.id === card.cardInfo.id &&
+          c.cardType === card.cardType
+            ? { ...c, signed_up: value }
+            : c
+        );
+      }
+      // If not, add new interaction card
+      return [...prev, { ...card, signed_up: value }];
+    });
   };
 
   const updateCompleted = (card: CardProps, value: boolean | null) => {
-    setCards(prev =>
-      prev.map(c =>
-        c.cardInfo.id === card.cardInfo.id &&
-        c.cardType === card.cardType
-          ? { ...c, completed: value }
-          : c
-      )
-    );
+    setCards(prev => {
+      const exists = prev.some(
+        c => c.cardInfo.id === card.cardInfo.id && c.cardType === card.cardType
+      );
+      // Update card if already has been interacted with
+      if (exists) {
+        return prev.map(c =>
+          c.cardInfo.id === card.cardInfo.id &&
+          c.cardType === card.cardType
+            ? { ...c, completed: value }
+            : c
+        );
+      }
+      // If not, add new interaction card
+      return [...prev, { ...card, completed: value }];
+    });
   };
 
   const updateClicked = (card: CardProps) => {
-    setCards(prev =>
-      prev.map(c =>
-        c.cardInfo.id === card.cardInfo.id &&
-        c.cardType === card.cardType
-          ? { ...c, clicked: true }
-          : c
-      )
-    );
+    setCards(prev => {
+      const exists = prev.some(
+        c => c.cardInfo.id === card.cardInfo.id && c.cardType === card.cardType
+      );
+      // Update card if already has been interacted with
+      if (exists) {
+        return prev.map(c =>
+          c.cardInfo.id === card.cardInfo.id &&
+          c.cardType === card.cardType
+            ? { ...c, clicked: true }
+            : c
+        );
+      }
+      // If not, add new interaction card
+      return [...prev, { ...card, clicked: true }];
+    });
   };
 
   return (
