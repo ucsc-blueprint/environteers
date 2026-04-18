@@ -137,7 +137,7 @@ export const OnlineCard = ({
                 name={liked ? "cards-heart" : "cards-heart-outline"}
                 size={25}
                 color={'#0282D3'}
-                onPress={() => handleLike}
+                onPress={handleLike}
                 disabled={!user?.id}
               />
               </View>
@@ -177,7 +177,7 @@ export const OnlineCard = ({
             {/* Action Button */}
             { cardInfo.email_link &&
               <View style={CardStyles.signUpButtonContainer}>
-                <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => openSignUpLink}>       
+                <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={openSignUpLink}>       
                   { completed ? 
                     <Text style={CardStyles.signUpText}>Eco action completed </Text> : 
                     <Text style={CardStyles.signUpText}>Take Action</Text> 

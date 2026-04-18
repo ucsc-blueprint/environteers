@@ -1,8 +1,7 @@
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
 import { LogoutButton } from "@/components/LogoutButton";
 import { EcoFeed } from "@/components/EcoFeed";
-import { CardProps } from "./volunteer";
-import { useInteractions } from "@/context/InteractionsContext";
+import { CardProps, useInteractions } from "@/context/InteractionsContext";
 
 export default function Activity() {
   const { cards, loading } = useInteractions();
@@ -94,7 +93,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'column',
-    gap: '20',
+    gap: 20,
   }
 });
 

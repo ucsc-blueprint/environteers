@@ -30,10 +30,10 @@ export type EventCardDataProps = {
   clicked: boolean,
 }
 
-// type EventCardProps = EventCardDataProps & {
-//   expanded: boolean;
-//   onToggle: () => void;
-// };
+type EventCardProps = EventCardDataProps & {
+  expanded?: boolean;
+  onToggle?: () => void;
+};
 
 export const EventCard = ({
   cardInfo, 
@@ -41,17 +41,21 @@ export const EventCard = ({
   signed_up,
   completed,
   clicked,
-  // expanded,
-  // onToggle
-
-}: EventCardDataProps) => {
-  const [expanded, setExpanded] = useState(false);
+  expanded: externalExpanded,
+  onToggle,
+}: EventCardProps) => {
   const { user } = useAuth();
 
   const { updateLike, updateSignUp, updateCompleted, updateClicked } = useInteractions();
 
+  const [internalExpanded, setInternalExpanded] = useState(false);
+  const expanded = externalExpanded !== undefined ? externalExpanded : internalExpanded;
   const toggleExpanded = () => {
-    setExpanded(prev => !prev);
+    if (onToggle) {
+      onToggle();
+    } else {
+      setInternalExpanded(prev => !prev);
+    }
   };
 
   const isPastEvent =
@@ -118,7 +122,7 @@ export const EventCard = ({
     );
 
     if (!response) {
-      setExpanded(false);
+      toggleExpanded();
     }
   };
 
@@ -136,7 +140,7 @@ export const EventCard = ({
       response
     );
 
-    setExpanded(false);
+    toggleExpanded();
   };
 
   const handleLikes = async () => {

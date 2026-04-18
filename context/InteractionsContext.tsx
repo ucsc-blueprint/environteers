@@ -1,11 +1,11 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { EventCardDataProps } from "@/components/EventCard";
-import { InPersonCardProps } from "@/components/InPersonCard";
+import { InPersonCardDataProps } from "@/components/InPersonCard";
 import { OnlineCardDataProps } from "@/components/OnlineCard";
 import { useAuth } from "./AuthContext";
 import { supabase } from "@/constants/supabase";
 
-export type CardProps = InPersonCardProps | OnlineCardDataProps | EventCardDataProps;
+export type CardProps = InPersonCardDataProps | OnlineCardDataProps | EventCardDataProps;
 
 const InteractionsContext = createContext<InteractionsContextType | null>(null);
 

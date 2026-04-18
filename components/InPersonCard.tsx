@@ -30,10 +30,10 @@ export type InPersonCardDataProps = {
   clicked: boolean,
 }
 
-// type InPersonCardProps = InPersonCardDataProps & {
-//   expanded: boolean;
-//   onToggle: () => void;
-// };
+type InPersonCardProps = InPersonCardDataProps & {
+  expanded?: boolean;
+  onToggle?: () => void;
+};
 
 export const InPersonCard = ({
   cardInfo, 
@@ -41,15 +41,20 @@ export const InPersonCard = ({
   signed_up,
   completed,
   clicked,
-  // expanded,
-  // onToggle
-}: InPersonCardDataProps) => {
+  expanded: externalExpanded,
+  onToggle
+}: InPersonCardProps) => {
   const { updateLike, updateSignUp, updateCompleted, updateClicked } = useInteractions();
-  const [expanded, setExpanded] = useState(false);
   const { user } = useAuth();
 
+  const [internalExpanded, setInternalExpanded] = useState(false);
+  const expanded = externalExpanded !== undefined ? externalExpanded : internalExpanded;
   const toggleExpanded = () => {
-    setExpanded(prev => !prev);
+    if (onToggle) {
+      onToggle();
+    } else {
+      setInternalExpanded(prev => !prev);
+    }
   };
 
   const isPastEvent =
@@ -110,7 +115,7 @@ export const InPersonCard = ({
     updateSignUp (
       { cardType: "in_person", cardInfo, liked, signed_up: response, completed, clicked }, response
     );
-    setExpanded(response);
+    toggleExpanded();
   };
       
 
@@ -123,11 +128,8 @@ export const InPersonCard = ({
         .eq("action_id", cardInfo.id)
         .eq("user_id", user.id);
     
-      if (response) {
-        setExpanded(false); 
-      } else {
-        setExpanded(false);
-      }
+      toggleExpanded(); 
+
       // Update context
       updateCompleted(
         { cardType: "in_person", cardInfo, liked, signed_up: signed_up, completed: response, clicked },
