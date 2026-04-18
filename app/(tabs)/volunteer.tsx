@@ -5,6 +5,7 @@ import { supabase } from "@/constants/supabase";
 import { LinearGradient } from 'expo-linear-gradient';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { useAuth } from "@/context/AuthContext";
+import { useInteractions } from "@/context/InteractionsContext";
 import { InPersonCardDataProps } from "@/components/InPersonCard";
 import { OnlineCardDataProps } from "@/components/OnlineCard";
 import { EventCardDataProps } from "@/components/EventCard";
@@ -37,6 +38,20 @@ export default function Volunteer() {
   const [filterTypes, setFilterTypes] = useState<string[]>([]);
   const [maxDistance, setMaxDistance] = useState<number | null>(null);
 
+  const { cards: interactionCards } = useInteractions();
+
+  const getInteractionState = (id: string, type: string) => {
+    const match = interactionCards.find(
+      c => c.cardInfo.id === id && c.cardType === type
+    );
+    return {
+      liked: match?.liked ?? false,
+      signed_up: match && 'signed_up' in match ? match.signed_up : null,
+      completed: match?.completed ?? null,
+      clicked: match?.clicked ?? false,
+    };
+  };
+
   useEffect(() => {
     const getLocation = async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -59,18 +74,15 @@ export default function Volunteer() {
       const [inPersonRes, onlineRes, eventRes] = await Promise.all([
         supabase
           .from("inperson_ecoactions")
-          .select(`*, interactions_eco_inperson!left(*), location_latitude, location_longitude`)
-          .eq("interactions_eco_inperson.user_id", user.id),
+          .select(`*, location_latitude, location_longitude`),
 
         supabase
           .from("online_ecoactions")
-          .select(`*, interactions_eco_online!left(*)`)
-          .eq("interactions_eco_online.user_id", user.id),
+          .select(`*`),
 
         supabase
           .from("events")
-          .select(`*, interactions_events!left(*), location_latitude, location_longitude`)
-          .eq("interactions_events.user_id", user.id)
+          .select(`*, location_latitude, location_longitude`)
       ]);
 
       if (inPersonRes.error) console.error(inPersonRes.error);
@@ -81,44 +93,32 @@ export default function Volunteer() {
       const onlineData = onlineRes.data ?? [];
       const eventData = eventRes.data ?? [];
     
-      const inPersonCardData: CardProps[] = (inPersonData ?? []).map(card => {
-        const interaction = card.interactions_eco_inperson?.[0];
+      const inPersonCardData: CardProps[] = (inPersonData ?? []).map(card => ({
+        cardType: "in_person",
+        cardInfo: card,
+        liked: false,
+        signed_up: null,
+        completed: null,
+        clicked: false,
+      }));
 
-        return {
-          cardType: "in_person",
-          cardInfo: card,
-          liked: interaction?.liked ?? false,
-          signed_up: interaction?.signed_up ?? false,
-          completed: interaction?.completed ?? false,
-          clicked: interaction?.clicked ?? false,
-        };
-      }); 
+      const onlineCardData: CardProps[] = (onlineData ?? []).map(card => ({
+        cardType: "online",
+        cardInfo: card,
+        liked: false,
+        signed_up: null,
+        completed: null,
+        clicked: false,
+      })); 
     
-      const onlineCardData: CardProps[] = (onlineData ?? []).map(card => {
-        const interaction = card.interactions_eco_online?.[0];
-
-        return {
-          cardType: "online",
-          cardInfo: card,
-          liked: interaction?.liked ?? false,
-          signed_up: interaction?.signed_up ?? false,
-          completed: interaction?.completed ?? false,
-          clicked: interaction?.clicked ?? false,
-        };
-      }); 
-    
-      const eventCardData: CardProps[] = (eventData ?? []).map(event => {
-        const interaction = event.interactions_events?.[0];
-
-        return {
-          cardType: "event",
-          cardInfo: event,
-          liked: interaction?.liked ?? false,
-          signed_up: interaction?.signed_up ?? false,
-          completed: interaction?.completed ?? false,
-          clicked: interaction?.clicked ?? false,
-        };
-      });
+      const eventCardData: CardProps[] = (eventData ?? []).map(event => ({
+        cardType: "event",
+        cardInfo: event,
+        liked: false,
+        signed_up: null,
+        completed: null,
+        clicked: false,
+      }));
 
       const fullData = [...inPersonCardData, ...onlineCardData, ...eventCardData]
       setItems(fullData);
@@ -130,26 +130,31 @@ export default function Volunteer() {
   }, [user?.id]);
 
   const filteredItems = useMemo(() => {
-    return items.filter((item) => {
-      const matchesSearch =
-        item.cardInfo.title
-          ?.toLowerCase()
-          .includes(search.toLowerCase()) ?? true;
+    return items
+      .filter((item) => {
+        const matchesSearch =
+          item.cardInfo.title
+            ?.toLowerCase()
+            .includes(search.toLowerCase()) ?? true;
 
-      const matchesType =
-        filterTypes.length === 0 || filterTypes.includes(item.cardType);
+        const matchesType =
+          filterTypes.length === 0 || filterTypes.includes(item.cardType);
 
-      const matchesDistance = (() => {
-        if (!maxDistance || !userLocation || item.cardType === "online") return true;
-        const lat = (item.cardInfo as any).location_latitude;
-        const lon = (item.cardInfo as any).location_longitude;
-        if (!lat || !lon) return true;
-        return getDistance(userLocation.latitude, userLocation.longitude, lat, lon) <= maxDistance;
-      })();
+        const matchesDistance = (() => {
+          if (!maxDistance || !userLocation || item.cardType === "online") return true;
+          const lat = (item.cardInfo as any).location_latitude;
+          const lon = (item.cardInfo as any).location_longitude;
+          if (!lat || !lon) return true;
+          return getDistance(userLocation.latitude, userLocation.longitude, lat, lon) <= maxDistance;
+        })();
 
-      return matchesSearch && matchesType && matchesDistance;
-    });
-  }, [items, search, filterTypes, maxDistance, userLocation]);
+        return matchesSearch && matchesType && matchesDistance;
+      })
+      .map(item => ({
+        ...item,
+        ...getInteractionState(item.cardInfo.id, item.cardType)
+      }));
+  }, [items, search, filterTypes, maxDistance, userLocation, interactionCards]);
 
   return (
     <LinearGradient
