@@ -1,105 +1,18 @@
 import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator } from "react-native";
 import { Header, EcoFeed } from "@/components/EcoFeed";
-import { useEffect, useState } from "react";
-import { supabase } from "@/constants/supabase";
 import { LinearGradient } from 'expo-linear-gradient';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
-import { useAuth } from "@/context/AuthContext";
 import { InPersonCardProps } from "@/components/InPersonCard";
 import { OnlineCardDataProps } from "@/components/OnlineCard";
 import { EventCardDataProps } from "@/components/EventCard";
 import { router } from "expo-router";
 
-import { useRefresh } from "@/context/RefreshContext";
+import { useInteractions } from "@/context/InteractionsContext";
 
 export type CardProps = InPersonCardProps | OnlineCardDataProps | EventCardDataProps;
 
 export default function Volunteer() {
-  const { user } = useAuth();
-  const [items, setItems] = useState<CardProps[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const { refreshKey } = useRefresh();
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-
-      if (!user?.id) {
-        setLoading(false);
-        return;
-      };
-
-      const [inPersonRes, onlineRes, eventRes] = await Promise.all([
-        supabase
-          .from("inperson_ecoactions")
-          .select(`*, interactions_eco_inperson!left(*)`)
-          .eq("interactions_eco_inperson.user_id", user.id),
-
-        supabase
-          .from("online_ecoactions")
-          .select(`*, interactions_eco_online!left(*)`)
-          .eq("interactions_eco_online.user_id", user.id),
-
-        supabase
-          .from("events")
-          .select(`*, interactions_events!left(*)`)
-          .eq("interactions_events.user_id", user.id)
-      ]);
-
-      if (inPersonRes.error) console.error(inPersonRes.error);
-      if (onlineRes.error) console.error(onlineRes.error);
-      if (eventRes.error) console.error(eventRes.error);
-
-      const inPersonData = inPersonRes.data ?? [];
-      const onlineData = onlineRes.data ?? [];
-      const eventData = eventRes.data ?? [];
-    
-      const inPersonCardData: CardProps[] = (inPersonData ?? []).map(card => {
-        const interaction = card.interactions_eco_inperson?.[0];
-
-        return {
-          cardType: "in_person",
-          cardInfo: card,
-          liked: interaction?.liked ?? null,
-          signed_up: interaction?.signed_up ?? null,
-          completed: interaction?.completed ?? null,
-          clicked: interaction?.clicked ?? null,
-        };
-      }); 
-    
-      const onlineCardData: CardProps[] = (onlineData ?? []).map(card => {
-        const interaction = card.interactions_eco_online?.[0];
-
-        return {
-          cardType: "online",
-          cardInfo: card,
-          liked: interaction?.liked ?? null,
-          signed_up: interaction?.signed_up ?? null,
-          completed: interaction?.completed ?? null,
-          clicked: interaction?.clicked ?? null,
-        };
-      }); 
-    
-      const eventCardData: CardProps[] = (eventData ?? []).map(event => {
-        const interaction = event.interactions_events?.[0];
-
-        return {
-          cardType: "event",
-          cardInfo: event,
-          liked: interaction?.liked ?? null,
-          signed_up: interaction?.signed_up ?? null,
-          completed: interaction?.completed ?? null,
-          clicked: interaction?.clicked ?? null,
-        };
-      });
-
-      const fullData = [...inPersonCardData, ...onlineCardData, ...eventCardData]
-      setItems(fullData);
-      setLoading(false);
-    };
-    fetchData();
-  }, [user?.id, refreshKey]);
+  const { cards, loading } = useInteractions();
 
   return (
     <LinearGradient
@@ -111,11 +24,10 @@ export default function Volunteer() {
       >
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
         
-        <Header resultsCount={items.length}/> 
-        
+        <Header resultsCount={cards.length}/> 
         
         { loading && <ActivityIndicator size="large" color="#0000ff" />}
-        { !loading && items.map((card) => ( 
+        { !loading && cards.map((card) => ( 
           <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
         ))}
       </ScrollView>

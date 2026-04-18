@@ -1,16 +1,13 @@
 import { useAuth } from "@/context/AuthContext";
 import { View, Image, Text, Pressable, Linking, Alert } from 'react-native';
 import { useState } from "react";
-import { 
-  mdiOpenInNew,
-} from '@mdi/js';
+import { mdiOpenInNew } from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
-import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp, addClick } from "@/app/utils/cards";
-import { useRefresh } from "@/context/RefreshContext";
+import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addClick } from "@/app/utils/cards";
 import { supabase } from "@/constants/supabase";
-import { useEffect } from "react";
+import { useInteractions } from "@/context/InteractionsContext";
 
 export type EventCardData = {
   id: string,
@@ -35,146 +32,123 @@ export type EventCardDataProps = {
 
 export const EventCard = ({
   cardInfo, 
-  liked: initialLike, 
-  signed_up: initialSignUp,
+  liked, 
+  signed_up,
   completed,
   clicked,
 }: EventCardDataProps) => {
   const [expanded, setExpanded] = useState(false);
-  //const [signUpClick, setSignUpClicked] = useState(false);
-  const [signUpStatus, setSignUpStatus] = useState(initialSignUp);
-  const [liked, setLiked] = useState(initialLike);
   const { user } = useAuth();
 
-  const isPastEvent =
-  cardInfo.end_date
-    ? new Date(cardInfo.end_date).getTime() < Date.now()
-    : false;
-
-  const shouldShowCompletionPrompt =
-    expanded &&
-    clicked &&
-    signUpStatus === true &&
-    completed === null &&
-    isPastEvent;
-
-  const shouldShowPrompt =
-  expanded &&
-  clicked &&
-  signUpStatus === null;
-
-  useEffect(() => {
-    setSignUpStatus(initialSignUp);
-  }, [initialSignUp]);
-
-  const { triggerRefresh } = useRefresh();
+  const { updateLike, updateSignUp, updateCompleted, updateClicked } = useInteractions();
 
   const toggleExpanded = () => {
     setExpanded(prev => !prev);
   };
 
-  // const openSignUpLink = async (link: string) => {
-  //   if (user?.id) {
-  //     await addClick("interactions_events", cardInfo.id, user.id, 'event_id');
-  //     triggerRefresh();
-  //     //setSignUpClicked(true);
-  //   }
-  //   Linking.openURL(link);
-  // }  
+  const isPastEvent =
+    cardInfo.end_date
+      ? new Date(cardInfo.end_date).getTime() < Date.now()
+      : false;
+
+  const shouldShowCompletionPrompt =
+    expanded &&
+    clicked &&
+    signed_up === true &&
+    completed === null &&
+    isPastEvent;
+
+  const shouldShowPrompt =
+    expanded &&
+    clicked &&
+    signed_up === null;
 
   const openSignUpLink = async (link: string) => {
     if (user?.id) {
-  
+
       // Reset signed_up ONLY if it was false
-      if (signUpStatus === false) {
+      if (signed_up === false) {
         await supabase
           .from("interactions_events") 
           .update({ signed_up: null })
           .eq("event_id", cardInfo.id)
           .eq("user_id", user.id);
-  
-        setSignUpStatus(null);
+
+        updateSignUp(
+          { cardType: "event", cardInfo, liked, signed_up, completed, clicked },
+          null
+        );
       }
-  
-      await addClick("interactions_events", cardInfo.id, user.id, 'event_id');
-  
-      triggerRefresh();
-    }
-  
-    Linking.openURL(link);
-  };
-  
 
-    const handleSignUp = async (response: boolean) => {
-      if (!user?.id) return;
-    
-      await supabase
-        .from("interactions_events")
-        .update({ signed_up: response })
-        .eq("event_id", cardInfo.id)
-        .eq("user_id", user.id);
-    
-      if (response) {
-        setSignUpStatus(true);
-      } else {
-        setSignUpStatus(false);
-        setExpanded(false);
-      }
-    
-      //setSignUpClicked(false);
-    
-      triggerRefresh(); 
-    };
-
-    const handleCompletion = async (response: boolean) => {
-      if (!user?.id) return;
-    
-      await supabase
-        .from("interactions_events")
-        .update({ completed: response })
-        .eq("event_id", cardInfo.id)
-        .eq("user_id", user.id);
-    
-      if (response) {
-        setExpanded(false); 
-      } else {
-        setExpanded(false);
-      }
-    
-      triggerRefresh();
-    };
-
-
-
-  // const handleLikes = (cardInfo: EventCardData) => {
-  //   if (user?.id) {
-  //     toggleLike("interactions_events", cardInfo.id, user.id, liked, 'event_id');
-  //     setLiked(!liked);
-  //     return;
-  //   }
-  //   Alert.alert("Not signed in! Can't like post");
-  //   return;
-  // }
-
-  const handleLikes = async (cardInfo: EventCardData) => {
-    if (user?.id) {
-      await toggleLike(
+      await addClick(
         "interactions_events",
         cardInfo.id,
         user.id,
-        liked,
         'event_id'
       );
-  
-      setLiked(!liked);
-      triggerRefresh(); 
-      return;
+
+      updateClicked(
+        { cardType: "event", cardInfo, liked, signed_up, completed, clicked }
+      );
     }
-  
-    Alert.alert("Not signed in! Can't like post");
+
+    Linking.openURL(link);
   };
 
+  const handleSignUp = async (response: boolean) => {
+    if (!user?.id) return;
 
+    await supabase
+      .from("interactions_events")
+      .update({ signed_up: response })
+      .eq("event_id", cardInfo.id)
+      .eq("user_id", user.id);
+
+    updateSignUp(
+      { cardType: "event", cardInfo, liked, signed_up, completed, clicked },
+      response
+    );
+
+    if (!response) {
+      setExpanded(false);
+    }
+  };
+
+  const handleCompletion = async (response: boolean) => {
+    if (!user?.id) return;
+
+    await supabase
+      .from("interactions_events")
+      .update({ completed: response })
+      .eq("event_id", cardInfo.id)
+      .eq("user_id", user.id);
+
+    updateCompleted(
+      { cardType: "event", cardInfo, liked, signed_up, completed, clicked },
+      response
+    );
+
+    setExpanded(false);
+  };
+
+  const handleLikes = async () => {
+    if (!user?.id) {
+      Alert.alert("Not signed in! Can't like post");
+      return;
+    }
+
+    await toggleLike(
+      "interactions_events",
+      cardInfo.id,
+      user.id,
+      liked,
+      'event_id'
+    );
+    
+    updateLike(
+      { cardType: "event", cardInfo, liked, signed_up, completed, clicked }, !liked
+    );
+  };
 
   return (
     <View style={CardStyles.card}>
@@ -208,7 +182,7 @@ export const EventCard = ({
                 name={liked ? "cards-heart" : "cards-heart-outline"}
                 size={25}
                 color={'#0282D3'}
-                onPress={() => handleLikes(cardInfo)}
+                onPress={handleLikes}
                 disabled={!user?.id}
               />
             </View>
@@ -276,7 +250,7 @@ export const EventCard = ({
               { cardInfo.sign_up_link &&
                 <View style={CardStyles.signUpButtonContainer}>
                   <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => openSignUpLink(cardInfo.sign_up_link!)}> 
-                    { signUpStatus ? 
+                    { signed_up ? 
                       <Text style={CardStyles.signUpText}>Revisit Link</Text> : 
                       <Text style={CardStyles.signUpText}>Take Action</Text> 
                     }
@@ -290,4 +264,3 @@ export const EventCard = ({
     </View>
   );
 }
-

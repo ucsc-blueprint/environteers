@@ -1,22 +1,13 @@
 import { useAuth } from "@/context/AuthContext";
 import { View, Image, Text, Pressable, Linking, Alert } from 'react-native';
-// import Svg, { Path } from 'react-native-svg';
-import { useState} from "react";
-import { 
-  // mdiMenu,
-  // mdiBell,
-  // mdiListBoxOutline,
-  mdiOpenInNew,
-} from '@mdi/js';
+import { useState } from "react";
+import { mdiOpenInNew } from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
-import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp, addClick } from "@/app/utils/cards";
-
-import { useRefresh } from "@/context/RefreshContext";
+import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addClick } from "@/app/utils/cards";
+import { useInteractions } from "@/context/InteractionsContext";
 import { supabase } from "@/constants/supabase";
-import { useEffect } from "react";
-
 
 export type InPersonCardData = {
   id: string,
@@ -41,22 +32,14 @@ export type InPersonCardProps = {
 
 export const InPersonCard = ({
   cardInfo, 
-  liked: initialLike, 
-  signed_up: initialSignUp,
+  liked,
+  signed_up,
   completed,
   clicked,
 }: InPersonCardProps) => {
+  const { updateLike, updateSignUp, updateCompleted, updateClicked } = useInteractions();
   const [expanded, setExpanded] = useState(false);
-  //const [signUpClick, setSignUpClicked] = useState(false);
-
-  const [liked, setLiked] = useState(initialLike);
-  const [signUpStatus, setSignUpStatus] = useState(initialSignUp);
   const { user } = useAuth();
-  const { triggerRefresh } = useRefresh();
-
-  useEffect(() => {
-    setSignUpStatus(initialSignUp);
-  }, [initialSignUp]);
 
   const toggleExpanded = () => {
     setExpanded(prev => !prev);
@@ -70,75 +53,70 @@ export const InPersonCard = ({
   const shouldShowCompletionPrompt =
     expanded &&
     clicked &&
-    signUpStatus === true &&
+    signed_up === true &&
     completed === null &&
     isPastEvent;
 
   const shouldShowPrompt =
     expanded &&
     clicked &&
-    signUpStatus === null;
+    signed_up === null;
 
-  // const openSignUpLink = async (link: string) => {
-  //   if (user?.id) {
-  //     await addClick("interactions_eco_inperson", cardInfo.id, user.id, 'action_id');
-  //     triggerRefresh();
-  //     //setSignUpClicked(true);
-  //   }
-  //   Linking.openURL(link);
-  // }
   const openSignUpLink = async (link: string) => {
     if (user?.id) {
-  
       // Reset signed_up ONLY if it was false
-      if (signUpStatus === false) {
+      if (signed_up === false) {
         await supabase
           .from("interactions_eco_inperson") 
           .update({ signed_up: null })
           .eq("action_id", cardInfo.id)
           .eq("user_id", user.id);
-  
-        setSignUpStatus(null);
+
+        // Update context
+        updateSignUp(
+          { cardType: "in_person", cardInfo, liked, signed_up: null, completed, clicked },
+          null
+        );
       }
-  
+
       await addClick("interactions_eco_inperson", cardInfo.id, user.id, 'action_id');
-  
-      triggerRefresh();
+
+      // No refresh (just updates local state)
+      updateClicked(
+        { cardType: "in_person", cardInfo, liked, signed_up: signed_up, completed, clicked }
+      );
     }
-  
+
     Linking.openURL(link);
   };
 
-  // const handleSignUp = (cardInfo: InPersonCardData) => {
-  //   if (user?.id) {
-  //     addSignUp("interactions_eco_inperson", cardInfo.id, user.id, 'action_id');
-  //     setSignUpStatus(true);
-  //     triggerRefresh();
-  //     return;
-  //   }
-  //   Alert.alert("Not signed in! Can't sign up");
-  //   return;
-  // }
-    const handleSignUp = async (response: boolean) => {
-      if (!user?.id) return;
-    
-      await supabase
-        .from("interactions_eco_inperson")
-        .update({ signed_up: response })
-        .eq("action_id", cardInfo.id)
-        .eq("user_id", user.id);
-    
-      if (response) {
-        setSignUpStatus(true);
-      } else {
-        setSignUpStatus(false);
-        setExpanded(false);
-      }
-    
-      //setSignUpClicked(false);
-    
-      triggerRefresh();
-    };
+  const handleSignUp = async (response: boolean) => {
+    if (!user?.id) return;
+
+    await supabase
+      .from("interactions_eco_inperson")
+      .update({ signed_up: response })
+      .eq("action_id", cardInfo.id)
+      .eq("user_id", user.id);
+
+    if (response) {
+      updateSignUp(
+        { cardType: "in_person", cardInfo, liked, signed_up: signed_up, completed, clicked }, true
+      );
+
+    } else {
+      updateSignUp(
+        { cardType: "in_person", cardInfo, liked, signed_up: signed_up, completed, clicked }, false
+      );
+      setExpanded(false);
+    }
+
+    // Update context
+    updateSignUp (
+      { cardType: "in_person", cardInfo, liked, signed_up: response, completed, clicked }, response
+    );
+  };
+      
 
     const handleCompletion = async (response: boolean) => {
       if (!user?.id) return;
@@ -154,20 +132,14 @@ export const InPersonCard = ({
       } else {
         setExpanded(false);
       }
-    
-      triggerRefresh();
+      // Update context
+      updateCompleted(
+        { cardType: "in_person", cardInfo, liked, signed_up: signed_up, completed: response, clicked },
+        response
+      );
+
     };
 
-
-  // const handleLikes = (cardInfo: InPersonCardData) => {
-  //   if (user?.id) {
-  //     toggleLike("interactions_eco_inperson", cardInfo.id, user.id, liked, 'action_id');
-  //     setLiked(!liked);
-  //     return;
-  //   }
-  //   Alert.alert("Not signed in! Can't like post");
-  //   return;
-  // }
   const handleLikes = async (cardInfo: InPersonCardData) => {
     if (user?.id) {
       await toggleLike(
@@ -177,15 +149,15 @@ export const InPersonCard = ({
         liked,
         'action_id'
       );
-  
-      setLiked(!liked);
-      triggerRefresh(); 
+      updateLike (
+        { cardType: "in_person", cardInfo, liked, signed_up: signed_up, completed, clicked }, !liked
+      );
+
       return;
     }
-  
+
     Alert.alert("Not signed in! Can't like post");
   };
-
 
   return (
     <View style={CardStyles.card}>
@@ -253,18 +225,6 @@ export const InPersonCard = ({
                   <Text style={CardStyles.confirmationText}>No</Text>
                   <MaterialCommunityIcons name="close" size={20} color={'black'} />
                 </Pressable>
-                
-
-                   { /* <Pressable style={CardStyles.confirmationButton} onPress={() => (setSignUpClicked(false))}>
-                    <Text style={CardStyles.confirmationText} onPress={() => setExpanded(!expanded)}>No</Text>
-                    <MaterialCommunityIcons name="close" size={20} color={'black'} />
-                  </Pressable> */ }
-
-                  { /* <Pressable style={CardStyles.confirmationButton}>
-                    <Text style={CardStyles.confirmationText} onPress={() => (handleSignUp(cardInfo))}>Yes</Text>
-                    <MaterialCommunityIcons name="check" size={20} color={'black'} />
-                  </Pressable> */ }
-
                 </View>
               </View>
             }
@@ -295,7 +255,7 @@ export const InPersonCard = ({
             { cardInfo.sign_up_link &&
               <View style={CardStyles.signUpButtonContainer}>
                 <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => openSignUpLink(cardInfo.sign_up_link!)}> 
-                  { signUpStatus ? 
+                  { signed_up ? 
                     <Text style={CardStyles.signUpText}>Revisit Link</Text> : 
                     <Text style={CardStyles.signUpText}>Take Action</Text> 
                   }
