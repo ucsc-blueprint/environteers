@@ -110,7 +110,6 @@ export const InPersonCard = ({
       updateSignUp(
         { cardType: "in_person", cardInfo, liked, signed_up: signed_up, completed, clicked }, true
       );
-
     } else {
       updateSignUp(
         { cardType: "in_person", cardInfo, liked, signed_up: signed_up, completed, clicked }, false

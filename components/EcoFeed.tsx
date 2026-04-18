@@ -9,7 +9,7 @@ import { CardStyles } from "@/app/stylesheets/CardStyles";
 import { InPersonCard } from "@/components/InPersonCard";
 import { OnlineCard } from "@/components/OnlineCard";
 import { EventCard } from "@/components/EventCard";
-import { CardProps } from "@/context/InteractionsContext";
+import { CardProps } from "@/app/(tabs)/volunteer";
 import { renderIcon } from "@/app/utils/cards";
 import { SlidersHorizontal } from 'lucide-react-native';
 import { EcoFeedFilterDropdown } from '@/components/EcoFeedFilterDropdown';
@@ -95,13 +95,13 @@ export const Header = ({
 
 export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
   const { card } = props;
-  const expanded = props.isSelected ?? false;
+  // const expanded = props.isSelected ?? false;
 
-  const toggleExpanded = () => {
-    if (!props.setSelectedId) return;
-    const key = `${card.cardInfo.id}-${card.cardType}`;
-    props.setSelectedId(prev => (prev === key ? null : key));
-  };
+  // const toggleExpanded = () => {
+  //   if (!props.setSelectedId) return;
+  //   const key = `${card.cardInfo.id}-${card.cardType}`;
+  //   props.setSelectedId(prev => (prev === key ? null : key));
+  // };
 
   if (!card) return null;
 
@@ -114,8 +114,8 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
           signed_up={card.signed_up} 
           completed={card.completed} 
           clicked={card.clicked}
-          expanded={expanded}
-          onToggle={toggleExpanded}
+          // expanded={expanded}
+          // onToggle={toggleExpanded}
         />
       );
     case "online":
@@ -135,8 +135,8 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
           signed_up={card.signed_up} 
           completed={card.completed} 
           clicked={card.clicked}
-          expanded={expanded}
-          onToggle={toggleExpanded}
+          // expanded={expanded}
+          // onToggle={toggleExpanded}
         />
       );
     default:
