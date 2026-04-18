@@ -1,61 +1,183 @@
-import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator } from "react-native";
-import { Header, EcoFeed } from "@/components/EcoFeed";
-import { LinearGradient } from 'expo-linear-gradient';
+import { useAuth } from "@/context/AuthContext";
+import { View, Image, Text, Pressable, Linking, Alert } from 'react-native';
+import { useState } from "react";
+import { 
+  mdiOpenInNew,
+} from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
-import { InPersonCardProps } from "@/components/InPersonCard";
-import { OnlineCardDataProps } from "@/components/OnlineCard";
-import { EventCardDataProps } from "@/components/EventCard";
-import { router } from "expo-router";
+import { MaterialIcons } from '@expo/vector-icons';
+import { CardStyles } from "@/app/stylesheets/CardStyles";
+import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp, addClick } from "@/app/utils/cards";
+import { useRefresh } from "@/context/RefreshContext";
 
-import { useInteractions } from "@/context/InteractionsContext";
-
-export type CardProps = InPersonCardProps | OnlineCardDataProps | EventCardDataProps;
-
-export default function Volunteer() {
-  const { cards, loading } = useInteractions();
-
-  return (
-    <LinearGradient
-        colors={['white','#EDF3F7', '#EAF2F6']}
-        locations={[0.8, 0.9, 1]}
-        start={{ x: 0, y: 0}}
-        end={{ x: 0, y: 0.5 }}
-        style={styles.gradient}
-      >
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
-        
-        <Header resultsCount={cards.length}/> 
-        
-        { loading && <ActivityIndicator size="large" color="#0000ff" />}
-        { !loading && cards.map((card) => ( 
-          <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
-        ))}
-      </ScrollView>
-        <View style={styles.mapBackground}>
-          <Pressable onPress={() => router.push('/(tabs)/map')}>
-            <MaterialCommunityIcons name="map" size={30} color={'#0282D3'} />
-          </Pressable>
-        </View>
-    </LinearGradient>
-  );
+export type EventCardData = {
+  id: string,
+  title: string,
+  start_time?: Date,
+  end_time?: Date,
+  location?: string,
+  cover_photo?: string,
+  google_calendar_link?: string,
+  description?: string,
+  sign_up_link?: string,
 }
 
-const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 16,
-    gap: 16,
-  },
-  mapBackground: {
-    backgroundColor: 'white',
-    borderRadius: 50,
-    padding: 15,
-    maxWidth: 80,
-    position: 'absolute',
-    bottom: 10,
-    right: 20,
-    boxShadow: '0px 0px 10px 0px #0282D333',
+export type EventCardDataProps = {
+  cardType: "event";
+  cardInfo: EventCardData,
+  liked: boolean,
+  signed_up: boolean,
+  completed: boolean,
+  clicked: boolean,
+}
+
+type EventCardProps = EventCardDataProps & {
+  expanded: boolean;
+  onToggle: () => void;
+};
+
+export const EventCard = ({
+  cardInfo, 
+  liked: initialLike, 
+  signed_up: initialSignUp,
+  completed,
+  clicked,
+  expanded,
+  onToggle
+}: EventCardProps) => {
+  const [signUpClick, setSignUpClicked] = useState(false);
+  const [signUpStatus, setSignUpStatus] = useState(initialSignUp);
+  const [liked, setLiked] = useState(initialLike);
+  const { user } = useAuth();
+
+  const { triggerRefresh } = useRefresh();
+
+  const toggleExpanded = onToggle;
+
+  const openSignUpLink = (link: string) => {
+    if (user?.id) {
+      addClick("interactions_events", cardInfo.id, user.id, 'event_id');
+      setSignUpClicked(true);
+    }
+    Linking.openURL(link);
+  }  
+
+  const handleSignUp = (cardInfo: EventCardData) => {
+    if (user?.id) {
+      addSignUp("interactions_events", cardInfo.id, user.id, 'event_id');
+      setSignUpStatus(true);
+      triggerRefresh();
+      return;
+    }
+    Alert.alert("Not signed in! Can't sign up");
+    return;
   }
-});
+
+
+  // const handleLikes = (cardInfo: EventCardData) => {
+  //   if (user?.id) {
+  //     toggleLike("interactions_events", cardInfo.id, user.id, liked, 'event_id');
+  //     setLiked(!liked);
+  //     return;
+  //   }
+  //   Alert.alert("Not signed in! Can't like post");
+  //   return;
+  // }
+
+  const handleLikes = async (cardInfo: EventCardData) => {
+    if (user?.id) {
+      await toggleLike(
+        "interactions_events",
+        cardInfo.id,
+        user.id,
+        liked,
+        'event_id'
+      );
+  
+      setLiked(!liked);
+      triggerRefresh(); 
+      return;
+    }
+  
+    Alert.alert("Not signed in! Can't like post");
+  };
+
+
+
+  return (
+    <View style={CardStyles.card}>
+      <Pressable onPress={toggleExpanded}>
+        <View style={CardStyles.cardInfo}>
+          <View style={CardStyles.imageColumn}>
+            { cardInfo.cover_photo && renderCoverPhoto(cardInfo.cover_photo) } 
+          </View>
+          <View style={CardStyles.contentColumn}>
+            <Text>{cardInfo.title}</Text>
+            { cardInfo.start_time && cardInfo.end_time &&
+              <View style={[CardStyles.formatRow, CardStyles.date]}>
+                <Image
+                  source={require("../assets/images/google-calendar.png")}
+                  style={{ width: 18, height: 18 }}
+                />
+                <Text>{formatEventDate(cardInfo.start_time, cardInfo.end_time)}</Text>
+              </View>
+            }
+            { cardInfo.location &&
+              <View style={CardStyles.formatRow}>
+                <MaterialIcons name="location-on" size={25} color={'black'} />
+                <Text>{cardInfo.location}</Text>
+              </View>
+            }
+          </View>
+          {/* Like/Share Icons */}
+          <View style={CardStyles.iconsColumn}>
+            <View style={CardStyles.iconBackgrounds}>
+              <MaterialCommunityIcons
+                name={liked ? "cards-heart" : "cards-heart-outline"}
+                size={25}
+                color={'#0282D3'}
+                onPress={() => handleLikes(cardInfo)}
+                disabled={!user?.id}
+              />
+            </View>
+            <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>
+          </View>
+        </View>
+          {/* Expanded Content */}
+          { expanded && 
+            <View style={CardStyles.signUpContainer}>
+              { cardInfo.description && <Text style={{ marginTop: 20 }}>{cardInfo.description}</Text>}
+              {/* Verify If User Signed-up */}
+              { signUpClick && !signUpStatus &&
+                <View style={CardStyles.confirmationContainer}>
+                  <Text style={{color: '#3A5513'}}>Did you sign up for this event?</Text>
+                  <View style={CardStyles.confirmationButtons}>
+                    <Pressable style={CardStyles.confirmationButton} onPress={() => setSignUpClicked(false)}>
+                      <Text style={CardStyles.confirmationText} onPress={toggleExpanded}>No</Text>
+                      <MaterialCommunityIcons name="close" size={20} color={'black'} />
+                    </Pressable>
+                    <Pressable style={CardStyles.confirmationButton}>
+                      <Text style={CardStyles.confirmationText} onPress={() => handleSignUp(cardInfo)}>Yes</Text>
+                      <MaterialCommunityIcons name="check" size={20} color={'black'} />
+                    </Pressable>
+                  </View>
+                </View>
+              }
+              {/* Sign Up Button */}
+              { cardInfo.sign_up_link &&
+                <View style={CardStyles.signUpButtonContainer}>
+                  <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => openSignUpLink(cardInfo.sign_up_link!)}> 
+                    { signUpStatus ? 
+                      <Text style={CardStyles.signUpText}>Revisit Link</Text> : 
+                      <Text style={CardStyles.signUpText}>Take Action</Text> 
+                    }
+                    {renderIcon(15, mdiOpenInNew, 'white')}
+                  </Pressable>
+                </View>
+              }
+            </View>
+          }
+      </Pressable>
+    </View>
+  );
+}
