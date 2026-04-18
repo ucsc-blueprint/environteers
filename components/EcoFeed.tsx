@@ -1,8 +1,6 @@
 import { useAuth } from "@/context/AuthContext";
-import { View, Image, Text, StyleSheet, Pressable, Linking, Alert, TextInput } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
-import React, { useState, useEffect} from "react";
-import { supabase } from "@/constants/supabase";
+import { View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
+import React, { useState } from "react";
 import { 
   mdiMenu,
   mdiBell,
@@ -11,7 +9,7 @@ import { CardStyles } from "@/app/stylesheets/CardStyles";
 import { InPersonCard } from "@/components/InPersonCard";
 import { OnlineCard } from "@/components/OnlineCard";
 import { EventCard } from "@/components/EventCard";
-import { CardProps } from "@/app/(tabs)/volunteer";
+import { CardProps } from "@/context/InteractionsContext";
 import { renderIcon } from "@/app/utils/cards";
 import { SlidersHorizontal } from 'lucide-react-native';
 import { EcoFeedFilterDropdown } from '@/components/EcoFeedFilterDropdown';

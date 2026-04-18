@@ -190,8 +190,8 @@ export default function Map() {
         cardInfo: {
           id: e.id,
           title: e.title,
-          start_time: e.start_time ?? undefined,
-          end_time: e.end_time ?? undefined,
+          start_date: e.start_date ?? undefined,
+          end_date: e.end_date ?? undefined,
           location: e.location ?? undefined,
           cover_photo: e.cover_photo ?? undefined,
           google_calendar_link: e.google_calendar_link ?? undefined,

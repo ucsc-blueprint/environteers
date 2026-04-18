@@ -1,183 +1,207 @@
-import { useAuth } from "@/context/AuthContext";
-import { View, Image, Text, Pressable, Linking, Alert } from 'react-native';
-import { useState } from "react";
-import { 
-  mdiOpenInNew,
-} from '@mdi/js';
+import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator } from "react-native";
+import { Header, EcoFeed } from "@/components/EcoFeed";
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/constants/supabase";
+import { LinearGradient } from 'expo-linear-gradient';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
-import { MaterialIcons } from '@expo/vector-icons';
-import { CardStyles } from "@/app/stylesheets/CardStyles";
-import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp, addClick } from "@/app/utils/cards";
-import { useRefresh } from "@/context/RefreshContext";
+import { useAuth } from "@/context/AuthContext";
+import { InPersonCardDataProps } from "@/components/InPersonCard";
+import { OnlineCardDataProps } from "@/components/OnlineCard";
+import { EventCardDataProps } from "@/components/EventCard";
+import { router } from "expo-router";
+import * as Location from 'expo-location';
 
-export type EventCardData = {
-  id: string,
-  title: string,
-  start_time?: Date,
-  end_time?: Date,
-  location?: string,
-  cover_photo?: string,
-  google_calendar_link?: string,
-  description?: string,
-  sign_up_link?: string,
-}
+export type CardProps = InPersonCardDataProps | OnlineCardDataProps | EventCardDataProps;
 
-export type EventCardDataProps = {
-  cardType: "event";
-  cardInfo: EventCardData,
-  liked: boolean,
-  signed_up: boolean,
-  completed: boolean,
-  clicked: boolean,
-}
+const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const R = 3958.8;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
 
-type EventCardProps = EventCardDataProps & {
-  expanded: boolean;
-  onToggle: () => void;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  
+  return R * c;
 };
 
-export const EventCard = ({
-  cardInfo, 
-  liked: initialLike, 
-  signed_up: initialSignUp,
-  completed,
-  clicked,
-  expanded,
-  onToggle
-}: EventCardProps) => {
-  const [signUpClick, setSignUpClicked] = useState(false);
-  const [signUpStatus, setSignUpStatus] = useState(initialSignUp);
-  const [liked, setLiked] = useState(initialLike);
+export default function Volunteer() {
   const { user } = useAuth();
+  const [items, setItems] = useState<CardProps[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ latitude: number, longitude: number } | null>(null);
 
-  const { triggerRefresh } = useRefresh();
+  const [search, setSearch] = useState("");
+  const [filterTypes, setFilterTypes] = useState<string[]>([]);
+  const [maxDistance, setMaxDistance] = useState<number | null>(null);
 
-  const toggleExpanded = onToggle;
+  useEffect(() => {
+    const getLocation = async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') return;
+      const location = await Location.getCurrentPositionAsync({});
+      setUserLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+    };
 
-  const openSignUpLink = (link: string) => {
-    if (user?.id) {
-      addClick("interactions_events", cardInfo.id, user.id, 'event_id');
-      setSignUpClicked(true);
-    }
-    Linking.openURL(link);
-  }  
+    const fetchData = async () => {
+      setLoading(true);
 
-  const handleSignUp = (cardInfo: EventCardData) => {
-    if (user?.id) {
-      addSignUp("interactions_events", cardInfo.id, user.id, 'event_id');
-      setSignUpStatus(true);
-      triggerRefresh();
-      return;
-    }
-    Alert.alert("Not signed in! Can't sign up");
-    return;
-  }
+      if (!user?.id) {
+        setLoading(false);
+        return;
+      };
 
+      const [inPersonRes, onlineRes, eventRes] = await Promise.all([
+        supabase
+          .from("inperson_ecoactions")
+          .select(`*, interactions_eco_inperson!left(*), location_latitude, location_longitude`)
+          .eq("interactions_eco_inperson.user_id", user.id),
 
-  // const handleLikes = (cardInfo: EventCardData) => {
-  //   if (user?.id) {
-  //     toggleLike("interactions_events", cardInfo.id, user.id, liked, 'event_id');
-  //     setLiked(!liked);
-  //     return;
-  //   }
-  //   Alert.alert("Not signed in! Can't like post");
-  //   return;
-  // }
+        supabase
+          .from("online_ecoactions")
+          .select(`*, interactions_eco_online!left(*)`)
+          .eq("interactions_eco_online.user_id", user.id),
 
-  const handleLikes = async (cardInfo: EventCardData) => {
-    if (user?.id) {
-      await toggleLike(
-        "interactions_events",
-        cardInfo.id,
-        user.id,
-        liked,
-        'event_id'
-      );
-  
-      setLiked(!liked);
-      triggerRefresh(); 
-      return;
-    }
-  
-    Alert.alert("Not signed in! Can't like post");
-  };
+        supabase
+          .from("events")
+          .select(`*, interactions_events!left(*), location_latitude, location_longitude`)
+          .eq("interactions_events.user_id", user.id)
+      ]);
 
+      if (inPersonRes.error) console.error(inPersonRes.error);
+      if (onlineRes.error) console.error(onlineRes.error);
+      if (eventRes.error) console.error(eventRes.error);
 
+      const inPersonData = inPersonRes.data ?? [];
+      const onlineData = onlineRes.data ?? [];
+      const eventData = eventRes.data ?? [];
+    
+      const inPersonCardData: CardProps[] = (inPersonData ?? []).map(card => {
+        const interaction = card.interactions_eco_inperson?.[0];
+
+        return {
+          cardType: "in_person",
+          cardInfo: card,
+          liked: interaction?.liked ?? false,
+          signed_up: interaction?.signed_up ?? false,
+          completed: interaction?.completed ?? false,
+          clicked: interaction?.clicked ?? false,
+        };
+      }); 
+    
+      const onlineCardData: CardProps[] = (onlineData ?? []).map(card => {
+        const interaction = card.interactions_eco_online?.[0];
+
+        return {
+          cardType: "online",
+          cardInfo: card,
+          liked: interaction?.liked ?? false,
+          signed_up: interaction?.signed_up ?? false,
+          completed: interaction?.completed ?? false,
+          clicked: interaction?.clicked ?? false,
+        };
+      }); 
+    
+      const eventCardData: CardProps[] = (eventData ?? []).map(event => {
+        const interaction = event.interactions_events?.[0];
+
+        return {
+          cardType: "event",
+          cardInfo: event,
+          liked: interaction?.liked ?? false,
+          signed_up: interaction?.signed_up ?? false,
+          completed: interaction?.completed ?? false,
+          clicked: interaction?.clicked ?? false,
+        };
+      });
+
+      const fullData = [...inPersonCardData, ...onlineCardData, ...eventCardData]
+      setItems(fullData);
+      setLoading(false);
+    };
+
+    getLocation();
+    fetchData();
+  }, [user?.id]);
+
+  const filteredItems = useMemo(() => {
+    return items.filter((item) => {
+      const matchesSearch =
+        item.cardInfo.title
+          ?.toLowerCase()
+          .includes(search.toLowerCase()) ?? true;
+
+      const matchesType =
+        filterTypes.length === 0 || filterTypes.includes(item.cardType);
+
+      const matchesDistance = (() => {
+        if (!maxDistance || !userLocation || item.cardType === "online") return true;
+        const lat = (item.cardInfo as any).location_latitude;
+        const lon = (item.cardInfo as any).location_longitude;
+        if (!lat || !lon) return true;
+        return getDistance(userLocation.latitude, userLocation.longitude, lat, lon) <= maxDistance;
+      })();
+
+      return matchesSearch && matchesType && matchesDistance;
+    });
+  }, [items, search, filterTypes, maxDistance, userLocation]);
 
   return (
-    <View style={CardStyles.card}>
-      <Pressable onPress={toggleExpanded}>
-        <View style={CardStyles.cardInfo}>
-          <View style={CardStyles.imageColumn}>
-            { cardInfo.cover_photo && renderCoverPhoto(cardInfo.cover_photo) } 
-          </View>
-          <View style={CardStyles.contentColumn}>
-            <Text>{cardInfo.title}</Text>
-            { cardInfo.start_time && cardInfo.end_time &&
-              <View style={[CardStyles.formatRow, CardStyles.date]}>
-                <Image
-                  source={require("../assets/images/google-calendar.png")}
-                  style={{ width: 18, height: 18 }}
-                />
-                <Text>{formatEventDate(cardInfo.start_time, cardInfo.end_time)}</Text>
-              </View>
-            }
-            { cardInfo.location &&
-              <View style={CardStyles.formatRow}>
-                <MaterialIcons name="location-on" size={25} color={'black'} />
-                <Text>{cardInfo.location}</Text>
-              </View>
-            }
-          </View>
-          {/* Like/Share Icons */}
-          <View style={CardStyles.iconsColumn}>
-            <View style={CardStyles.iconBackgrounds}>
-              <MaterialCommunityIcons
-                name={liked ? "cards-heart" : "cards-heart-outline"}
-                size={25}
-                color={'#0282D3'}
-                onPress={() => handleLikes(cardInfo)}
-                disabled={!user?.id}
-              />
-            </View>
-            <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>
-          </View>
+    <LinearGradient
+        colors={['white','#EDF3F7', '#EAF2F6']}
+        locations={[0.8, 0.9, 1]}
+        start={{ x: 0, y: 0}}
+        end={{ x: 0, y: 0.5 }}
+        style={styles.gradient}
+      >
+      <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
+        
+        <Header 
+          resultsCount={items.length}
+          search={search}
+          setSearch={setSearch}
+          filterTypes={filterTypes}
+          setFilterTypes={setFilterTypes}
+          maxDistance={maxDistance}
+          setMaxDistance={setMaxDistance}
+        />
+        
+        
+        { loading && <ActivityIndicator size="large" color="#0000ff" />}
+        { !loading && filteredItems.map((card) => ( 
+          <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
+        ))}
+      </ScrollView>
+        <View style={styles.mapBackground}>
+          <Pressable onPress={() => router.push('/(tabs)/map')}>
+            <MaterialCommunityIcons name="map" size={30} color={'#0282D3'} />
+          </Pressable>
         </View>
-          {/* Expanded Content */}
-          { expanded && 
-            <View style={CardStyles.signUpContainer}>
-              { cardInfo.description && <Text style={{ marginTop: 20 }}>{cardInfo.description}</Text>}
-              {/* Verify If User Signed-up */}
-              { signUpClick && !signUpStatus &&
-                <View style={CardStyles.confirmationContainer}>
-                  <Text style={{color: '#3A5513'}}>Did you sign up for this event?</Text>
-                  <View style={CardStyles.confirmationButtons}>
-                    <Pressable style={CardStyles.confirmationButton} onPress={() => setSignUpClicked(false)}>
-                      <Text style={CardStyles.confirmationText} onPress={toggleExpanded}>No</Text>
-                      <MaterialCommunityIcons name="close" size={20} color={'black'} />
-                    </Pressable>
-                    <Pressable style={CardStyles.confirmationButton}>
-                      <Text style={CardStyles.confirmationText} onPress={() => handleSignUp(cardInfo)}>Yes</Text>
-                      <MaterialCommunityIcons name="check" size={20} color={'black'} />
-                    </Pressable>
-                  </View>
-                </View>
-              }
-              {/* Sign Up Button */}
-              { cardInfo.sign_up_link &&
-                <View style={CardStyles.signUpButtonContainer}>
-                  <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => openSignUpLink(cardInfo.sign_up_link!)}> 
-                    { signUpStatus ? 
-                      <Text style={CardStyles.signUpText}>Revisit Link</Text> : 
-                      <Text style={CardStyles.signUpText}>Take Action</Text> 
-                    }
-                    {renderIcon(15, mdiOpenInNew, 'white')}
-                  </Pressable>
-                </View>
-              }
-            </View>
-          }
-      </Pressable>
-    </View>
+    </LinearGradient>
   );
 }
+
+const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 16,
+    gap: 16,
+  },
+  mapBackground: {
+    backgroundColor: 'white',
+    borderRadius: 50,
+    padding: 15,
+    maxWidth: 80,
+    position: 'absolute',
+    bottom: 10,
+    right: 20,
+    boxShadow: '0px 0px 10px 0px #0282D333',
+  }
+});

@@ -30,12 +30,20 @@ export type EventCardDataProps = {
   clicked: boolean,
 }
 
+// type EventCardProps = EventCardDataProps & {
+//   expanded: boolean;
+//   onToggle: () => void;
+// };
+
 export const EventCard = ({
   cardInfo, 
   liked, 
   signed_up,
   completed,
   clicked,
+  // expanded,
+  // onToggle
+
 }: EventCardDataProps) => {
   const [expanded, setExpanded] = useState(false);
   const { user } = useAuth();
@@ -100,7 +108,7 @@ export const EventCard = ({
 
     await supabase
       .from("interactions_events")
-      .update({ signed_up: response })
+      .update({ signed_up: response, signed_up_timestamp: new Date().toISOString() })
       .eq("event_id", cardInfo.id)
       .eq("user_id", user.id);
 
@@ -119,7 +127,7 @@ export const EventCard = ({
 
     await supabase
       .from("interactions_events")
-      .update({ completed: response })
+      .update({ completed: response, completed_timestamp: new Date().toISOString(), })
       .eq("event_id", cardInfo.id)
       .eq("user_id", user.id);
 

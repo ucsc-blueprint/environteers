@@ -10,8 +10,8 @@ export default function Activity() {
 
   const getCardDate = (card: CardProps) => {
     if (!card?.cardInfo) return null;
-    if (card.cardType === "event" && card.cardInfo.end_date) {
-      return new Date(card.cardInfo.end_date);
+    if (card.cardType === "event" && card.cardInfo.start_date) {
+      return new Date(card.cardInfo.start_date);
     }  
     if (card.cardType === "in_person" && card.cardInfo.start_date) {
       return new Date(card.cardInfo.start_date);

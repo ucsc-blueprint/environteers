@@ -30,10 +30,10 @@ export type InPersonCardDataProps = {
   clicked: boolean,
 }
 
-type InPersonCardProps = InPersonCardDataProps & {
-  expanded: boolean;
-  onToggle: () => void;
-};
+// type InPersonCardProps = InPersonCardDataProps & {
+//   expanded: boolean;
+//   onToggle: () => void;
+// };
 
 export const InPersonCard = ({
   cardInfo, 
@@ -41,9 +41,9 @@ export const InPersonCard = ({
   signed_up,
   completed,
   clicked,
-  expanded,
-  onToggle
-}: InPersonCardProps) => {
+  // expanded,
+  // onToggle
+}: InPersonCardDataProps) => {
   const { updateLike, updateSignUp, updateCompleted, updateClicked } = useInteractions();
   const [expanded, setExpanded] = useState(false);
   const { user } = useAuth();
@@ -75,7 +75,7 @@ export const InPersonCard = ({
       if (signed_up === false) {
         await supabase
           .from("interactions_eco_inperson") 
-          .update({ signed_up: null })
+          .update({ signed_up: null, signed_up_timestamp: new Date().toISOString(), })
           .eq("action_id", cardInfo.id)
           .eq("user_id", user.id);
 
@@ -102,7 +102,7 @@ export const InPersonCard = ({
 
     await supabase
       .from("interactions_eco_inperson")
-      .update({ signed_up: response })
+      .update({ signed_up: response, signed_up_timestamp: new Date().toISOString() })
       .eq("action_id", cardInfo.id)
       .eq("user_id", user.id);
 
