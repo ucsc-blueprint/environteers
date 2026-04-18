@@ -1,6 +1,6 @@
 import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator } from "react-native";
 import { Header, EcoFeed } from "@/components/EcoFeed";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/constants/supabase";
 import { LinearGradient } from 'expo-linear-gradient';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
@@ -40,7 +40,7 @@ export default function Volunteer() {
 
   const { cards: interactionCards } = useInteractions();
 
-  const getInteractionState = (id: string, type: string) => {
+  const getInteractionState = useCallback((id: string, type: string) => {
     const match = interactionCards.find(
       c => c.cardInfo.id === id && c.cardType === type
     );
@@ -50,7 +50,7 @@ export default function Volunteer() {
       completed: match?.completed ?? null,
       clicked: match?.clicked ?? false,
     };
-  };
+  }, [interactionCards]);
 
   useEffect(() => {
     const getLocation = async () => {
@@ -154,7 +154,7 @@ export default function Volunteer() {
         ...item,
         ...getInteractionState(item.cardInfo.id, item.cardType)
       }));
-  }, [items, search, filterTypes, maxDistance, userLocation, interactionCards]);
+  }, [items, search, filterTypes, maxDistance, userLocation, getInteractionState]);
 
   return (
     <LinearGradient

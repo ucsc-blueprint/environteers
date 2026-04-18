@@ -1,7 +1,7 @@
 import { StyleSheet, TextInput, View, Text, Pressable } from 'react-native';
 import MapView, { Marker, LatLng } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { supabase } from '@/constants/supabase';
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { EcoFeed } from '@/components/EcoFeed';
@@ -120,7 +120,7 @@ export default function Map() {
   }
 
   // Helper to get interaction state for a card
-  const getInteractionState = (id: string, type: string) => {
+  const getInteractionState = useCallback((id: string, type: string) => {
     const match = interactionCards.find(
       c => c.cardInfo.id === id && c.cardType === type
     );
@@ -130,7 +130,7 @@ export default function Map() {
       completed: match?.completed ?? null,
       clicked: match?.clicked ?? false,
     };
-  };
+  }, [interactionCards]);
 
   // Request user location
   useEffect(() => {
@@ -278,7 +278,7 @@ export default function Map() {
       ...item,
       ...getInteractionState(item.cardInfo.id, item.cardType)
     })),
-  [items, search, filterTypes, maxDistance, userLocation, markers, interactionCards]);
+  [items, search, filterTypes, maxDistance, userLocation, markers, getInteractionState]);
 
   const filteredMarkers = useMemo(() => markers.filter(marker => {
     const matchesType = filterTypes.length === 0 || filterTypes.includes(marker.type);

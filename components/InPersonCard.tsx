@@ -80,7 +80,7 @@ export const InPersonCard = ({
       if (signed_up === false) {
         await supabase
           .from("interactions_eco_inperson") 
-          .update({ signed_up: null, signed_up_timestamp: new Date().toISOString(), })
+          .update({ signed_up: null })
           .eq("action_id", cardInfo.id)
           .eq("user_id", user.id);
 
