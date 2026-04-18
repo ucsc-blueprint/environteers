@@ -21,7 +21,7 @@ export type InPersonCardData = {
   summary?: string,
 }
 
-export type InPersonCardProps = {
+export type InPersonCardDataProps = {
   cardType: "in_person";
   cardInfo: InPersonCardData,
   liked: boolean,
@@ -30,12 +30,19 @@ export type InPersonCardProps = {
   clicked: boolean,
 }
 
+type InPersonCardProps = InPersonCardDataProps & {
+  expanded: boolean;
+  onToggle: () => void;
+};
+
 export const InPersonCard = ({
   cardInfo, 
   liked,
   signed_up,
   completed,
   clicked,
+  expanded,
+  onToggle
 }: InPersonCardProps) => {
   const { updateLike, updateSignUp, updateCompleted, updateClicked } = useInteractions();
   const [expanded, setExpanded] = useState(false);

@@ -5,13 +5,12 @@ import { DeleteNewsConfirmationModal } from "@/components/DeleteNewsConfirmation
 import { WebView } from "react-native-webview";
 import DropDownPicker from 'react-native-dropdown-picker'
 import {supabase} from "@/constants/supabase";
-import { Ionicons } from "@expo/vector-icons"; //"filter-outline" dropdown and "menu-outline" menu icon
+import { Ionicons } from "@expo/vector-icons";
 import Toast from 'react-native-toast-message';
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
 
 const includesText = (str: string, search: string) =>
-
   str.toLowerCase().includes(search.toLowerCase());
 
 const parseDate = (dateStr: string) => new Date(dateStr);
@@ -28,12 +27,13 @@ const includesDate = (dateStr: string, filter: 'week' | '2weeks' | 'month' | 'al
   return false;
 }
 
-export interface newsLetterItem{
+export interface newsLetterItem {
   newsletter_id: string;
   edition_number: string;
   date: string;
   preview_image: string;
   link: string;
+  read_count?: number;
 }
 
 export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
@@ -42,22 +42,27 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
   const [activeUrl, setActiveUrl] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
-  const [filterDateLength, setFilterDateLength] = useState< 'week' | '2weeks' | 'month' | 'all' >('all');
-  const [refreshing, setRefreshing] = useState(false)
+  const [filterDateLength, setFilterDateLength] = useState<'week' | '2weeks' | 'month' | 'all'>('all');
+  const [refreshing, setRefreshing] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [selectedNewsletter, setSelectedNewsletter] = useState<newsLetterItem | null>(null);
 
   const fetchNewsletters = async () => {
-      const { data, error } = await supabase
-        .from('news')
-        .select('*');
+    const { data, error } = await supabase
+      .from('news')
+      .select('*, read_count:interaction_news(count)');
 
-      if (error) {
-        console.error(error);
-        return;
-      }
+    if (error) {
+      console.error(error);
+      return;
+    }
 
-      setNewsLetters(data ?? []);
+    const mapped = (data ?? []).map((item: any) => ({
+      ...item,
+      read_count: item.read_count?.[0]?.count ?? 0,
+    }));
+
+    setNewsLetters(mapped);
   };
 
   const handleOpenDeleteModal = (newsletter: newsLetterItem) => {
@@ -77,13 +82,13 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
         type: 'success',
         text1: 'Newsletter deleted',
         text2: 'Users can no longer see this newsletter on their feed.'
-      })
+      });
     } else {
       Toast.show({
         type: 'error',
         text1: 'Failed to delete newsletter',
         text2: 'Please try again later.'
-      })
+      });
     }
   }
 
@@ -92,19 +97,18 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
       const { error } = await supabase
         .from("news")
         .delete()
-        .eq("newsletter_id", newsletter_id)
+        .eq("newsletter_id", newsletter_id);
 
-        if (error) {
-            console.error("Error deleting newsletter:", error);
-            return false;
-        }
-
-        setNewsLetters((prev) => prev.filter((n) => n.newsletter_id !== newsletter_id));
-
-        return true;
-    } catch (error) {
-        console.error("Unexpected error:", error);
+      if (error) {
+        console.error("Error deleting newsletter:", error);
         return false;
+      }
+
+      setNewsLetters((prev) => prev.filter((n) => n.newsletter_id !== newsletter_id));
+      return true;
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      return false;
     }
   }
 
@@ -120,9 +124,9 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
   );
 
   const filteredNewsletters = newsLetters.filter((n) =>
-    (includesText(`Environteers Weekly Update: ${n.edition_number}th Edition`, searchText))&& (includesDate(n.date, filterDateLength))
+    (includesText(`Environteers Weekly Update: ${n.edition_number}th Edition`, searchText)) && (includesDate(n.date, filterDateLength))
   );
-  //displaying webview of a newsletter
+
   if (activeUrl) {
     return (
       <View style={{ flex: 1 }}>
@@ -132,60 +136,53 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
         >
           <Text>← Back</Text>
         </Pressable>
-
         <WebView
           source={{ uri: activeUrl }}
           style={{ flex: 1 }}
-          startInLoadingState = {true}
+          startInLoadingState={true}
         />
       </View>
     );
   }
-  //displaying list of newsletters
+
   return (
     <View style={{ flex: 1 }}>
-
-      <Ionicons name = "menu-outline" size = {30} style = {{marginTop: 8, marginLeft: 8}} />
+      <Ionicons name="menu-outline" size={30} style={{ marginTop: 8, marginLeft: 8 }} />
       {isAdmin ? (
         <>
-          <Text style = {{marginTop: 8, marginBottom: 4, marginLeft: 12, fontWeight: "bold", fontSize: 30}}>Manage Newsletters</Text>
-          <Text style = {{marginBottom: 12, marginLeft: 12, fontSize: 16, color: "#79B128"}}>Add, edit, and delete</Text>
+          <Text style={{ marginTop: 8, marginBottom: 4, marginLeft: 12, fontWeight: "bold", fontSize: 30 }}>Manage Newsletters</Text>
+          <Text style={{ marginBottom: 12, marginLeft: 12, fontSize: 16, color: "#79B128" }}>Add, edit, and delete</Text>
         </>
       ) : (
-        <Text style = {{marginTop: 8, marginBottom :12, marginLeft : 12, fontWeight: "bold", fontSize: 30}}> Weekly Updates</Text>
+        <Text style={{ marginTop: 8, marginBottom: 12, marginLeft: 12, fontWeight: "bold", fontSize: 30 }}> Weekly Updates</Text>
       )}
-      
-        <TextInput
-          placeholder="Search newsletters"
-          placeholderTextColor="#999"
-          style={styles.search}
-          value={searchText}
-          onChangeText={setSearchText}
-        />
 
-      <View style = {{flexDirection: 'row', marginLeft: 12}}>
-        <Ionicons style = {{marginTop: 14, marginRight: 4, marginLeft: 4}}name = "filter-outline" size = {24}/>
+      <TextInput
+        placeholder="Search newsletters"
+        placeholderTextColor="#999"
+        style={styles.search}
+        value={searchText}
+        onChangeText={setSearchText}
+      />
+
+      <View style={{ flexDirection: 'row', marginLeft: 12 }}>
+        <Ionicons style={{ marginTop: 14, marginRight: 4, marginLeft: 4 }} name="filter-outline" size={24} />
         <DropDownPicker
           open={filterOpen}
-          setOpen = {setFilterOpen}
+          setOpen={setFilterOpen}
           value={filterDateLength}
           setValue={setFilterDateLength}
-  
           items={[
             { label: 'Past Week', value: 'week' },
             { label: 'Past 2 Weeks', value: '2weeks' },
             { label: 'Past Month', value: 'month' },
             { label: 'Any', value: 'all' },
-
           ]}
           style={styles.filter}
-          dropDownContainerStyle= {styles.dropDownContainerStyle}
-          
-          >
-
-          </DropDownPicker>
+          dropDownContainerStyle={styles.dropDownContainerStyle}
+        />
       </View>
-      
+
       <FlatList
         style={{ marginVertical: 10 }}
         data={filteredNewsletters}
@@ -195,10 +192,12 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
         refreshing={refreshing}
         renderItem={({ item }) => (
           <NewsCard
+            newsId={item.newsletter_id}
             title={`Environteers Weekly Update: ${item.edition_number}th Edition`}
             date={item.date}
             previewImage={item.preview_image}
             adminView={isAdmin}
+            readCount={isAdmin ? item.read_count : undefined}
             onPress={() => setActiveUrl(item.link)}
             onDelete={() => handleOpenDeleteModal(item)}
             onEdit={() => {
@@ -212,25 +211,25 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
         )}
       />
 
-      {isAdmin  && (
+      {isAdmin && (
         <>
-          <Pressable 
-            style={styles.addNewsletterButton} 
+          <Pressable
+            style={styles.addNewsletterButton}
             onPress={() => router.push({
               pathname: '/(tabs)/AdminNewsAddFormView'
             })}>
             <Text style={styles.addNewsletterButtonText}>+ Add</Text>
           </Pressable>
-    
-          <DeleteNewsConfirmationModal 
-            visible={deleteModalVisible} 
-            onCancel={handleCancel} 
-            onConfirm={handleDelete} 
+
+          <DeleteNewsConfirmationModal
+            visible={deleteModalVisible}
+            onCancel={handleCancel}
+            onConfirm={handleDelete}
             newsletterTitle={
               selectedNewsletter
-              ? `Environteers Weekly Update: ${selectedNewsletter.edition_number}th Edition`
-              : "Selected newsletter"
-            } 
+                ? `Environteers Weekly Update: ${selectedNewsletter.edition_number}th Edition`
+                : "Selected newsletter"
+            }
           />
         </>
       )}
