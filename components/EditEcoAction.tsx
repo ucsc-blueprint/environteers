@@ -269,13 +269,13 @@ type Props =
           else if (typeOfAction === 'event') 
           {
             setStartTime(data.start_date ? new Date(data.start_date) : null);
-            setEndTime(data.end_time ? new Date(data.end_time) : null);
+            setEndTime(data.end_date ? new Date(data.end_date) : null);
             setEventDate(data.start_date ? new Date(data.start_date) : null);
           } 
           else 
           {
             setStartTime(null);
-            setEndTime(data.end_time ? new Date(data.end_time) : null);
+            setEndTime(data.end_date ? new Date(data.end_date) : null);
             setEventDate(null);
           }
 
