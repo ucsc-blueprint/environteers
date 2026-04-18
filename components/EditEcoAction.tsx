@@ -16,16 +16,10 @@ type Props =
     //values for supabase
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
-    const [eventDate, setEventDate] = useState<Date | null>(
-      (typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null
-    );
-    const [startTime, setStartTime] = useState<Date | null>(
-      (typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null
-    );
-    const [endTime, setEndTime] = useState<Date | null>(
-      (typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null
-    );
     const [coverPhoto, setCoverPhoto] = useState("");
+    const [eventDate, setEventDate] = useState<Date | null>(null);
+    const [startTime, setStartTime] = useState<Date | null>(null);
+    const [endTime, setEndTime] = useState<Date | null>(null);
     const [campaignType, setCampaignType] = useState("");
     const [location, setLocation] = useState("");
     const [link, setLink] = useState("");
@@ -229,7 +223,7 @@ type Props =
       useCallback(() => 
       {
         const fetchEcoAction = async () => {
-          setLoading(true);
+          setLoading(true);     
 
           let tableName = typeOfAction === 'online'
             ? 'online_ecoactions'
@@ -258,19 +252,13 @@ type Props =
           setCampaignType(data.campaign_type ?? '');
           setCustomCampaignType(data.campaign_type ?? '');
           setGoogleCalendarLink(data.google_calendar_link ?? '');
-
-          if (typeOfAction === 'in-person') 
+          console.log(data.start_date, data.start_time);
+          if (typeOfAction === 'in-person' || typeOfAction === 'event') 
           {
             setStartTime(data.start_date ? new Date(data.start_date) : null);
             setEndTime(data.end_date ? new Date(data.end_date) : null);
             setEventDate(data.start_date ? new Date(data.start_date) : null);
           }
-          else if (typeOfAction === 'event') 
-          {
-            setStartTime(data.start_time ? new Date(data.start_time) : null);
-            setEndTime(data.end_time ? new Date(data.end_time) : null);
-            setEventDate(data.start_time ? new Date(data.start_time) : null);
-          } 
           else 
           {
             setStartTime(null);

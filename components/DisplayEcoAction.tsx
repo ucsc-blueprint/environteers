@@ -201,7 +201,9 @@ export const DisplayEcoAction = ({
               ]}
               onPress={() => { setPickerMode("start"); setShowPicker(!showPicker); }}
             >
-              <Text>{startTime?.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} -</Text>
+              <Text>
+                {startTime ? startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Start time"} -
+              </Text>
             </Pressable>
             )}
           
