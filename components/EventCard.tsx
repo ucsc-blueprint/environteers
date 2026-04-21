@@ -8,6 +8,7 @@ import { CardStyles } from "@/app/stylesheets/CardStyles";
 import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addClick } from "@/app/utils/cards";
 import { supabase } from "@/constants/supabase";
 import { useInteractions } from "@/context/InteractionsContext";
+import { ActivityFeedback } from "@/components/ActivityFeedback";
 
 export type EventCardData = {
   id: string,
@@ -28,11 +29,14 @@ export type EventCardDataProps = {
   signed_up: boolean | null,
   completed: boolean | null,
   clicked: boolean,
+  feedback: boolean | null,
 }
 
 type EventCardProps = EventCardDataProps & {
   expanded?: boolean;
   onToggle?: () => void;
+  feedbackVisible: boolean;
+  setFeedbackVisible: (val: boolean) => void;
 };
 
 export const EventCard = ({
@@ -41,12 +45,15 @@ export const EventCard = ({
   signed_up,
   completed,
   clicked,
+  feedback,
+  feedbackVisible,
+  setFeedbackVisible,
   expanded: externalExpanded,
   onToggle,
 }: EventCardProps) => {
   const { user } = useAuth();
 
-  const { updateLike, updateSignUp, updateCompleted, updateClicked } = useInteractions();
+  const { updateLike, updateSignUp, updateCompleted, updateClicked, updateFeedback } = useInteractions();
 
   const [internalExpanded, setInternalExpanded] = useState(false);
   const expanded = externalExpanded !== undefined ? externalExpanded : internalExpanded;
@@ -87,7 +94,7 @@ export const EventCard = ({
           .eq("user_id", user.id);
 
         updateSignUp(
-          { cardType: "event", cardInfo, liked, signed_up, completed, clicked },
+          { cardType: "event", cardInfo, liked, signed_up, completed, clicked, feedback },
           null
         );
       }
@@ -100,7 +107,7 @@ export const EventCard = ({
       );
 
       updateClicked(
-        { cardType: "event", cardInfo, liked, signed_up, completed, clicked }
+        { cardType: "event", cardInfo, liked, signed_up, completed, clicked, feedback }
       );
     }
 
@@ -117,7 +124,7 @@ export const EventCard = ({
       .eq("user_id", user.id);
 
     updateSignUp(
-      { cardType: "event", cardInfo, liked, signed_up, completed, clicked },
+      { cardType: "event", cardInfo, liked, signed_up, completed, clicked, feedback },
       response
     );
 
@@ -135,13 +142,59 @@ export const EventCard = ({
       .eq("event_id", cardInfo.id)
       .eq("user_id", user.id);
 
-    updateCompleted(
-      { cardType: "event", cardInfo, liked, signed_up, completed, clicked },
-      response
-    );
-
-    toggleExpanded();
+    if (response) {
+      setFeedbackVisible(true);
+    } else {
+      updateCompleted(
+        { cardType: "event", cardInfo, liked, signed_up, completed, clicked, feedback },
+        response
+      );
+      toggleExpanded();
+    }
   };
+
+  const handleFeedbackSubmit = async (feedbackText: string) => {
+    if (!user?.id) return;
+
+    await Promise.all([
+      supabase
+        .from("feedback")
+        .insert({
+          user_id: user.id,
+          content: feedbackText,
+          event_id: cardInfo.id,
+        }),
+      supabase
+        .from("interactions_events")
+        .update({ feedback: true })
+        .eq("event_id", cardInfo.id)
+        .eq("user_id", user.id)
+    ])
+      
+    setFeedbackVisible(false);
+    updateCompleted(
+      { cardType: "event", cardInfo, liked, signed_up, completed: true, clicked, feedback },
+      true
+    );
+    updateFeedback(
+      { cardType: "event", cardInfo, liked, signed_up, completed: true, clicked, feedback },
+      true
+    );
+    toggleExpanded()
+  }
+
+  const handleFeedbackCancel = () => {
+    setFeedbackVisible(false);
+    updateCompleted(
+      { cardType: "event", cardInfo, liked, signed_up, completed: true, clicked, feedback },
+      true
+    );
+    updateFeedback(
+      { cardType: "event", cardInfo, liked, signed_up, completed: true, clicked, feedback },
+      false
+    );
+    toggleExpanded()
+  }
 
   const handleLikes = async () => {
     if (!user?.id) {
@@ -158,12 +211,18 @@ export const EventCard = ({
     );
     
     updateLike(
-      { cardType: "event", cardInfo, liked, signed_up, completed, clicked }, !liked
+      { cardType: "event", cardInfo, liked, signed_up, completed, clicked, feedback }, !liked
     );
   };
 
   return (
     <View style={CardStyles.card}>
+      <ActivityFeedback 
+        visible={feedbackVisible} 
+        onSubmit={handleFeedbackSubmit} 
+        onCancel={handleFeedbackCancel} 
+      />
+      
       <Pressable onPress={toggleExpanded}>
         <View style={CardStyles.cardInfo}>
           <View style={CardStyles.imageColumn}>
@@ -261,13 +320,19 @@ export const EventCard = ({
               {/* Sign Up Button */}
               { cardInfo.sign_up_link &&
                 <View style={CardStyles.signUpButtonContainer}>
-                  <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => openSignUpLink(cardInfo.sign_up_link!)}> 
-                    { signed_up ? 
-                      <Text style={CardStyles.signUpText}>Revisit Link</Text> : 
-                      <Text style={CardStyles.signUpText}>Take Action</Text> 
-                    }
-                    {renderIcon(15, mdiOpenInNew, 'white')}
-                  </Pressable>
+                  { completed && !feedback ? (
+                    <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => setFeedbackVisible(true)}>
+                      <Text style={CardStyles.signUpText}>Provide Feedback</Text>
+                    </Pressable>
+                  ) : (
+                    <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => openSignUpLink(cardInfo.sign_up_link!)}> 
+                      { signed_up ? 
+                        <Text style={CardStyles.signUpText}>Revisit Link</Text> : 
+                        <Text style={CardStyles.signUpText}>Take Action</Text> 
+                      }
+                      {renderIcon(15, mdiOpenInNew, 'white')}
+                    </Pressable>
+                  )}
                 </View>
               }
             </View>

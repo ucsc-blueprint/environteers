@@ -97,6 +97,8 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
   const { card } = props;
   const expanded = props.isSelected ?? false;
 
+  const [feedbackVisible, setFeedbackVisible] = useState(false);
+
   const toggleExpanded = () => {
     if (props.setSelectedId) {
       const key = `${card.cardInfo.id}-${card.cardType}`;
@@ -115,6 +117,8 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
           signed_up={card.signed_up} 
           completed={card.completed} 
           clicked={card.clicked}
+          feedbackVisible={feedbackVisible}
+          setFeedbackVisible={setFeedbackVisible}
           {...(props.setSelectedId ? { expanded, onToggle: toggleExpanded } : {})}
         />
       );
@@ -135,6 +139,8 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
           signed_up={card.signed_up} 
           completed={card.completed} 
           clicked={card.clicked}
+          feedbackVisible={feedbackVisible}
+          setFeedbackVisible={setFeedbackVisible}
           {...(props.setSelectedId ? { expanded, onToggle: toggleExpanded } : {})}
         />
       );
