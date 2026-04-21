@@ -134,7 +134,7 @@ type Props =
           Alert.alert("Link required for online eco actions");
           return;
         }
-        if (typeOfAction === "in-person" && (! )) 
+        if (typeOfAction === "in-person" && (!eventDate || !startTime || !endTime)) 
           {
             Alert.alert("Date and times required for in-person eco actions");
             return;

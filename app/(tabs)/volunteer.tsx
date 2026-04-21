@@ -9,7 +9,6 @@ import { InPersonCardProps } from "@/components/InPersonCard";
 import { OnlineCardDataProps } from "@/components/OnlineCard";
 import { EventCardDataProps } from "@/components/EventCard";
 import { router } from "expo-router";
-import { Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useRefresh } from "@/context/RefreshContext";
