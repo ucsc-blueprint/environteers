@@ -140,6 +140,11 @@ export const OnlineCard = ({
           <View style={CardStyles.contentColumn}>
             <Text>{cardInfo.title}</Text>
             {/* {endDate && <Text>{endDate}</Text>} */}
+            {isAdmin && (
+            <View style={[CardStyles.formatRow, CardStyles.rsvpContainer]}>
+              <Text style = {[CardStyles.rsvp]}>24 current RSVPs</Text>
+            </View>
+            )}            
             <View style={CardStyles.formatRow}>
               {renderIcon(24, mdiListBoxOutline, 'black')}
               {cardInfo.campaign_type && <Text>{cardInfo.campaign_type}</Text>}

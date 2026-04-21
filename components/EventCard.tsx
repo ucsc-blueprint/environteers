@@ -123,6 +123,13 @@ export const EventCard = ({
                 <Text>{formatEventDate(cardInfo.start_time, cardInfo.end_time)}</Text>
               </View>
             }
+
+            {isAdmin && (
+            <View style={[CardStyles.formatRow, CardStyles.rsvpContainer]}>
+              <Text style = {[CardStyles.rsvp]}>24 current RSVPs</Text>
+            </View>
+            )}
+
             { cardInfo.location &&
               <View style={CardStyles.formatRow}>
                 <MaterialIcons name="location-on" size={25} color={'black'} />

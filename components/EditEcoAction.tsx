@@ -16,15 +16,12 @@ type Props =
     //values for supabase
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
-    const [eventDate, setEventDate] = useState<Date | null>(
-      (typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null
-    );
-    const [startTime, setStartTime] = useState<Date | null>(
-      (typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null
-    );
-    const [endTime, setEndTime] = useState<Date | null>(
-      (typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null
-    );
+    const [eventDate, setEventDate] = useState<Date | null>
+      (null);
+    const [startTime, setStartTime] = useState<Date | null>
+      (null);
+    const [endTime, setEndTime] = useState<Date | null>
+      (null);
     const [coverPhoto, setCoverPhoto] = useState("");
     const [campaignType, setCampaignType] = useState("");
     const [location, setLocation] = useState("");
@@ -140,7 +137,7 @@ type Props =
           Alert.alert("Link required for online eco actions");
           return;
         }
-        if (typeOfAction === "in-person" && (!eventDate || !startTime || !endTime)) 
+        if (typeOfAction === "in-person" && (! )) 
           {
             Alert.alert("Date and times required for in-person eco actions");
             return;
@@ -230,6 +227,10 @@ type Props =
       useCallback(() => 
       {
         const fetchEcoAction = async () => {
+          if(!id){
+            Alert.alert("No ID provided");
+            return;
+          }
           setLoading(true);
 
           let tableName = typeOfAction === 'online'
@@ -260,22 +261,22 @@ type Props =
           setCustomCampaignType(data.campaign_type ?? '');
           setGoogleCalendarLink(data.google_calendar_link ?? '');
 
-          if (typeOfAction === 'in-person') 
+          if (typeOfAction === 'in-person')
           {
-            setStartTime(data.start_date ? new Date(data.start_date) : null);
-            setEndTime(data.end_date ? new Date(data.end_date) : null);
-            setEventDate(data.start_date ? new Date(data.start_date) : null);
+            setStartTime(new Date(data.start_date));
+            setEndTime(new Date(data.end_date));
+            setEventDate(new Date(data.start_date));
           }
-          else if (typeOfAction === 'event') 
+          else if (typeOfAction === 'event')
           {
-            setStartTime(data.start_time ? new Date(data.start_time) : null);
-            setEndTime(data.end_time ? new Date(data.end_time) : null);
-            setEventDate(data.start_time ? new Date(data.start_time) : null);
-          } 
+            setStartTime(new Date(data.start_date));
+            setEndTime(new Date(data.end_date));
+            setEventDate(new Date(data.start_date));
+          }
           else 
           {
             setStartTime(null);
-            setEndTime(data.end_time ? new Date(data.end_time) : null);
+            setEndTime(new Date(data.end_time));
             setEventDate(null);
           }
 
@@ -287,7 +288,6 @@ type Props =
     );
         
     return (
-      <SafeAreaView style={{flex: 1}}>
         <DisplayEcoAction
           typeOfAction={typeOfAction}
 
@@ -333,7 +333,6 @@ type Props =
           handleCancel={handleCancel}
           getImage = {getImage}
         />
-      </SafeAreaView>
     )}
 
 
