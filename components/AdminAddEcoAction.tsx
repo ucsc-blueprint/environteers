@@ -212,7 +212,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
       }
     };
     return (
-      <SafeAreaView style={{flex: 1}}>
+      
         <DisplayEcoAction
           key = {resetKey}// forces remount of component to reset the rich text editor
           typeOfAction={typeOfAction}
@@ -258,7 +258,6 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
           handleCancel={handleCancel}
           getImage = {getImage}
         />
-      </SafeAreaView>
     )}
 
 
