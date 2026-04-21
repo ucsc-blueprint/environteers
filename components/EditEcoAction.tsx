@@ -1,4 +1,4 @@
-import React, {useCallback, useState,} from 'react';
+import React, {useCallback, useState, } from 'react';
 import {Alert} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -16,13 +16,10 @@ type Props =
     //values for supabase
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
-    const [eventDate, setEventDate] = useState<Date | null>
-      (null);
-    const [startTime, setStartTime] = useState<Date | null>
-      (null);
-    const [endTime, setEndTime] = useState<Date | null>
-      (null);
     const [coverPhoto, setCoverPhoto] = useState("");
+    const [eventDate, setEventDate] = useState<Date | null>(null);
+    const [startTime, setStartTime] = useState<Date | null>(null);
+    const [endTime, setEndTime] = useState<Date | null>(null);
     const [campaignType, setCampaignType] = useState("");
     const [location, setLocation] = useState("");
     const [link, setLink] = useState("");
@@ -260,18 +257,12 @@ type Props =
           setCampaignType(data.campaign_type ?? '');
           setCustomCampaignType(data.campaign_type ?? '');
           setGoogleCalendarLink(data.google_calendar_link ?? '');
-
-          if (typeOfAction === 'in-person')
+          console.log(data.start_date, data.start_time);
+          if (typeOfAction === 'in-person' || typeOfAction === 'event') 
           {
-            setStartTime(new Date(data.start_date));
-            setEndTime(new Date(data.end_date));
-            setEventDate(new Date(data.start_date));
-          }
-          else if (typeOfAction === 'event')
-          {
-            setStartTime(new Date(data.start_date));
-            setEndTime(new Date(data.end_date));
-            setEventDate(new Date(data.start_date));
+            setStartTime(data.start_date ? new Date(data.start_date) : null);
+            setEndTime(data.end_date ? new Date(data.end_date) : null);
+            setEventDate(data.start_date ? new Date(data.start_date) : null);
           }
           else 
           {

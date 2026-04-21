@@ -13,15 +13,11 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
     //values for supabase
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
-    const [eventDate, setEventDate] = useState<Date | null>(
-      (typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null
-    );
-    const [startTime, setStartTime] = useState<Date | null>(
-      (typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null
-    );
-    const [endTime, setEndTime] = useState<Date | null>(
-      (typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null
-    );
+
+    const [eventDate, setEventDate] = useState<Date | null>(null);
+    const [startTime, setStartTime] = useState<Date | null>(null);
+    const [endTime, setEndTime] = useState<Date | null>(null);
+
     const [coverPhoto, setCoverPhoto] = useState("");
     const [campaignType, setCampaignType] = useState("");
     const [location, setLocation] = useState("");
@@ -97,9 +93,9 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         setCampaignType("")
         setCustomCampaignType("")
         setGoogleCalendarLink("")
-        setEventDate((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
-        setStartTime((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
-        setEndTime((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
+        setEventDate(null);
+        setStartTime(null);
+        setEndTime(null);
         setResetKey(prev => prev + 1) // resets rich text editor  
       }
       

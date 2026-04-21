@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator, Text, Modal } from "react-native";
+import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator, Text, Modal} from "react-native";
 import { Header, EcoFeed } from "@/components/EcoFeed";
 import { useEffect, useState } from "react";
 import { supabase } from "@/constants/supabase";
@@ -9,6 +9,8 @@ import { InPersonCardProps } from "@/components/InPersonCard";
 import { OnlineCardDataProps } from "@/components/OnlineCard";
 import { EventCardDataProps } from "@/components/EventCard";
 import { router } from "expo-router";
+import { Modal } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import { useRefresh } from "@/context/RefreshContext";
 
@@ -23,8 +25,9 @@ export default function Volunteer() {
   const isAdmin = profile?.is_admin === true;
 
   const { refreshKey } = useRefresh();
-  const goToAddForm = (type: "event" | "in-person" | "online") => {
-    setShowAddMenu(false);
+  const goToAddForm = (type: "event" | "in-person" | "online") => 
+  {
+    setShowAddMenu(false);    
     router.push({
       pathname: "/(tabs)/AddEcoAction",
       params: { typeOfAction: type },
@@ -114,19 +117,19 @@ export default function Volunteer() {
 
   return (
     <LinearGradient
-      colors={['white', '#EDF3F7', '#EAF2F6']}
-      locations={[0.8, 0.9, 1]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 0.5 }}
-      style={styles.gradient}
-    >
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
-
-        <Header resultsCount={items.length} />
-
-
-        {loading && <ActivityIndicator size="large" color="#0000ff" />}
-        {!loading && items.map((card) => (
+        colors={['white','#EDF3F7', '#EAF2F6']}
+        locations={[0.8, 0.9, 1]}
+        start={{ x: 0, y: 0}}
+        end={{ x: 0, y: 0.5 }}
+        style={styles.gradient}
+      >
+      <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
+        
+        <Header resultsCount={items.length} onOpenAddMenu={() => setShowAddMenu(true)}/> 
+        
+        
+        { loading && <ActivityIndicator size="large" color="#0000ff" />}
+        { !loading && items.map((card) => ( 
           <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
         ))}
       </ScrollView>

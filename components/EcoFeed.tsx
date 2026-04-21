@@ -13,9 +13,14 @@ import { renderIcon } from "@/app/utils/cards";
 
 type HeaderProps = {
   resultsCount: number,
+  onOpenAddMenu: () => void,
 }
 
+<<<<<<< HEAD
 export const Header = ({ resultsCount }: HeaderProps) => {
+=======
+export const Header = ({resultsCount, onOpenAddMenu}: HeaderProps) => {
+>>>>>>> 3cbbd337861e880a03553e67cc61f4c8677a4b04
   const { profile } = useAuth();
   return (
       <View style={CardStyles.feedHeader}>
@@ -39,10 +44,30 @@ export const Header = ({ resultsCount }: HeaderProps) => {
           <Text style={CardStyles.results}>{resultsCount} results</Text>
         </View>
       </View>
+<<<<<<< HEAD
   );
+=======
+      <Text style={CardStyles.userText}>Ready to take action 
+        <Text style={ CardStyles.userName}> {profile?.first_name} {profile?.last_name}?</Text>
+      </Text>
+      {/* Searchbar */}
+      <View>
+        <Text style={[CardStyles.searchFilter, CardStyles.searchBar]}>Search for a keyword...</Text>
+      </View>
+      {/* Buttons */}
+      <View style={CardStyles.filters}>
+        <Pressable style={CardStyles.button} onPress={() => {}}><Text style={CardStyles.buttonText}>Events</Text></Pressable>
+        <Pressable style={CardStyles.button} onPress={() => {}}><Text style={CardStyles.buttonText}>Eco Actions: In-person</Text></Pressable>
+        <Pressable style={CardStyles.button} onPress={() => {}}><Text style={CardStyles.buttonText}>Eco Actions: Online</Text></Pressable>
+        <Text style={CardStyles.results}>{resultsCount} results</Text>
+      </View>
+  </View>
+    );
+>>>>>>> 3cbbd337861e880a03553e67cc61f4c8677a4b04
 };
 
 export const EcoFeed = (props: { card: CardProps }) => {
+
   const { card } = props;
 
   if (!card) return null;
@@ -80,4 +105,8 @@ export const EcoFeed = (props: { card: CardProps }) => {
     default:
       return null;
   }
+<<<<<<< HEAD
 };
+=======
+}  
+>>>>>>> 3cbbd337861e880a03553e67cc61f4c8677a4b04
