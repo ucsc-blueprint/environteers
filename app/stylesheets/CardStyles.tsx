@@ -86,12 +86,15 @@ export const CardStyles = StyleSheet.create({
     borderRadius: 24,
     padding: 16,
     gap: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
     backgroundColor: 'white',
+    borderColor: '#96BDD7',
+    borderWidth: 1,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.1,
+    // shadowRadius: 6,
+    elevation: 3,
+    // backgroundColor: 'white',
   },
 
   cardInfo: {
@@ -285,5 +288,12 @@ export const CardStyles = StyleSheet.create({
     alignItems: 'center',
     display: 'flex',
     justifyContent: 'center',
+  },
+  
+  // Required Cards
+  requiredCard: {
+    backgroundColor: '#FFF4DF',
+    borderColor: '#FF9212',
+    borderWidth: 1,
   }
 });
