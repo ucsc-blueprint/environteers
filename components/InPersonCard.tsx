@@ -108,7 +108,6 @@ export const InPersonCard = ({
     Alert.alert("Not signed in! Can't like post");
   };
 
-
   return (
     <View style={CardStyles.card}>
       <Pressable onPress={toggleExpanded}>
@@ -151,7 +150,13 @@ export const InPersonCard = ({
                 name="pencil-outline"
                 size={25}
                 color={'#0282D3'}
-                onPress={() => router.push('/(tabs)/AddEcoAction')}
+                onPress={() => {
+                  console.log("Edit pressed, id: ", cardInfo.id);
+                  router.push({
+                    pathname: '/(tabs)/AdminEditEcoAction',
+                    params: { typeOfAction: "in-person", id: cardInfo.id}
+                  })
+                }}
               />
               </View>
               <View style={CardStyles.deleteIconBackground}><MaterialCommunityIcons name="trash-can-outline" size={25} color="#EA4335" /></View>    

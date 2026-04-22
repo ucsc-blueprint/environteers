@@ -1,5 +1,4 @@
 import { AdminAddEcoAction } from "@/components/AdminAddEcoAction";
-import { EditEcoAction } from "@/components/EditEcoAction";
 import React from "react";
 import { useLocalSearchParams } from "expo-router";
 
