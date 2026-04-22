@@ -1,11 +1,4 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  ActivityIndicator,
-  Pressable,
-} from "react-native";
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator, Pressable } from "react-native";
 import { useState, useEffect } from "react";
 import { LogoutButton } from "@/components/LogoutButton";
 import { EcoFeed } from "@/components/EcoFeed";
@@ -17,26 +10,20 @@ import { EcoFeedFilterDropdown } from "@/components/EcoFeedFilterDropdown";
 export default function Activity() {
   const { cards, loading } = useInteractions();
 
-  const [selectedFilter, setSelectedFilter] = useState<
-    "signups" | "favorites"
-  >("signups");
+  const [selectedFilter, setSelectedFilter] = useState<"signups" | "favorites">("signups");
 
-  // FILTER STATE (same as volunteer.tsx)
+  // Filter state
   const [filterTypes, setFilterTypes] = useState<string[]>([]);
   const [maxDistance, setMaxDistance] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [userLocation, setUserLocation] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
+  const [userLocation, setUserLocation] = useState<{latitude: number; longitude: number} | null>(null);
 
   const now = new Date();
 
-  // 📍 Get user location
+  // Get user location
   useEffect(() => {
     const getLocation = async () => {
-      const { status } =
-        await Location.requestForegroundPermissionsAsync();
+      const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") return;
 
       const location = await Location.getCurrentPositionAsync({});
@@ -49,69 +36,53 @@ export default function Activity() {
     getLocation();
   }, []);
 
-  // 📏 Distance helper
-  const getDistance = (
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ) => {
+  // Distance helper
+  const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
     const R = 3958.8;
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
 
     const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) ** 2;
-
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    
     return R * c;
   };
 
-  // 📅 Helper for dates
+  // Date helper function
   const getCardDate = (card: CardProps) => {
     if (!card?.cardInfo) return null;
 
-    if (
-      (card.cardType === "event" || card.cardType === "in_person") &&
-      card.cardInfo.start_date
-    ) {
+    if ((card.cardType === "event" || card.cardType === "in_person") && card.cardInfo.start_date) {
       return new Date(card.cardInfo.start_date);
     }
 
     return null;
   };
 
-  // 🔍 FILTERED CARDS (core fix)
+  // Filtered Cards
   const filteredCards = cards.filter((card) => {
-    const matchesType =
-      filterTypes.length === 0 || filterTypes.includes(card.cardType);
+    const matchesType = filterTypes.length === 0 || filterTypes.includes(card.cardType);
 
     const matchesDistance = (() => {
-      if (!maxDistance || !userLocation || card.cardType === "online")
+      if (!maxDistance || !userLocation || card.cardType === "online") {
         return true;
+      }
 
       const lat = (card.cardInfo as any).location_latitude;
       const lon = (card.cardInfo as any).location_longitude;
 
       if (!lat || !lon) return true;
 
-      return (
-        getDistance(
-          userLocation.latitude,
-          userLocation.longitude,
-          lat,
-          lon
-        ) <= maxDistance
-      );
+      return (getDistance(userLocation.latitude, userLocation.longitude, lat, lon ) <= maxDistance);
     })();
 
     return matchesType && matchesDistance;
   });
 
-  // 📦 Derived sections FROM filtered cards
+  // Derived card States
   const likedCards = filteredCards.filter((c) => c.liked === true);
 
   const completedCards = filteredCards.filter(
@@ -121,11 +92,9 @@ export default function Activity() {
   const upcomingCards = filteredCards.filter((card) => {
     const date = getCardDate(card);
     return (
-      (card.cardType === "event" ||
-        card.cardType === "in_person") &&
+      (card.cardType === "event" || card.cardType === "in_person") &&
       card.signed_up === true &&
-      date &&
-      date > now
+      date && date > now
     );
   });
 
@@ -137,12 +106,8 @@ export default function Activity() {
       return card.clicked === true && card.completed === null;
     }
 
-    if (
-      card.cardType === "event" ||
-      card.cardType === "in_person"
-    ) {
-      const notSignedUpYet =
-        card.clicked === true && card.signed_up === null;
+    if (card.cardType === "event" || card.cardType === "in_person") {
+      const notSignedUpYet = card.clicked === true && card.signed_up === null;
 
       const needsCompletion =
         card.clicked === true &&
@@ -152,7 +117,6 @@ export default function Activity() {
 
       return notSignedUpYet || needsCompletion;
     }
-
     return false;
   });
 
@@ -173,11 +137,9 @@ export default function Activity() {
               ]}
               onPress={() => setSelectedFilter("signups")}
             >
-              <Text
-                style={[
+              <Text style={[
                   styles.buttonText,
-                  selectedFilter !== "signups" &&
-                    styles.nonSelectedButtonText,
+                  selectedFilter !== "signups" && styles.nonSelectedButtonText,
                 ]}
               >
                 Sign-ups
@@ -237,8 +199,7 @@ export default function Activity() {
         {selectedFilter === "favorites" ? (
           <>
             <Text>Favorites</Text>
-            {!loading &&
-              likedCards.map((card) => (
+            {!loading && likedCards.map((card) => (
                 <EcoFeed
                   key={`${card.cardType}-${card.cardInfo.id}`}
                   card={card}
@@ -256,6 +217,7 @@ export default function Activity() {
                 <EcoFeed
                   key={`${card.cardType}-${card.cardInfo.id}`}
                   card={card}
+                  highlight={true}
                 />
               ))}
 
@@ -278,7 +240,6 @@ export default function Activity() {
               ))}
           </>
         )}
-
         <LogoutButton />
       </ScrollView>
     </View>
