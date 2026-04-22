@@ -9,10 +9,11 @@ import { decode } from 'base64-arraybuffer';
 import { DisplayEcoAction } from '@/components/DisplayEcoAction';
 type Props = 
 {
+    isEdit: true,
     typeOfAction: string;
     id: any; 
 };
-   export const EditEcoAction = ({ typeOfAction, id }: Props) => { 
+   export const EditEcoAction = ({ isEdit, typeOfAction, id }: Props) => { 
     //values for supabase
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -281,7 +282,8 @@ type Props =
     return (
         <DisplayEcoAction
           typeOfAction={typeOfAction}
-
+          isEdit={true}
+          
           title={title}
           setTitle={setTitle}
 

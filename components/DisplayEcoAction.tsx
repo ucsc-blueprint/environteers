@@ -10,6 +10,7 @@ import { Dispatch, SetStateAction } from 'react';
 import { ActivityIndicator } from 'react-native-paper';
 type Props = {
   typeOfAction: string;
+  isEdit: boolean;
 
   title: string;
   setTitle: Dispatch<SetStateAction<string>>;
@@ -56,6 +57,7 @@ type Props = {
 };
 export const DisplayEcoAction = ({
     typeOfAction,
+    isEdit,
 
     title,
     setTitle,
@@ -105,6 +107,7 @@ export const DisplayEcoAction = ({
         const [filterOpen, setFilterOpen] = useState(false);
         const richText = useRef<RichEditor>(null);
 
+        const actionWord = isEdit? "Edit": "Add";
     if (loading)
     {
       return (<ActivityIndicator animating={true} color="#86AE42" size="large" style={{flex: 1, justifyContent: "center", alignItems: "center"}}/>);
@@ -127,15 +130,15 @@ export const DisplayEcoAction = ({
           <Pressable style = {styles.leftButton} onPress={() => handleCancel()}>
             <Ionicons name="close" size={28} color="black" />
           </Pressable>
-          {typeOfAction === "in-person" || typeOfAction === "online" ? (
+            {typeOfAction === "in-person" || typeOfAction === "online" ? (
 
-              <Text style={styles.headerTitle}>Add {typeOfAction} eco-action</Text>
-            ) 
-            : typeOfAction === "event" ? (
-              <Text style={styles.headerTitle}>Add event</Text>
-            )
-            : null
-          }
+                <Text style={styles.headerTitle}>{actionWord} {typeOfAction} eco-action</Text>
+              ) 
+              : typeOfAction === "event" ? (
+                <Text style={styles.headerTitle}>{actionWord} event</Text>
+              )
+              : null
+            }
 
           <Pressable
             style={[styles.rightButton, submitting && { opacity: 0.5}]}

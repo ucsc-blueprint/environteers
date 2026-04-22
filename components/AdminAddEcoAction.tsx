@@ -215,6 +215,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         <DisplayEcoAction
           key = {resetKey}// forces remount of component to reset the rich text editor
           typeOfAction={typeOfAction}
+          isEdit= {false}
 
           title={title}
           setTitle={setTitle}
