@@ -86,7 +86,7 @@ export default function AdminAnalytics() {
     };
 
     fetchFeedback();
-  }, [volunteerID]);
+  }, [volunteerName, membershipStatus, volunteerID]);
 
   if (loading) {
     return <ActivityIndicator size="large" color="#000000" />

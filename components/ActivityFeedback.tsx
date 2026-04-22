@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Modal, StyleSheet, Pressable } from 'react-native';
 import { X } from 'lucide-react-native';
-import { supabase } from '@/constants/supabase';
 
 interface ActivityFeedbackProps {
   visible: boolean;
