@@ -1,6 +1,12 @@
 import { useAuth } from "@/context/AuthContext";
+<<<<<<< HEAD
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import {
+=======
+import { View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
+import React, { useState } from "react";
+import { 
+>>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
   mdiMenu,
   mdiBell,
 } from '@mdi/js';
@@ -10,14 +16,44 @@ import { OnlineCard } from "@/components/OnlineCard";
 import { EventCard } from "@/components/EventCard";
 import { CardProps } from "@/app/(tabs)/volunteer";
 import { renderIcon } from "@/app/utils/cards";
+import { SlidersHorizontal } from 'lucide-react-native';
+import { EcoFeedFilterDropdown } from '@/components/EcoFeedFilterDropdown';
 
 type HeaderProps = {
+<<<<<<< HEAD
   resultsCount: number,
   onOpenAddMenu: () => void,
 }
 
 export const Header = ({resultsCount, onOpenAddMenu}: HeaderProps) => {
+=======
+  resultsCount: number;
+  search: string;
+  setSearch(value: string): void;
+  filterTypes: string[];
+  setFilterTypes(types: string[]): void;
+  maxDistance: number | null;
+  setMaxDistance(distance: number | null): void;
+};
+
+type ExpandableProps = {
+  isSelected?: boolean,
+  setSelectedId?: React.Dispatch<React.SetStateAction<string | null>>; 
+};
+
+export const Header = ({ 
+  resultsCount,
+  search,
+  setSearch,
+  filterTypes,
+  setFilterTypes,
+  maxDistance,
+  setMaxDistance
+}: HeaderProps) => {
+>>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
   const { profile } = useAuth();
+  const [showFilters, setShowFilters] = useState(false);
+
   return (
       <View style={CardStyles.feedHeader}>
         {/* Navbar (Top)*/}
@@ -40,12 +76,69 @@ export const Header = ({resultsCount, onOpenAddMenu}: HeaderProps) => {
           <Text style={CardStyles.results}>{resultsCount} results</Text>
         </View>
       </View>
+<<<<<<< HEAD
   );
 };
 
 export const EcoFeed = (props: { card: CardProps }) => {
 
+=======
+      <Text style={CardStyles.userText}>Ready to take action 
+        <Text style={ CardStyles.userName}> {profile?.first_name} {profile?.last_name}?</Text>
+      </Text>
+      {/* Searchbar */}
+      <View>
+        <View style={styles.searchRow}>
+          <TextInput
+            placeholder="Search..."
+            placeholderTextColor="#868E8B"
+            value={search}
+            onChangeText={setSearch}
+            style={styles.searchInput}
+          />
+
+          <Pressable
+            onPress={() => setShowFilters(prev => !prev)}
+            style={styles.filterButton}
+          >
+            <SlidersHorizontal size={18} color="black" />
+          </Pressable>
+        </View>
+
+        {showFilters && (
+          <View style={{ marginTop: 16 }}>
+            <EcoFeedFilterDropdown
+              typeOptions={[
+                { label: "In-Person Eco Actions", value: "in_person" },
+                { label: "Online Eco Actions", value: "online" },
+                { label: "Events", value: "event" },
+              ]}
+              selectedTypes={filterTypes}
+              selectedDistance={maxDistance}
+              onApply={(types, distance) => {
+                setFilterTypes(types);
+                setMaxDistance(distance);
+                setShowFilters(false);
+              }}
+            />
+          </View>
+        )}
+      </View>
+    </View>
+    );
+};
+
+export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
+>>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
   const { card } = props;
+  const expanded = props.isSelected ?? false;
+
+  const toggleExpanded = () => {
+    if (props.setSelectedId) {
+      const key = `${card.cardInfo.id}-${card.cardType}`;
+      props.setSelectedId(prev => (prev === key ? null : key));
+    }
+   };
 
   if (!card) return null;
   
@@ -58,6 +151,7 @@ export const EcoFeed = (props: { card: CardProps }) => {
           signed_up={card.signed_up}
           completed={card.completed}
           clicked={card.clicked}
+          {...(props.setSelectedId ? { expanded, onToggle: toggleExpanded } : {})}
         />
       );
     case "online":
@@ -77,9 +171,37 @@ export const EcoFeed = (props: { card: CardProps }) => {
           signed_up={card.signed_up}
           completed={card.completed}
           clicked={card.clicked}
+          {...(props.setSelectedId ? { expanded, onToggle: toggleExpanded } : {})}
         />
       );
     default:
       return null;
   }
+<<<<<<< HEAD
 }  
+=======
+};
+
+const styles = StyleSheet.create({
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: "#EAF2F6",
+    borderRadius: 8,
+  },
+  searchInput: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 8,
+  },
+  filterButton: {
+    width: 35,
+    height: 28,
+    borderRadius: 50,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+})
+>>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e

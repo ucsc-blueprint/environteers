@@ -1,34 +1,52 @@
-
 import React from 'react';
 import { StyleSheet, Text, View, Pressable} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Trash, Pencil } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { supabase } from "@/constants/supabase";
+import { useAuth } from "@/context/AuthContext";
 
 export interface NewsCardProps {
+  newsId: string;
   title: string;
   editionNumber?: number;
   date: string;
   previewImage: string;
   adminView: boolean;
+  readCount?: number;
   onPress: () => void;
   onDelete?: () => void;
   onEdit?: () => void;
 }
 
 export const NewsCard = ({
+  newsId,
   title,
   date,
   editionNumber,
   previewImage,
   adminView,
+  readCount,
   onPress,
   onDelete,
   onEdit,
 }: NewsCardProps) => {
+
+  const { user } = useAuth();
+
+  const handlePress = async () => {
+    if (user) {
+      const { error } = await supabase.from('interaction_news').insert({
+        user_id: user.id,
+        news_id: newsId,
+      });
+      if (error) console.error("Failed to track newsletter read:", error);
+    }
+    onPress();
+  };
+
   return (
-    <Pressable style={styles.card} onPress={onPress}>
+    <Pressable style={styles.card} onPress={handlePress}>
       <View style={styles.imageWrapper}>
         <Image source={{ uri: previewImage }} style={styles.image} />
       </View>
@@ -42,6 +60,10 @@ export const NewsCard = ({
           <Ionicons name="calendar-outline" size={14} color="#777" />
           <Text style={styles.metaText}>{date}</Text>
         </View>
+
+        {readCount !== undefined && (
+          <Text style={styles.readCount}>{readCount} total reads</Text>
+        )}
 
         {adminView && (
           <View style={{flexDirection: "row"}}>
@@ -107,6 +129,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#777',
     marginLeft: 6,
+  },
+
+  readCount: {
+    fontSize: 13,
+    color: '#79B128',
+    fontWeight: '600',
   },
 
   deleteButton: {

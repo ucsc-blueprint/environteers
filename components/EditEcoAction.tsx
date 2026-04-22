@@ -197,8 +197,8 @@ type Props =
             const { data, error } = await supabase.from("events").update({
               title: title,
               description: description,
-              start_time: startTime!.toISOString(),
-              end_time: endTime!.toISOString(),
+              start_date: startTime!.toISOString(),
+              end_date: endTime!.toISOString(),
               location: location,
               sign_up_link: link,
               cover_photo: imageUrl,
@@ -264,10 +264,23 @@ type Props =
             setEndTime(data.end_date ? new Date(data.end_date) : null);
             setEventDate(data.start_date ? new Date(data.start_date) : null);
           }
+<<<<<<< HEAD
           else 
           {
             setStartTime(null);
             setEndTime(new Date(data.end_time));
+=======
+          else if (typeOfAction === 'event') 
+          {
+            setStartTime(data.start_date ? new Date(data.start_date) : null);
+            setEndTime(data.end_date ? new Date(data.end_date) : null);
+            setEventDate(data.start_date ? new Date(data.start_date) : null);
+          } 
+          else 
+          {
+            setStartTime(null);
+            setEndTime(data.end_date ? new Date(data.end_date) : null);
+>>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
             setEventDate(null);
           }
 

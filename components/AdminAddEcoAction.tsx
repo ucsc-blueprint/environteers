@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState} from 'react';
 import {Alert} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -188,8 +188,8 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
             const { error } = await supabase.from("events").insert({
               title: title,
               description: description,
-              start_time: startTime!.toISOString(),
-              end_time: endTime!.toISOString(),
+              start_date: startTime!.toISOString(),
+              end_date: endTime!.toISOString(),
               location: location,
               sign_up_link: link,
               cover_photo: imageUrl,

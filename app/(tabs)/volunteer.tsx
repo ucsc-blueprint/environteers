@@ -1,24 +1,42 @@
 import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator, Text, Modal} from "react-native";
 import { Header, EcoFeed } from "@/components/EcoFeed";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/constants/supabase";
 import { LinearGradient } from 'expo-linear-gradient';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { useAuth } from "@/context/AuthContext";
-import { InPersonCardProps } from "@/components/InPersonCard";
+import { useInteractions } from "@/context/InteractionsContext";
+import { InPersonCardDataProps } from "@/components/InPersonCard";
 import { OnlineCardDataProps } from "@/components/OnlineCard";
 import { EventCardDataProps } from "@/components/EventCard";
 import { router } from "expo-router";
+<<<<<<< HEAD
 import { Ionicons } from '@expo/vector-icons';
+=======
+import * as Location from 'expo-location';
+>>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
 
-import { useRefresh } from "@/context/RefreshContext";
+export type CardProps = InPersonCardDataProps | OnlineCardDataProps | EventCardDataProps;
 
-export type CardProps = InPersonCardProps | OnlineCardDataProps | EventCardDataProps;
+const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const R = 3958.8;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  
+  return R * c;
+};
 
 export default function Volunteer() {
   const { user, profile } = useAuth();
   const [items, setItems] = useState<CardProps[]>([]);
   const [loading, setLoading] = useState(false);
+<<<<<<< HEAD
   const [showAddMenu, setShowAddMenu] = useState(false);
 
   const isAdmin = profile?.is_admin === true;
@@ -33,8 +51,39 @@ export default function Volunteer() {
     });
   };
 
+=======
+  const [userLocation, setUserLocation] = useState<{ latitude: number, longitude: number } | null>(null);
+
+  const [search, setSearch] = useState("");
+  const [filterTypes, setFilterTypes] = useState<string[]>([]);
+  const [maxDistance, setMaxDistance] = useState<number | null>(null);
+
+  const { cards: interactionCards } = useInteractions();
+
+  const getInteractionState = useCallback((id: string, type: string) => {
+    const match = interactionCards.find(
+      c => c.cardInfo.id === id && c.cardType === type
+    );
+    return {
+      liked: match?.liked ?? false,
+      signed_up: match && 'signed_up' in match ? match.signed_up : null,
+      completed: match?.completed ?? null,
+      clicked: match?.clicked ?? false,
+    };
+  }, [interactionCards]);
+>>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
 
   useEffect(() => {
+    const getLocation = async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') return;
+      const location = await Location.getCurrentPositionAsync({});
+      setUserLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+    };
+
     const fetchData = async () => {
       setLoading(true);
 
@@ -46,18 +95,15 @@ export default function Volunteer() {
       const [inPersonRes, onlineRes, eventRes] = await Promise.all([
         supabase
           .from("inperson_ecoactions")
-          .select(`*, interactions_eco_inperson!left(*)`)
-          .eq("interactions_eco_inperson.user_id", user.id),
+          .select(`*, location_latitude, location_longitude`),
 
         supabase
           .from("online_ecoactions")
-          .select(`*, interactions_eco_online!left(*)`)
-          .eq("interactions_eco_online.user_id", user.id),
+          .select(`*`),
 
         supabase
           .from("events")
-          .select(`*, interactions_events!left(*)`)
-          .eq("interactions_events.user_id", user.id)
+          .select(`*, location_latitude, location_longitude`)
       ]);
 
       if (inPersonRes.error) console.error(inPersonRes.error);
@@ -67,6 +113,7 @@ export default function Volunteer() {
       const inPersonData = inPersonRes.data ?? [];
       const onlineData = onlineRes.data ?? [];
       const eventData = eventRes.data ?? [];
+<<<<<<< HEAD
 
       const inPersonCardData: CardProps[] = (inPersonData ?? []).map(card => {
         const interaction = card.interactions_eco_inperson?.[0];
@@ -106,13 +153,71 @@ export default function Volunteer() {
           clicked: interaction?.clicked ?? false,
         };
       });
+=======
+    
+      const inPersonCardData: CardProps[] = (inPersonData ?? []).map(card => ({
+        cardType: "in_person",
+        cardInfo: card,
+        liked: false,
+        signed_up: null,
+        completed: null,
+        clicked: false,
+      }));
+
+      const onlineCardData: CardProps[] = (onlineData ?? []).map(card => ({
+        cardType: "online",
+        cardInfo: card,
+        liked: false,
+        signed_up: null,
+        completed: null,
+        clicked: false,
+      })); 
+    
+      const eventCardData: CardProps[] = (eventData ?? []).map(event => ({
+        cardType: "event",
+        cardInfo: event,
+        liked: false,
+        signed_up: null,
+        completed: null,
+        clicked: false,
+      }));
+>>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
 
       const fullData = [...inPersonCardData, ...onlineCardData, ...eventCardData]
       setItems(fullData);
       setLoading(false);
     };
+
+    getLocation();
     fetchData();
-  }, [user?.id, refreshKey]);
+  }, [user?.id]);
+
+  const filteredItems = useMemo(() => {
+    return items
+      .filter((item) => {
+        const matchesSearch =
+          item.cardInfo.title
+            ?.toLowerCase()
+            .includes(search.toLowerCase()) ?? true;
+
+        const matchesType =
+          filterTypes.length === 0 || filterTypes.includes(item.cardType);
+
+        const matchesDistance = (() => {
+          if (!maxDistance || !userLocation || item.cardType === "online") return true;
+          const lat = (item.cardInfo as any).location_latitude;
+          const lon = (item.cardInfo as any).location_longitude;
+          if (!lat || !lon) return true;
+          return getDistance(userLocation.latitude, userLocation.longitude, lat, lon) <= maxDistance;
+        })();
+
+        return matchesSearch && matchesType && matchesDistance;
+      })
+      .map(item => ({
+        ...item,
+        ...getInteractionState(item.cardInfo.id, item.cardType)
+      }));
+  }, [items, search, filterTypes, maxDistance, userLocation, getInteractionState]);
 
   return (
     <LinearGradient
@@ -124,11 +229,23 @@ export default function Volunteer() {
       >
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
         
+<<<<<<< HEAD
         <Header resultsCount={items.length} onOpenAddMenu={() => setShowAddMenu(true)}/> 
+=======
+        <Header 
+          resultsCount={items.length}
+          search={search}
+          setSearch={setSearch}
+          filterTypes={filterTypes}
+          setFilterTypes={setFilterTypes}
+          maxDistance={maxDistance}
+          setMaxDistance={setMaxDistance}
+        />
+>>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
         
         
         { loading && <ActivityIndicator size="large" color="#0000ff" />}
-        { !loading && items.map((card) => ( 
+        { !loading && filteredItems.map((card) => ( 
           <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
         ))}
       </ScrollView>
@@ -185,6 +302,7 @@ const styles = StyleSheet.create({
     bottom: 10,
     right: 20,
     boxShadow: '0px 0px 10px 0px #0282D333',
+<<<<<<< HEAD
   },
 
   addButtonText: {
@@ -223,3 +341,7 @@ const styles = StyleSheet.create({
 
 });
 
+=======
+  }
+});
+>>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
