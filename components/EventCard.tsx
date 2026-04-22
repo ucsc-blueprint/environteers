@@ -34,6 +34,7 @@ export type EventCardDataProps = {
 type EventCardProps = EventCardDataProps & {
   expanded?: boolean;
   onToggle?: () => void;
+  highlight?: boolean;
 };
 
 export const EventCard = ({
@@ -44,6 +45,7 @@ export const EventCard = ({
   clicked,
   expanded: externalExpanded,
   onToggle,
+  highlight,
 }: EventCardProps) => {
   const { user, profile } = useAuth();
   const isAdmin = profile?.is_admin === true;
@@ -166,7 +168,14 @@ export const EventCard = ({
   };
 
   return (
-    <View style={CardStyles.card}>
+    <View
+      style={[
+        CardStyles.card,
+        highlight && CardStyles.requiredCard
+      ]}
+    >
+
+    {/* // <View style={CardStyles.card}> */}
       <Pressable onPress={toggleExpanded}>
         <View style={CardStyles.cardInfo}>
           <View style={CardStyles.imageColumn}>
