@@ -5,9 +5,89 @@ import { LineChart } from 'react-native-chart-kit';
 import { Divider } from 'react-native-paper';
 import { Redirect, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
+import { AdminFeedbackList } from '@/components/AdminFeedbackList';
+import { supabase } from '@/constants/supabase';
+
 export default function AdminAnalytics() {
-  const { volunteerName, membershipStatus } = useLocalSearchParams();
+  const { volunteerName, membershipStatus, volunteerID } = useLocalSearchParams();
   const { profile, loading } = useAuth();
+
+  const [feedback, setFeedback] = React.useState<any[]>([]);
+  const [loadingFeedback, setLoadingFeedback] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchFeedback = async () => {
+      if (!volunteerID) return;
+
+      setLoadingFeedback(true);
+
+      const id = Array.isArray(volunteerID) ? volunteerID[0] : volunteerID;
+
+      const { data, error } = await supabase
+        .from('feedback')
+        .select('*')
+        .eq('user_id', id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.log('Error fetching feedback:', error);
+        setLoadingFeedback(false);
+        return;
+      }
+
+      const formattedData = [];
+      for (const item of data) {
+        let eventName = "";
+        if (item.event_id) {
+          const {data: events} = await supabase
+            .from('events')
+            .select('title')
+            .eq('id', item.event_id)
+            .single();
+          if (events) {
+            eventName = events?.title;
+          }
+        }
+        else if (item.inperson_ecoaction_id) {
+          const {data: inperson} = await supabase
+            .from('inperson_ecoactions')
+            .select('title')
+            .eq('id', item.inperson_ecoaction_id)
+            .single();
+          if (inperson) {
+            eventName = inperson?.title;
+          }
+        }
+        else if (item.online_ecoaction_id) {
+          const {data: online} = await supabase
+            .from('online_ecoactions')
+            .select('title')
+            .eq('id', item.online_ecoaction_id)
+            .single();
+
+          if (online) {
+            eventName = online?.title;
+          }
+        }
+        const object = {
+          event_name: eventName,
+          user_name: volunteerName || 'Volunteer Name',
+          feedback_content: item.content,
+          date: new Date(item.created_at),
+          is_specific: true,
+          membership: membershipStatus,
+          user_id: volunteerID
+        }
+        formattedData.push(object)
+      }
+
+      setFeedback(formattedData);
+      setLoadingFeedback(false);
+    };
+
+    fetchFeedback();
+  }, [volunteerID]);
+
   if (loading) {
     return <ActivityIndicator size="large" color="#000000" />
   }
@@ -166,6 +246,17 @@ export default function AdminAnalytics() {
           multiline
           textAlignVertical="top"
         />
+      </View>
+
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionHeader}>Events feedback sent</Text>
+        {loadingFeedback ? (
+          <ActivityIndicator size="large" color="#000000" />
+        ) : feedback.length > 0 ? (
+          <AdminFeedbackList data={feedback} />
+        ) : (
+          <Text style={styles.activityText}>No feedback yet</Text>
+        )}
       </View>
     </ScrollView>
   );
