@@ -33,6 +33,7 @@ export type InPersonCardDataProps = {
 type InPersonCardProps = InPersonCardDataProps & {
   expanded?: boolean;
   onToggle?: () => void;
+  highlight?: boolean;
 };
 
 export const InPersonCard = ({
@@ -42,7 +43,8 @@ export const InPersonCard = ({
   completed,
   clicked,
   expanded: externalExpanded,
-  onToggle
+  onToggle,
+  highlight,
 }: InPersonCardProps) => {
   const { updateLike, updateSignUp, updateCompleted, updateClicked } = useInteractions();
   const { user } = useAuth();
@@ -158,7 +160,12 @@ export const InPersonCard = ({
   };
 
   return (
-    <View style={CardStyles.card}>
+    <View
+      style={[
+        CardStyles.card,
+        highlight && CardStyles.requiredCard
+      ]}
+    >      
       <Pressable onPress={toggleExpanded}>
         <View style={CardStyles.cardInfo}>
           {/* Cover Photo */}

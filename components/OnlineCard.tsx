@@ -30,12 +30,19 @@ export type OnlineCardDataProps = {
   clicked: boolean,
 }
 
+type OnlineCardProps = OnlineCardDataProps & {
+  expanded?: boolean;
+  onToggle?: () => void;
+  highlight?: boolean;
+};
+
 export const OnlineCard = ({
   cardInfo, 
   liked, 
   completed,
   clicked,
-}: OnlineCardDataProps) => {
+  highlight,
+}: OnlineCardProps) => {
   const [expanded, setExpanded] = useState(false);
   const { user } = useAuth();
 
@@ -114,7 +121,12 @@ export const OnlineCard = ({
 
   // RENDER END DATE
   return (
-    <View style={CardStyles.card}>
+    <View
+      style={[
+        CardStyles.card,
+        highlight && CardStyles.requiredCard
+      ]}
+    >
       <Pressable onPress={toggleExpanded}>
         <View style={CardStyles.cardInfo}>
           {/* Cover Photo */}
