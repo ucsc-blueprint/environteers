@@ -38,6 +38,7 @@ type InPersonCardProps = InPersonCardDataProps & {
   onToggle?: () => void;
   feedbackVisible: boolean;
   setFeedbackVisible: (val: boolean) => void;
+  highlight?: boolean;
 };
 
 export const InPersonCard = ({
@@ -50,7 +51,8 @@ export const InPersonCard = ({
   feedbackVisible,
   setFeedbackVisible,
   expanded: externalExpanded,
-  onToggle
+  onToggle,
+  highlight,
 }: InPersonCardProps) => {
   const { updateLike, updateSignUp, updateCompleted, updateClicked, updateFeedback } = useInteractions();
   const { user } = useAuth();
@@ -216,7 +218,11 @@ export const InPersonCard = ({
   };
 
   return (
-    <View style={CardStyles.card}>
+    <View
+      style={[
+        CardStyles.card,
+        highlight && CardStyles.requiredCard
+      ]}
       <ActivityFeedback 
         visible={feedbackVisible} 
         onSubmit={handleFeedbackSubmit} 

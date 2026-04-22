@@ -33,13 +33,20 @@ export type OnlineCardDataProps = {
   feedback: boolean | null,
 }
 
+type OnlineCardProps = OnlineCardDataProps & {
+  expanded?: boolean;
+  onToggle?: () => void;
+  highlight?: boolean;
+};
+
 export const OnlineCard = ({
   cardInfo, 
   liked, 
   completed,
   clicked,
-  feedback
-}: OnlineCardDataProps) => {
+  feedback,
+  highlight,
+}: OnlineCardProps) => {
   const [expanded, setExpanded] = useState(false);
   const [feedbackVisible, setFeedbackVisible] = useState(false);
   const { user } = useAuth();
@@ -167,13 +174,16 @@ export const OnlineCard = ({
 
   // RENDER END DATE
   return (
-    <View style={CardStyles.card}>
+    <View
+      style={[
+        CardStyles.card,
+        highlight && CardStyles.requiredCard
+      ]}
       <ActivityFeedback 
         visible={feedbackVisible} 
         onSubmit={handleFeedbackSubmit} 
         onCancel={handleFeedbackCancel} 
       />
-
       <Pressable onPress={toggleExpanded}>
         <View style={CardStyles.cardInfo}>
           {/* Cover Photo */}

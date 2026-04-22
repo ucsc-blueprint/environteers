@@ -27,6 +27,7 @@ type HeaderProps = {
 type ExpandableProps = {
   isSelected?: boolean,
   setSelectedId?: React.Dispatch<React.SetStateAction<string | null>>; 
+  highlight?: boolean;
 };
 
 export const Header = ({ 
@@ -113,6 +114,7 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
       return (
         <InPersonCard 
           {...card} 
+          highlight={props.highlight}
           liked={card.liked} 
           signed_up={card.signed_up} 
           completed={card.completed} 
@@ -126,6 +128,7 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
       return (
         <OnlineCard 
           {...card} 
+          highlight={props.highlight}
           liked={card.liked} 
           completed={card.completed} 
           clicked={card.clicked}
@@ -135,6 +138,7 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
       return (
         <EventCard 
           {...card} 
+          highlight={props.highlight}
           liked={card.liked} 
           signed_up={card.signed_up} 
           completed={card.completed} 

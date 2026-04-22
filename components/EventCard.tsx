@@ -37,6 +37,7 @@ type EventCardProps = EventCardDataProps & {
   onToggle?: () => void;
   feedbackVisible: boolean;
   setFeedbackVisible: (val: boolean) => void;
+  highlight?: boolean;
 };
 
 export const EventCard = ({
@@ -50,6 +51,7 @@ export const EventCard = ({
   setFeedbackVisible,
   expanded: externalExpanded,
   onToggle,
+  highlight,
 }: EventCardProps) => {
   const { user } = useAuth();
 
@@ -216,13 +218,17 @@ export const EventCard = ({
   };
 
   return (
-    <View style={CardStyles.card}>
+    <View style={[
+        CardStyles.card,
+        highlight && CardStyles.requiredCard
+      ]}
       <ActivityFeedback 
         visible={feedbackVisible} 
         onSubmit={handleFeedbackSubmit} 
         onCancel={handleFeedbackCancel} 
       />
-      
+
+    {/* // <View style={CardStyles.card}> */}
       <Pressable onPress={toggleExpanded}>
         <View style={CardStyles.cardInfo}>
           <View style={CardStyles.imageColumn}>
