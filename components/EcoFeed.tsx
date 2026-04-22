@@ -1,12 +1,7 @@
 import { useAuth } from "@/context/AuthContext";
-<<<<<<< HEAD
-import { View, Text, Pressable, StyleSheet } from 'react-native';
-import {
-=======
 import { View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
 import React, { useState } from "react";
 import { 
->>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
   mdiMenu,
   mdiBell,
 } from '@mdi/js';
@@ -20,13 +15,6 @@ import { SlidersHorizontal } from 'lucide-react-native';
 import { EcoFeedFilterDropdown } from '@/components/EcoFeedFilterDropdown';
 
 type HeaderProps = {
-<<<<<<< HEAD
-  resultsCount: number,
-  onOpenAddMenu: () => void,
-}
-
-export const Header = ({resultsCount, onOpenAddMenu}: HeaderProps) => {
-=======
   resultsCount: number;
   search: string;
   setSearch(value: string): void;
@@ -50,39 +38,16 @@ export const Header = ({
   maxDistance,
   setMaxDistance
 }: HeaderProps) => {
->>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
   const { profile } = useAuth();
   const [showFilters, setShowFilters] = useState(false);
 
   return (
-      <View style={CardStyles.feedHeader}>
-        {/* Navbar (Top)*/}
-        <View style={CardStyles.formatBetween}>
-          {renderIcon(24, mdiMenu, 'black')}
-          {renderIcon(24, mdiBell, 'black')}
-        </View>
-        <Text style={CardStyles.userText}>Ready to take action
-          <Text style={CardStyles.userName}> {profile?.first_name} {profile?.last_name}?</Text>
-        </Text>
-        {/* Searchbar */}
-        <View>
-          <Text style={[CardStyles.searchFilter, CardStyles.searchBar]}>Search for a keyword...</Text>
-        </View>
-        {/* Buttons */}
-        <View style={CardStyles.filters}>
-          <Pressable style={CardStyles.button} onPress={() => { }}><Text style={CardStyles.buttonText}>Events</Text></Pressable>
-          <Pressable style={CardStyles.button} onPress={() => { }}><Text style={CardStyles.buttonText}>Eco Actions: In-person</Text></Pressable>
-          <Pressable style={CardStyles.button} onPress={() => { }}><Text style={CardStyles.buttonText}>Eco Actions: Online</Text></Pressable>
-          <Text style={CardStyles.results}>{resultsCount} results</Text>
-        </View>
+    <View style={CardStyles.feedHeader}>
+      {/* Navbar (Top)*/}
+      <View style={CardStyles.formatBetween}>
+        {renderIcon(24, mdiMenu, 'black')}
+        {renderIcon(24, mdiBell, 'black')}
       </View>
-<<<<<<< HEAD
-  );
-};
-
-export const EcoFeed = (props: { card: CardProps }) => {
-
-=======
       <Text style={CardStyles.userText}>Ready to take action 
         <Text style={ CardStyles.userName}> {profile?.first_name} {profile?.last_name}?</Text>
       </Text>
@@ -129,7 +94,6 @@ export const EcoFeed = (props: { card: CardProps }) => {
 };
 
 export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
->>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
   const { card } = props;
   const expanded = props.isSelected ?? false;
 
@@ -141,35 +105,35 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
    };
 
   if (!card) return null;
-  
+
   switch (card.cardType) {
     case "in_person":
       return (
-        <InPersonCard
-          {...card}
-          liked={card.liked}
-          signed_up={card.signed_up}
-          completed={card.completed}
+        <InPersonCard 
+          {...card} 
+          liked={card.liked} 
+          signed_up={card.signed_up} 
+          completed={card.completed} 
           clicked={card.clicked}
           {...(props.setSelectedId ? { expanded, onToggle: toggleExpanded } : {})}
         />
       );
     case "online":
       return (
-        <OnlineCard
-          {...card}
-          liked={card.liked}
-          completed={card.completed}
+        <OnlineCard 
+          {...card} 
+          liked={card.liked} 
+          completed={card.completed} 
           clicked={card.clicked}
         />
       );
     case "event":
       return (
-        <EventCard
-          {...card}
-          liked={card.liked}
-          signed_up={card.signed_up}
-          completed={card.completed}
+        <EventCard 
+          {...card} 
+          liked={card.liked} 
+          signed_up={card.signed_up} 
+          completed={card.completed} 
           clicked={card.clicked}
           {...(props.setSelectedId ? { expanded, onToggle: toggleExpanded } : {})}
         />
@@ -177,9 +141,6 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
     default:
       return null;
   }
-<<<<<<< HEAD
-}  
-=======
 };
 
 const styles = StyleSheet.create({
@@ -204,4 +165,3 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
 })
->>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e

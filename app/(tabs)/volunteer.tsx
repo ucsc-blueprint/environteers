@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator, Text, Modal} from "react-native";
+import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator, Text, Modal } from "react-native";
 import { Header, EcoFeed } from "@/components/EcoFeed";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/constants/supabase";
@@ -10,11 +10,7 @@ import { InPersonCardDataProps } from "@/components/InPersonCard";
 import { OnlineCardDataProps } from "@/components/OnlineCard";
 import { EventCardDataProps } from "@/components/EventCard";
 import { router } from "expo-router";
-<<<<<<< HEAD
-import { Ionicons } from '@expo/vector-icons';
-=======
 import * as Location from 'expo-location';
->>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
 
 export type CardProps = InPersonCardDataProps | OnlineCardDataProps | EventCardDataProps;
 
@@ -36,13 +32,16 @@ export default function Volunteer() {
   const { user, profile } = useAuth();
   const [items, setItems] = useState<CardProps[]>([]);
   const [loading, setLoading] = useState(false);
-<<<<<<< HEAD
+  const [userLocation, setUserLocation] = useState<{ latitude: number, longitude: number } | null>(null);
+
+  const [search, setSearch] = useState("");
+  const [filterTypes, setFilterTypes] = useState<string[]>([]);
+  const [maxDistance, setMaxDistance] = useState<number | null>(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
 
-  const isAdmin = profile?.is_admin === true;
+  const { cards: interactionCards } = useInteractions();
 
-  const { refreshKey } = useRefresh();
-  const goToAddForm = (type: "event" | "in-person" | "online") => 
+  const goToAddForm = (type: "event" | "in-person" | "online") =>
   {
     setShowAddMenu(false);    
     router.push({
@@ -50,15 +49,6 @@ export default function Volunteer() {
       params: { typeOfAction: type },
     });
   };
-
-=======
-  const [userLocation, setUserLocation] = useState<{ latitude: number, longitude: number } | null>(null);
-
-  const [search, setSearch] = useState("");
-  const [filterTypes, setFilterTypes] = useState<string[]>([]);
-  const [maxDistance, setMaxDistance] = useState<number | null>(null);
-
-  const { cards: interactionCards } = useInteractions();
 
   const getInteractionState = useCallback((id: string, type: string) => {
     const match = interactionCards.find(
@@ -71,7 +61,8 @@ export default function Volunteer() {
       clicked: match?.clicked ?? false,
     };
   }, [interactionCards]);
->>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
+
+  const isAdmin = profile?.is_admin === true;
 
   useEffect(() => {
     const getLocation = async () => {
@@ -113,47 +104,6 @@ export default function Volunteer() {
       const inPersonData = inPersonRes.data ?? [];
       const onlineData = onlineRes.data ?? [];
       const eventData = eventRes.data ?? [];
-<<<<<<< HEAD
-
-      const inPersonCardData: CardProps[] = (inPersonData ?? []).map(card => {
-        const interaction = card.interactions_eco_inperson?.[0];
-
-        return {
-          cardType: "in_person",
-          cardInfo: card,
-          liked: interaction?.liked ?? false,
-          signed_up: interaction?.signed_up ?? false,
-          completed: interaction?.completed ?? false,
-          clicked: interaction?.clicked ?? false,
-        };
-      });
-
-      const onlineCardData: CardProps[] = (onlineData ?? []).map(card => {
-        const interaction = card.interactions_eco_online?.[0];
-
-        return {
-          cardType: "online",
-          cardInfo: card,
-          liked: interaction?.liked ?? false,
-          signed_up: interaction?.signed_up ?? false,
-          completed: interaction?.completed ?? false,
-          clicked: interaction?.clicked ?? false,
-        };
-      });
-
-      const eventCardData: CardProps[] = (eventData ?? []).map(event => {
-        const interaction = event.interactions_events?.[0];
-
-        return {
-          cardType: "event",
-          cardInfo: event,
-          liked: interaction?.liked ?? false,
-          signed_up: interaction?.signed_up ?? false,
-          completed: interaction?.completed ?? false,
-          clicked: interaction?.clicked ?? false,
-        };
-      });
-=======
     
       const inPersonCardData: CardProps[] = (inPersonData ?? []).map(card => ({
         cardType: "in_person",
@@ -181,7 +131,6 @@ export default function Volunteer() {
         completed: null,
         clicked: false,
       }));
->>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
 
       const fullData = [...inPersonCardData, ...onlineCardData, ...eventCardData]
       setItems(fullData);
@@ -229,9 +178,6 @@ export default function Volunteer() {
       >
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
         
-<<<<<<< HEAD
-        <Header resultsCount={items.length} onOpenAddMenu={() => setShowAddMenu(true)}/> 
-=======
         <Header 
           resultsCount={items.length}
           search={search}
@@ -241,7 +187,6 @@ export default function Volunteer() {
           maxDistance={maxDistance}
           setMaxDistance={setMaxDistance}
         />
->>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
         
         
         { loading && <ActivityIndicator size="large" color="#0000ff" />}
@@ -249,38 +194,11 @@ export default function Volunteer() {
           <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
         ))}
       </ScrollView>
-      {isAdmin ? (
-        <>
-          <Pressable
-            style={styles.addButton}
-            onPress={() => setShowAddMenu(true)}>
-            <Text style={styles.addButtonText}>+ Add</Text>
-          </Pressable>
-
-          <Modal visible={showAddMenu} transparent animationType="fade" onRequestClose={() => setShowAddMenu(false)}>
-            <Pressable style={styles.backdrop} onPress={() => setShowAddMenu(false)}>
-              <Pressable style={styles.popup} onPress={() => { }}>
-                <Text style={styles.popupTitle}>Add something new</Text>
-                <Pressable style={styles.popupButton} onPress={() => goToAddForm("event")}>
-                  <Text>Add Event</Text>
-                </Pressable>
-                <Pressable style={styles.popupButton} onPress={() => goToAddForm("in-person")}>
-                  <Text>Add In-Person Eco-Action</Text>
-                </Pressable>
-                <Pressable style={styles.popupButton} onPress={() => goToAddForm("online")}>
-                  <Text>Add Online Eco-Action</Text>
-                </Pressable>
-              </Pressable>
-            </Pressable>
-          </Modal>
-        </>
-      ) : (
         <View style={styles.mapBackground}>
           <Pressable onPress={() => router.push('/(tabs)/map')}>
             <MaterialCommunityIcons name="map" size={30} color={'#0282D3'} />
           </Pressable>
         </View>
-      )}
     </LinearGradient>
   );
 }
@@ -302,46 +220,5 @@ const styles = StyleSheet.create({
     bottom: 10,
     right: 20,
     boxShadow: '0px 0px 10px 0px #0282D333',
-<<<<<<< HEAD
-  },
-
-  addButtonText: {
-    color: 'white',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-
-  addButton: {
-    position: 'absolute',
-    bottom: 15,
-    right: 20,
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 12,
-    zIndex: 10,
-    backgroundColor: '#94C153',
-    height: 45,
-    width: 80,
-  },
-  backdrop: {
-    flex: 1, backgroundColor: 'rgba(0,0,0,0.35)',
-    justifyContent: 'center', alignItems: 'center', padding: 20,
-  },
-  popup: {
-    width: '100%', backgroundColor: 'white',
-    borderRadius: 16, padding: 16, gap: 12,
-  },
-
-  popupTitle: { fontSize: 18, fontWeight: '600', marginBottom: 6 },
-  popupButton: {
-    paddingVertical: 14, paddingHorizontal: 12,
-    borderRadius: 12, backgroundColor: '#F2F2F2',
-  },
-
-});
-
-=======
   }
 });
->>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e

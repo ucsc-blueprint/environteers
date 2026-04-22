@@ -9,12 +9,8 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
 import { renderIcon, renderCoverPhoto, toggleLike, addClick, addCompletion } from "@/app/utils/cards";
-<<<<<<< HEAD
-import { router, useRouter } from "expo-router";
-import { useRefresh } from "@/context/RefreshContext";
-=======
 import { useInteractions } from "@/context/InteractionsContext";
->>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
+import { router, useRouter } from "expo-router";
 
 export type OnlineCardData = {
   id: string,
@@ -42,16 +38,8 @@ export const OnlineCard = ({
   clicked,
 }: OnlineCardDataProps) => {
   const [expanded, setExpanded] = useState(false);
-<<<<<<< HEAD
-  const [signUpClick, setSignUpClicked] = useState(false);
-  const [liked, setLiked] = useState(initialLike);
-  const [completed, setCompleted] = useState(completionStatus);
   const { user, profile } = useAuth();
   const isAdmin = profile?.is_admin === true;
-  const router = useRouter();
-=======
-  const { user } = useAuth();
->>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
 
   const { updateLike, updateCompleted, updateClicked } = useInteractions();
 

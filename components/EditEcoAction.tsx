@@ -264,23 +264,10 @@ type Props =
             setEndTime(data.end_date ? new Date(data.end_date) : null);
             setEventDate(data.start_date ? new Date(data.start_date) : null);
           }
-<<<<<<< HEAD
           else 
           {
             setStartTime(null);
             setEndTime(new Date(data.end_time));
-=======
-          else if (typeOfAction === 'event') 
-          {
-            setStartTime(data.start_date ? new Date(data.start_date) : null);
-            setEndTime(data.end_date ? new Date(data.end_date) : null);
-            setEventDate(data.start_date ? new Date(data.start_date) : null);
-          } 
-          else 
-          {
-            setStartTime(null);
-            setEndTime(data.end_date ? new Date(data.end_date) : null);
->>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
             setEventDate(null);
           }
 

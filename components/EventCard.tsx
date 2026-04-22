@@ -5,15 +5,10 @@ import { mdiOpenInNew } from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
-<<<<<<< HEAD
 import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp, addClick } from "@/app/utils/cards";
-import { useRefresh } from "@/context/RefreshContext";
 import { router, useRouter } from "expo-router";
-=======
-import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addClick } from "@/app/utils/cards";
 import { supabase } from "@/constants/supabase";
 import { useInteractions } from "@/context/InteractionsContext";
->>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
 
 export type EventCardData = {
   id: string,
@@ -47,22 +42,11 @@ export const EventCard = ({
   signed_up,
   completed,
   clicked,
-<<<<<<< HEAD
-}: EventCardDataProps) => {
-  const [expanded, setExpanded] = useState(false);
-  const [signUpClick, setSignUpClicked] = useState(false);
-  const [signUpStatus, setSignUpStatus] = useState(initialSignUp);
-  const [liked, setLiked] = useState(initialLike);
-  const { user, profile } = useAuth();
-  const isAdmin = profile?.is_admin === true;
-  const router = useRouter();
-  
-=======
   expanded: externalExpanded,
   onToggle,
 }: EventCardProps) => {
-  const { user } = useAuth();
->>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
+  const { user, profile } = useAuth();
+  const isAdmin = profile?.is_admin === true;
 
   const { updateLike, updateSignUp, updateCompleted, updateClicked } = useInteractions();
 
@@ -124,13 +108,10 @@ export const EventCard = ({
 
     Linking.openURL(link);
   };
-<<<<<<< HEAD
   
-=======
 
   const handleSignUp = async (response: boolean) => {
     if (!user?.id) return;
->>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
 
     await supabase
       .from("interactions_events")

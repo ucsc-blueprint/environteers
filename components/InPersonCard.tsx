@@ -5,16 +5,11 @@ import { mdiOpenInNew } from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
-<<<<<<< HEAD
-import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp, addClick } from "@/app/utils/cards";
-import { router, useRouter } from "expo-router";
-import { useRefresh } from "@/context/RefreshContext";
-
-=======
 import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addClick } from "@/app/utils/cards";
 import { useInteractions } from "@/context/InteractionsContext";
 import { supabase } from "@/constants/supabase";
->>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
+import { router, useRouter } from "expo-router";
+
 
 export type InPersonCardData = {
   id: string,
@@ -51,19 +46,9 @@ export const InPersonCard = ({
   expanded: externalExpanded,
   onToggle
 }: InPersonCardProps) => {
-<<<<<<< HEAD
-  const [expanded, setExpanded] = useState(false);
-  const [signUpClick, setSignUpClicked] = useState(false);
-  const [liked, setLiked] = useState(initialLike);
-  const [signUpStatus, setSignUpStatus] = useState(initialSignUp);
+  const { updateLike, updateSignUp, updateCompleted, updateClicked } = useInteractions();
   const { user, profile } = useAuth();
   const isAdmin = profile?.is_admin === true;
-  const router = useRouter();
-
-=======
-  const { updateLike, updateSignUp, updateCompleted, updateClicked } = useInteractions();
-  const { user } = useAuth();
->>>>>>> 17ee808ea29c2c135f1de731bcd96ff9a779331e
 
   const [internalExpanded, setInternalExpanded] = useState(false);
   const expanded = externalExpanded !== undefined ? externalExpanded : internalExpanded;
