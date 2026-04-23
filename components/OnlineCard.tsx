@@ -179,6 +179,7 @@ export const OnlineCard = ({
         CardStyles.card,
         highlight && CardStyles.requiredCard
       ]}
+    >
       <ActivityFeedback 
         visible={feedbackVisible} 
         onSubmit={handleFeedbackSubmit} 
