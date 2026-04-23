@@ -10,6 +10,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
 import { renderIcon, renderCoverPhoto, toggleLike, addClick, addCompletion } from "@/app/utils/cards";
 import { useInteractions } from "@/context/InteractionsContext";
+import { ActivityFeedback } from "@/components/ActivityFeedback";
+import { supabase } from "@/constants/supabase";
 import { router, useRouter } from "expo-router";
 
 export type OnlineCardData = {
@@ -29,6 +31,7 @@ export type OnlineCardDataProps = {
   liked: boolean,
   completed: boolean | null,
   clicked: boolean,
+  feedback: boolean | null,
 }
 
 type OnlineCardProps = OnlineCardDataProps & {
@@ -42,13 +45,15 @@ export const OnlineCard = ({
   liked, 
   completed,
   clicked,
+  feedback,
   highlight,
 }: OnlineCardProps) => {
   const [expanded, setExpanded] = useState(false);
+  const [feedbackVisible, setFeedbackVisible] = useState(false);
   const { user, profile } = useAuth();
   const isAdmin = profile?.is_admin === true;
 
-  const { updateLike, updateCompleted, updateClicked } = useInteractions();
+  const { updateLike, updateCompleted, updateClicked, updateFeedback } = useInteractions();
 
   const toggleExpanded = () => {
     setExpanded(prev => !prev);
@@ -72,7 +77,7 @@ export const OnlineCard = ({
           null
         );
 
-        updateCompleted({ cardType: "online", cardInfo, liked, completed, clicked }, null);
+        updateCompleted({ cardType: "online", cardInfo, liked, completed, clicked, feedback }, null);
       }
 
       await addClick(
@@ -82,7 +87,7 @@ export const OnlineCard = ({
         "action_id"
       );
 
-      updateClicked({ cardType: "online", cardInfo, liked, completed, clicked });
+      updateClicked({ cardType: "online", cardInfo, liked, completed, clicked, feedback });
     }
 
     Linking.openURL(cardInfo.email_link!);
@@ -100,7 +105,7 @@ export const OnlineCard = ({
     );
     
     updateLike(
-      { cardType: "online", cardInfo, liked, completed, clicked }, !liked
+      { cardType: "online", cardInfo, liked, completed, clicked, feedback }, !liked
     );
   };
 
@@ -115,11 +120,59 @@ export const OnlineCard = ({
       value
     );
 
-    updateCompleted(
-      { cardType: "online", cardInfo, liked, completed, clicked },
-      value
-    );
+    if (value) {
+      setFeedbackVisible(true);
+    } else {
+      updateCompleted(
+        { cardType: "online", cardInfo, liked, completed, clicked, feedback },
+        value
+      );
+      toggleExpanded();
+    }
   };
+
+  const handleFeedbackSubmit = async (feedbackText: string) => {
+    if (!user?.id) return;
+
+    await Promise.all([
+      supabase
+        .from("feedback")
+        .insert({
+          user_id: user.id,
+          content: feedbackText,
+          online_ecoaction_id: cardInfo.id,
+        }),
+      supabase
+        .from("interactions_eco_online")
+        .update({ feedback: true })
+        .eq("action_id", cardInfo.id)
+        .eq("user_id", user.id)
+    ])
+
+    setFeedbackVisible(false);
+    updateCompleted(
+      { cardType: "online", cardInfo, liked, completed: true, clicked, feedback },
+      true
+    );
+    updateFeedback(
+      { cardType: "online", cardInfo, liked, completed: true, clicked, feedback },
+      true
+    );
+    toggleExpanded();
+  }
+
+  const handleFeedbackCancel = () => {
+    setFeedbackVisible(false);
+    updateCompleted(
+      { cardType: "online", cardInfo, liked, completed: true, clicked, feedback },
+      true
+    );
+    updateFeedback(
+      { cardType: "online", cardInfo, liked, completed: true, clicked, feedback },
+      false
+    );
+    toggleExpanded();
+  }
 
   // RENDER END DATE
   return (
@@ -129,6 +182,11 @@ export const OnlineCard = ({
         highlight && CardStyles.requiredCard
       ]}
     >
+      <ActivityFeedback 
+        visible={feedbackVisible} 
+        onSubmit={handleFeedbackSubmit} 
+        onCancel={handleFeedbackCancel} 
+      />
       <Pressable onPress={toggleExpanded}>
         <View style={CardStyles.cardInfo}>
           {/* Cover Photo */}
@@ -216,13 +274,19 @@ export const OnlineCard = ({
             {/* Action Button */}
             { cardInfo.email_link &&
               <View style={CardStyles.signUpButtonContainer}>
-                <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={openSignUpLink}>       
-                  { completed ? 
-                    <Text style={CardStyles.signUpText}>Eco action completed </Text> : 
-                    <Text style={CardStyles.signUpText}>Take Action</Text> 
-                  }
-                  {renderIcon(15, mdiOpenInNew, 'white')}
-                </Pressable>
+                { completed && !feedback ? (
+                  <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => setFeedbackVisible(true)}>
+                    <Text style={CardStyles.signUpText}>Provide Feedback</Text>
+                  </Pressable>
+                ) : (
+                  <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={openSignUpLink}>       
+                    { completed ? 
+                      <Text style={CardStyles.signUpText}>Eco action completed </Text> : 
+                      <Text style={CardStyles.signUpText}>Take Action</Text> 
+                    }
+                    {renderIcon(15, mdiOpenInNew, 'white')}
+                  </Pressable>
+                )}
               </View>
             }
           </View>

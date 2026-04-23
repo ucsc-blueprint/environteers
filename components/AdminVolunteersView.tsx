@@ -15,7 +15,7 @@ type Volunteer = {
 const includesText = (str: string, search: string) => 
   str.toLowerCase().includes(search.toLowerCase());
 
-const formatMembership = (created_at: string) => {
+export const formatMembership = (created_at: string) => {
   const created = new Date(created_at);
   const now = new Date();
 
@@ -108,7 +108,7 @@ export const AdminVolunteersView = () => {
               style={styles.row}
               onPress={() => router.push({
                 pathname: '/(tabs)/admin-analytics',
-                params: { volunteerName: item.name, membershipStatus: item.membership }
+                params: { volunteerName: item.name, membershipStatus: item.membership, volunteerID: item.id }
               })}
             >
               <View style={styles.avatar} />

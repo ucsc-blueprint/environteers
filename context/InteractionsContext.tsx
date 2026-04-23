@@ -17,6 +17,7 @@ type InteractionsContextType = {
   updateSignUp: (card: CardProps, value: boolean | null) => void;
   updateCompleted: (card: CardProps, value: boolean | null) => void;
   updateClicked: (card: CardProps) => void;
+  updateFeedback: (card: CardProps, value: boolean | null) => void;
 };
 
 export const InteractionsProvider = ({ children }: { children: React.ReactNode }) => {
@@ -42,6 +43,7 @@ export const InteractionsProvider = ({ children }: { children: React.ReactNode }
       signed_up: i.signed_up,
       completed: i.completed,
       clicked: i.clicked,
+      feedback: i.feedback,
     }));
 
     const online: CardProps[] = (onlineRes.data ?? []).map(i => ({
@@ -50,6 +52,7 @@ export const InteractionsProvider = ({ children }: { children: React.ReactNode }
       liked: i.liked,
       completed: i.completed,
       clicked: i.clicked,
+      feedback: i.feedback,
     }));
 
     const events: CardProps[] = (eventRes.data ?? []).map(i => ({
@@ -59,6 +62,7 @@ export const InteractionsProvider = ({ children }: { children: React.ReactNode }
       signed_up: i.signed_up,
       completed: i.completed,
       clicked: i.clicked,
+      feedback: i.feedback,
     }));
 
     setCards([...inPerson, ...online, ...events]);
@@ -126,6 +130,25 @@ export const InteractionsProvider = ({ children }: { children: React.ReactNode }
     });
   };
 
+  const updateFeedback = (card: CardProps, value: boolean | null) => {
+    setCards(prev => {
+      const exists = prev.some(
+        c => c.cardInfo.id === card.cardInfo.id && c.cardType === card.cardType
+      );
+      // Update card if already has been interacted with
+      if (exists) {
+        return prev.map(c =>
+          c.cardInfo.id === card.cardInfo.id &&
+          c.cardType === card.cardType
+            ? { ...c, feedback: value }
+            : c
+        )
+      }
+      // If not, add new interaction card
+      return [...prev, { ...card, feedback: value}]
+    })
+  }
+
   const updateClicked = (card: CardProps) => {
     setCards(prev => {
       const exists = prev.some(
@@ -154,6 +177,7 @@ export const InteractionsProvider = ({ children }: { children: React.ReactNode }
         updateSignUp,
         updateCompleted,
         updateClicked,
+        updateFeedback,
       }}
     >
       {children}
