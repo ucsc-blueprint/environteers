@@ -175,6 +175,7 @@ type Props =
               return;
             }
             Alert.alert("Eco action updated successfully");
+            router.push("/(tabs)/volunteer");
           }
           else if (typeOfAction === "in-person") {
             const { data, error } = await supabase.from("inperson_ecoactions").update({
@@ -193,6 +194,7 @@ type Props =
                 return;
             }
             Alert.alert("Eco action updated successfully");
+            router.push("/(tabs)/volunteer");
           }
           else if (typeOfAction === "event") {
             const { data, error } = await supabase.from("events").update({
@@ -212,7 +214,7 @@ type Props =
                 return;
             }
           Alert.alert("Event updated successfully");
-          router.push("/(tabs)/volunteer")
+          router.push("/(tabs)/volunteer");
           }
 
         resetAll();

@@ -166,6 +166,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
               return;
             }
             Alert.alert("Eco action created successfully");
+            router.push("/(tabs)/volunteer");
           }
           else if (typeOfAction === "in-person") {
             const { error } = await supabase.from("inperson_ecoactions").insert({
@@ -183,6 +184,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
                 return;
             }
             Alert.alert("Eco action created successfully");
+            router.push("/(tabs)/volunteer");
           }
           else if (typeOfAction === "event") {
             const { error } = await supabase.from("events").insert({
@@ -201,7 +203,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
                 return;
             }
           Alert.alert("Event created successfully");
-          router.push("/(tabs)/volunteer")
+          router.push("/(tabs)/volunteer");
           }
 
         resetAll();
