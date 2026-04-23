@@ -5,7 +5,8 @@ import { mdiOpenInNew } from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
-import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addClick } from "@/app/utils/cards";
+import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp, addClick } from "@/app/utils/cards";
+import { router, useRouter } from "expo-router";
 import { supabase } from "@/constants/supabase";
 import { useInteractions } from "@/context/InteractionsContext";
 
@@ -46,7 +47,8 @@ export const EventCard = ({
   onToggle,
   highlight,
 }: EventCardProps) => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const isAdmin = profile?.is_admin === true;
 
   const { updateLike, updateSignUp, updateCompleted, updateClicked } = useInteractions();
 
@@ -108,6 +110,7 @@ export const EventCard = ({
 
     Linking.openURL(link);
   };
+  
 
   const handleSignUp = async (response: boolean) => {
     if (!user?.id) return;
@@ -189,6 +192,13 @@ export const EventCard = ({
                 <Text>{formatEventDate(cardInfo.start_date, cardInfo.end_date)}</Text>
               </View>
             }
+
+            {isAdmin && (
+            <View style={[CardStyles.formatRow, CardStyles.rsvpContainer]}>
+              <Text style = {[CardStyles.rsvp]}>24 current RSVPs</Text>
+            </View>
+            )}
+
             { cardInfo.location &&
               <View style={CardStyles.formatRow}>
                 <MaterialIcons name="location-on" size={25} color={'black'} />
@@ -197,9 +207,28 @@ export const EventCard = ({
             }
           </View>
           {/* Like/Share Icons */}
+          {isAdmin ? (
+            <View style={CardStyles.iconsColumn}>
+              <View style={CardStyles.iconBackgrounds}> 
+              <MaterialCommunityIcons
+                name="pencil-outline"
+                size={25}
+                color={'#0282D3'}
+                onPress={() => {
+                  console.log("Edit pressed, id: ", cardInfo.id);
+                  router.push({
+                    pathname: '/(tabs)/AdminEditEcoAction',
+                    params: { typeOfAction: "event", id: cardInfo.id}
+                  })
+                }}
+              />
+              </View>
+              <View style={CardStyles.deleteIconBackground}><MaterialCommunityIcons name="trash-can-outline" size={25} color="#EA4335" /></View>    
+              </View>
+          ): (
           <View style={CardStyles.iconsColumn}>
             <View style={CardStyles.iconBackgrounds}>
-              <MaterialCommunityIcons
+            <MaterialCommunityIcons
                 name={liked ? "cards-heart" : "cards-heart-outline"}
                 size={25}
                 color={'#0282D3'}
@@ -209,6 +238,7 @@ export const EventCard = ({
             </View>
             <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>
           </View>
+          )}
         </View>
           {/* Expanded Content */}
           { expanded && 

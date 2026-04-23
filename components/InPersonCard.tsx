@@ -8,6 +8,8 @@ import { CardStyles } from "@/app/stylesheets/CardStyles";
 import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addClick } from "@/app/utils/cards";
 import { useInteractions } from "@/context/InteractionsContext";
 import { supabase } from "@/constants/supabase";
+import { router, useRouter } from "expo-router";
+
 
 export type InPersonCardData = {
   id: string,
@@ -47,7 +49,8 @@ export const InPersonCard = ({
   highlight,
 }: InPersonCardProps) => {
   const { updateLike, updateSignUp, updateCompleted, updateClicked } = useInteractions();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const isAdmin = profile?.is_admin === true;
 
   const [internalExpanded, setInternalExpanded] = useState(false);
   const expanded = externalExpanded !== undefined ? externalExpanded : internalExpanded;
@@ -141,6 +144,7 @@ export const InPersonCard = ({
     };
 
   const handleLikes = async (cardInfo: InPersonCardData) => {
+
     if (user?.id) {
       await toggleLike(
         "interactions_eco_inperson",
@@ -184,6 +188,13 @@ export const InPersonCard = ({
                 <Text>{formatEventDate(cardInfo.start_date, cardInfo.end_date)}</Text>
               </View>
             }
+
+            {isAdmin && (
+            <View style={[CardStyles.formatRow, CardStyles.rsvpContainer]}>
+              <Text style = {[CardStyles.rsvp]}>24 current RSVPs</Text>
+            </View>
+            )}
+
             { cardInfo.location &&
               <View style={CardStyles.formatRow}>
                 <MaterialIcons name="location-on" size={25} color={'black'} />
@@ -192,6 +203,25 @@ export const InPersonCard = ({
             }
           </View>
           {/* Like/Share Icons */}
+          {isAdmin ? (
+            <View style={CardStyles.iconsColumn}>
+              <View style={CardStyles.iconBackgrounds}> 
+              <MaterialCommunityIcons
+                name="pencil-outline"
+                size={25}
+                color={'#0282D3'}
+                onPress={() => {
+                  console.log("Edit pressed, id: ", cardInfo.id);
+                  router.push({
+                    pathname: '/(tabs)/AdminEditEcoAction',
+                    params: { typeOfAction: "in-person", id: cardInfo.id}
+                  })
+                }}
+              />
+              </View>
+              <View style={CardStyles.deleteIconBackground}><MaterialCommunityIcons name="trash-can-outline" size={25} color="#EA4335" /></View>    
+              </View>
+          ): (
           <View style={CardStyles.iconsColumn}>
             <View style={CardStyles.iconBackgrounds}>
             <MaterialCommunityIcons
@@ -204,6 +234,7 @@ export const InPersonCard = ({
             </View>
             <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>
           </View>
+          )}
         </View>
         {/* Expanded Content */}
         { expanded && 
