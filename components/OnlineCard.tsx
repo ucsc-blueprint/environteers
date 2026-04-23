@@ -12,6 +12,7 @@ import { renderIcon, renderCoverPhoto, toggleLike, addClick, addCompletion } fro
 import { useInteractions } from "@/context/InteractionsContext";
 import { ActivityFeedback } from "@/components/ActivityFeedback";
 import { supabase } from "@/constants/supabase";
+import { router, useRouter } from "expo-router";
 
 export type OnlineCardData = {
   id: string,
@@ -49,7 +50,8 @@ export const OnlineCard = ({
 }: OnlineCardProps) => {
   const [expanded, setExpanded] = useState(false);
   const [feedbackVisible, setFeedbackVisible] = useState(false);
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const isAdmin = profile?.is_admin === true;
 
   const { updateLike, updateCompleted, updateClicked, updateFeedback } = useInteractions();
 
@@ -195,24 +197,49 @@ export const OnlineCard = ({
           <View style={CardStyles.contentColumn}>
             <Text>{cardInfo.title}</Text>
             {/* {endDate && <Text>{endDate}</Text>} */}
+            {isAdmin && (
+            <View style={[CardStyles.formatRow, CardStyles.rsvpContainer]}>
+              <Text style = {[CardStyles.rsvp]}>24 current RSVPs</Text>
+            </View>
+            )}            
             <View style={CardStyles.formatRow}>
               {renderIcon(24, mdiListBoxOutline, 'black')}
               {cardInfo.campaign_type && <Text>{cardInfo.campaign_type}</Text>}
             </View>
           </View>
           {/* Like/Share Icons */}
+          {isAdmin ? (
+            <View style={CardStyles.iconsColumn}>
+              <View style={CardStyles.iconBackgrounds}> 
+              <MaterialCommunityIcons
+                name="pencil-outline"
+                size={25}
+                color={'#0282D3'}
+                onPress={() => {
+                  console.log("Edit pressed, id: ", cardInfo.id);
+                  router.push({
+                    pathname: '/(tabs)/AdminEditEcoAction',
+                    params: { typeOfAction: "online", id: cardInfo.id}
+                  })
+                }}
+              />
+              </View>
+              <View style={CardStyles.deleteIconBackground}><MaterialCommunityIcons name="trash-can-outline" size={25} color="#EA4335" /></View>    
+              </View>
+          ): (
           <View style={CardStyles.iconsColumn}>
             <View style={CardStyles.iconBackgrounds}>
-              <MaterialCommunityIcons
+            <MaterialCommunityIcons
                 name={liked ? "cards-heart" : "cards-heart-outline"}
                 size={25}
                 color={'#0282D3'}
                 onPress={handleLike}
                 disabled={!user?.id}
               />
-              </View>
+            </View>
             <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>
           </View>
+          )}
         </View>
         {/* Expanded Content */}
         { expanded && 

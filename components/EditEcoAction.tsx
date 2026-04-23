@@ -1,4 +1,4 @@
-import React, {useCallback, useState,} from 'react';
+import React, {useCallback, useState, } from 'react';
 import {Alert} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -9,23 +9,18 @@ import { decode } from 'base64-arraybuffer';
 import { DisplayEcoAction } from '@/components/DisplayEcoAction';
 type Props = 
 {
+    isEdit: true,
     typeOfAction: string;
     id: any; 
 };
-   export const EditEcoAction = ({ typeOfAction, id }: Props) => { 
+   export const EditEcoAction = ({ isEdit, typeOfAction, id }: Props) => { 
     //values for supabase
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
-    const [eventDate, setEventDate] = useState<Date | null>(
-      (typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null
-    );
-    const [startTime, setStartTime] = useState<Date | null>(
-      (typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null
-    );
-    const [endTime, setEndTime] = useState<Date | null>(
-      (typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null
-    );
     const [coverPhoto, setCoverPhoto] = useState("");
+    const [eventDate, setEventDate] = useState<Date | null>(null);
+    const [startTime, setStartTime] = useState<Date | null>(null);
+    const [endTime, setEndTime] = useState<Date | null>(null);
     const [campaignType, setCampaignType] = useState("");
     const [location, setLocation] = useState("");
     const [link, setLink] = useState("");
@@ -180,6 +175,7 @@ type Props =
               return;
             }
             Alert.alert("Eco action updated successfully");
+            router.push("/(tabs)/volunteer");
           }
           else if (typeOfAction === "in-person") {
             const { data, error } = await supabase.from("inperson_ecoactions").update({
@@ -198,6 +194,7 @@ type Props =
                 return;
             }
             Alert.alert("Eco action updated successfully");
+            router.push("/(tabs)/volunteer");
           }
           else if (typeOfAction === "event") {
             const { data, error } = await supabase.from("events").update({
@@ -217,7 +214,7 @@ type Props =
                 return;
             }
           Alert.alert("Event updated successfully");
-          router.push("/(tabs)/volunteer")
+          router.push("/(tabs)/volunteer");
           }
 
         resetAll();
@@ -230,6 +227,10 @@ type Props =
       useCallback(() => 
       {
         const fetchEcoAction = async () => {
+          if(!id){
+            Alert.alert("No ID provided");
+            return;
+          }
           setLoading(true);
 
           let tableName = typeOfAction === 'online'
@@ -259,23 +260,17 @@ type Props =
           setCampaignType(data.campaign_type ?? '');
           setCustomCampaignType(data.campaign_type ?? '');
           setGoogleCalendarLink(data.google_calendar_link ?? '');
-
-          if (typeOfAction === 'in-person') 
+          console.log(data.start_date, data.start_time);
+          if (typeOfAction === 'in-person' || typeOfAction === 'event') 
           {
             setStartTime(data.start_date ? new Date(data.start_date) : null);
             setEndTime(data.end_date ? new Date(data.end_date) : null);
             setEventDate(data.start_date ? new Date(data.start_date) : null);
           }
-          else if (typeOfAction === 'event') 
-          {
-            setStartTime(data.start_date ? new Date(data.start_date) : null);
-            setEndTime(data.end_date ? new Date(data.end_date) : null);
-            setEventDate(data.start_date ? new Date(data.start_date) : null);
-          } 
           else 
           {
             setStartTime(null);
-            setEndTime(data.end_date ? new Date(data.end_date) : null);
+            setEndTime(new Date(data.end_time));
             setEventDate(null);
           }
 
@@ -287,10 +282,10 @@ type Props =
     );
         
     return (
-      <SafeAreaView style={{flex: 1}}>
         <DisplayEcoAction
           typeOfAction={typeOfAction}
-
+          isEdit={true}
+          
           title={title}
           setTitle={setTitle}
 
@@ -333,7 +328,6 @@ type Props =
           handleCancel={handleCancel}
           getImage = {getImage}
         />
-      </SafeAreaView>
     )}
 
 
