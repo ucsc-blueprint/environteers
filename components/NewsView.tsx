@@ -9,6 +9,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Toast from 'react-native-toast-message';
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
+import newsletter from "@/app/(tabs)/newsletter";
 
 const includesText = (str: string, search: string) =>
   str.toLowerCase().includes(search.toLowerCase());
@@ -92,25 +93,39 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
     }
   }
 
-  const deleteNewsletter = async (newsletter_id: string) => {
-    try {
-      const { error } = await supabase
-        .from("news")
-        .delete()
-        .eq("newsletter_id", newsletter_id);
+const deleteNewsletter = async (newsletter_id: string) => {
+  try {
+    const newsletter = newsLetters.find((n) => n.newsletter_id === newsletter_id);
 
-      if (error) {
-        console.error("Error deleting newsletter:", error);
-        return false;
-      }
+    const { error } = await supabase
+      .from("news")
+      .delete()
+      .eq("newsletter_id", newsletter_id);
 
-      setNewsLetters((prev) => prev.filter((n) => n.newsletter_id !== newsletter_id));
-      return true;
-    } catch (error) {
-      console.error("Unexpected error:", error);
+    if (error) {
+      console.error("Error deleting newsletter:", error);
       return false;
     }
+
+    if (newsletter?.preview_image) {
+      const url = newsletter.preview_image;
+      console.log('Image URL:', url);
+      const filePath = decodeURIComponent(url.split('/news-images/')[1]);
+      console.log('File path:', filePath);
+      const { data, error: storageError } = await supabase.storage
+        .from('news-images')
+        .remove([filePath]);
+      console.log('Delete data:', JSON.stringify(data));
+      console.log('Delete error:', storageError);
+    }
+
+    setNewsLetters((prev) => prev.filter((n) => n.newsletter_id !== newsletter_id));
+    return true;
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    return false;
   }
+}
 
   const handleCancel = () => {
     setDeleteModalVisible(false);
