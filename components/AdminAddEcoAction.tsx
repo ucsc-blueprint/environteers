@@ -8,6 +8,20 @@ import * as FileSystem from 'expo-file-system/legacy'
 import { decode } from 'base64-arraybuffer';
 import { DisplayEcoAction } from '@/components/DisplayEcoAction';
 
+export const buildGoogleCalendarUrl = (title, startTime, endTime, description, location) => {
+    const formatDate = (date) =>
+        date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+    const params = new URLSearchParams({
+        action: 'TEMPLATE',
+        text: title,
+        dates: `${formatDate(new Date(startTime))}/${formatDate(new Date(endTime))}`,
+        details: description || '',
+        location: location || '',
+    });
+
+    return `https://calendar.google.com/calendar/render?${params.toString()}`;
+};
 
 export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { // in-person or online
     //values for supabase
@@ -22,7 +36,6 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
     const [campaignType, setCampaignType] = useState("");
     const [location, setLocation] = useState("");
     const [link, setLink] = useState("");
-    const [googleCalendarLink, setGoogleCalendarLink] = useState("");
     const BUCKETNAME = 'eco-action images'
 
 
@@ -92,7 +105,6 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         setLink("")
         setCampaignType("")
         setCustomCampaignType("")
-        setGoogleCalendarLink("")
         setEventDate(null);
         setStartTime(null);
         setEndTime(null);
@@ -178,6 +190,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
               sign_up_link: link,
               cover_photo: imageUrl,
               host_organization: host,
+              google_calendar_link: buildGoogleCalendarUrl(title, startTime, endTime, description, location),
             });
             if (error) {
                 Alert.alert(error.message);
@@ -196,7 +209,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
               sign_up_link: link,
               cover_photo: imageUrl,
               host_organization: host,
-              google_calendar_link: googleCalendarLink,
+              google_calendar_link: buildGoogleCalendarUrl(title, startTime, endTime, description, location),
             });
             if (error) {
                 Alert.alert(error.message);
@@ -233,9 +246,6 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
 
           link={link}
           setLink={setLink}
-
-          googleCalendarLink={googleCalendarLink}
-          setGoogleCalendarLink={setGoogleCalendarLink}
 
           eventDate={eventDate}
           setEventDate={setEventDate}

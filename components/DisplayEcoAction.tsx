@@ -27,9 +27,6 @@ type Props = {
   link: string;
   setLink: Dispatch<SetStateAction<string>>;
 
-  googleCalendarLink: string;
-  setGoogleCalendarLink: Dispatch<SetStateAction<string>>;
-
   eventDate: Date | null;
   setEventDate: Dispatch<SetStateAction<Date | null>>;
 
@@ -73,9 +70,6 @@ export const DisplayEcoAction = ({
 
     link,
     setLink,
-
-    googleCalendarLink,
-    setGoogleCalendarLink,
 
     eventDate,
     setEventDate,
@@ -354,19 +348,6 @@ export const DisplayEcoAction = ({
             />
           </View>
           
-          {typeOfAction === "event" && (
-          <View style={styles.section}>
-            <Text style={styles.label}>Google Calendar Link</Text>
-            <TextInput
-              style={styles.input}
-              placeholder= "Paste Calendar Link"
-              placeholderTextColor= "#888"
-              value={googleCalendarLink}
-              onChangeText={setGoogleCalendarLink}
-            />
-          </View>
-          )}
-
           {typeOfAction === "online" && (
           <View style={styles.section}>
             

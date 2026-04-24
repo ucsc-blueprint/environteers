@@ -22,6 +22,7 @@ export type InPersonCardData = {
   end_date: Date,
   sign_up_link: string,
   summary?: string,
+  google_calendar_link?: string,
 }
 
 export type InPersonCardDataProps = {

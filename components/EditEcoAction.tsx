@@ -7,6 +7,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as FileSystem from 'expo-file-system/legacy'
 import { decode } from 'base64-arraybuffer';
 import { DisplayEcoAction } from '@/components/DisplayEcoAction';
+import { buildGoogleCalendarUrl } from '@/components/AdminAddEcoAction';
+
 type Props = 
 {
     isEdit: true,
@@ -24,7 +26,6 @@ type Props =
     const [campaignType, setCampaignType] = useState("");
     const [location, setLocation] = useState("");
     const [link, setLink] = useState("");
-    const [googleCalendarLink, setGoogleCalendarLink] = useState("");
     const BUCKETNAME = 'eco-action images'
 
 
@@ -99,7 +100,6 @@ type Props =
         setLink("")
         setCampaignType("")
         setCustomCampaignType("")
-        setGoogleCalendarLink("")
         setEventDate((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
         setStartTime((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
         setEndTime((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
@@ -187,6 +187,7 @@ type Props =
               sign_up_link: link,
               cover_photo: imageUrl,
               host_organization: host,
+              google_calendar_link: buildGoogleCalendarUrl(title, startTime, endTime, description, location),
             })
             .eq('id', id);
             if (error) {
@@ -206,7 +207,7 @@ type Props =
               sign_up_link: link,
               cover_photo: imageUrl,
               host_organization: host,
-              google_calendar_link: googleCalendarLink,
+              google_calendar_link: buildGoogleCalendarUrl(title, startTime, endTime, description, location),
             })
             .eq('id', id);
             if (error) {
@@ -259,7 +260,6 @@ type Props =
           setLink(data.sign_up_link ?? data.email_link ?? '');
           setCampaignType(data.campaign_type ?? '');
           setCustomCampaignType(data.campaign_type ?? '');
-          setGoogleCalendarLink(data.google_calendar_link ?? '');
           console.log(data.start_date, data.start_time);
           if (typeOfAction === 'in-person' || typeOfAction === 'event') 
           {
@@ -300,9 +300,6 @@ type Props =
 
           link={link}
           setLink={setLink}
-
-          googleCalendarLink={googleCalendarLink}
-          setGoogleCalendarLink={setGoogleCalendarLink}
 
           eventDate={eventDate}
           setEventDate={setEventDate}
