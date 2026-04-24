@@ -75,6 +75,7 @@ export default function TabsLayout() {
         name="admin-dashboard"
         options={{
           title: 'Dashboard',
+          href: profile?.is_admin ? undefined : null,
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="view-dashboard" size={size} color={color} />
           ),
