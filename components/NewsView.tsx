@@ -9,7 +9,6 @@ import { Ionicons } from "@expo/vector-icons";
 import Toast from 'react-native-toast-message';
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
-import newsletter from "@/app/(tabs)/newsletter";
 
 const includesText = (str: string, search: string) =>
   str.toLowerCase().includes(search.toLowerCase());
