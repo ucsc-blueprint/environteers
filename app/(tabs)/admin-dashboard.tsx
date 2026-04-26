@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, Platform, ActivityIndicator } from 'react-native';
 import { supabase } from '@/constants/supabase';
 import { useRouter } from 'expo-router';
@@ -12,13 +12,17 @@ import DateTimePicker, {DateTimePickerEvent} from "@react-native-community/datet
 // all completion timestamps from interactions_events
 // total number of clicks (rows) from interaction_news
 
-
 export default function AdminDashboard() {
   const router = useRouter();
 
+  // default to past month
+  const today = new Date();
+  const oneMonthAgo = new Date(today);
+  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
   // stores start date and end date for filtering
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [startDate, setStartDate] = useState<Date | null>(oneMonthAgo);
+  const [endDate, setEndDate] = useState<Date | null>(today);
 
   // show date picker
   const [pickerMode, setPickerMode] = useState<"start" | "end">("start");
@@ -39,6 +43,10 @@ export default function AdminDashboard() {
 
     if (pickerMode === "end") {
       setEndDate(selectedDate);
+
+      if (startDate && selectedDate < startDate) {
+        setStartDate(null);
+      }
     }
   }
 
@@ -137,192 +145,227 @@ export default function AdminDashboard() {
     load();
   }, []);
 
-if (loading) {
+  const filtered = useMemo(() => {
+    const filter = (timestamps: Date[]) => {
+      if (!startDate && !endDate) return timestamps;
+
+      return timestamps.filter((timestamp) => {
+        const afterStart = startDate ? timestamp >= startDate : true;
+        const beforeEnd = endDate ? timestamp <= endDate : true;
+        return afterStart && beforeEnd;
+      });
+    };
+
+    return {
+      users: filter(dashboardTimestamps.users),
+      news: filter(dashboardTimestamps.news),
+      onlineEcoActions: filter(dashboardTimestamps.onlineEcoActions),
+      inPersonEcoActions: filter(dashboardTimestamps.inPersonEcoActions),
+      events: filter(dashboardTimestamps.events),
+    };
+  }, [dashboardTimestamps, startDate, endDate]);
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <ActivityIndicator size="large" />
-    </View>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ flexGrow: 1 }}
+    >
+
+        <View style={styles.dateColumnContainer}>
+
+          <View style={styles.dateColumn}>
+            <Text style={styles.dateHeader}>Start Date
+              <Text style={{color: "#ef4444"}}>*</Text>
+            </Text>
+
+            <Pressable
+              style={styles.dateBoxFull}
+              onPress={() => {
+                setPickerMode("start");
+                setShowPicker(true);
+              }}
+            >
+              <Text style={startDate ? styles.dateText : styles.emptyDateText}>
+                {startDate ? startDate.toLocaleDateString() : "Set date"}
+              </Text>
+            </Pressable>
+          </View>
+
+          <View style={styles.dateColumn}>
+            <Text style={styles.dateHeader}>End Date
+              <Text style={{color: "#ef4444"}}>*</Text>
+            </Text>
+
+            <Pressable
+              style={styles.dateBoxFull}
+              onPress={() => {
+                setPickerMode("end");
+                setShowPicker(true);
+              }}
+            >
+              <Text style={endDate ? styles.dateText : styles.emptyDateText}>
+                {endDate ? endDate.toLocaleDateString() : "Set date"}
+              </Text>
+            </Pressable>
+          </View>
+
+        </View>
+
+        {showPicker && (
+          <DateTimePicker
+            style={{alignSelf: 'center'}}
+            value={
+              pickerMode === "start"
+                ? startDate || new Date()
+                : endDate || new Date()
+            }
+            textColor="black"
+            mode="date"
+            display={Platform.OS === "ios" ? "spinner" : "default"}
+            onChange={changeDate}
+          />
+        )}
+      <View style={styles.dashboardContainer}>
+        <View style={styles.gridContainer}>
+
+          {/* Active Users */}
+          <View style={styles.gridBox}>
+            <View style={styles.titleContainer}>
+              <Text style={styles.titleText}>Active users</Text>
+            </View>
+
+            <View style={styles.numberContainer}>
+              <Text style={styles.numberText}>
+                {filtered.users.length}
+              </Text>
+            </View>
+
+            <Pressable
+              style={styles.subtitleContainer}
+              onPress={() => router.push('/(tabs)/VolunteerView')}
+            >
+              <Text style={styles.subtitleText}>View</Text>
+              <ChevronRight color="#0282D3"/>
+            </Pressable>
+          </View>
+
+          {/* Events */}
+          <View style={styles.gridBox}>
+            <View style={styles.titleContainer}>
+              <Text style={styles.titleText}>Events</Text>
+            </View>
+
+            <View style={styles.numberContainer}>
+              <Text style={styles.numberText}>
+                {filtered.events.length}
+              </Text>
+            </View>
+
+            <Pressable 
+              style={styles.subtitleContainer}
+              onPress={() => router.push('/(tabs)/volunteer')}
+            >
+              <Text style={styles.subtitleText}>See all events</Text>
+              <ChevronRight color="#0282D3"/>
+            </Pressable>
+          </View>
+
+          {/* Online Eco-Actions */}
+          <View style={styles.gridBox}>
+            <View style={styles.titleContainer}>
+              <Text style={styles.titleText}>Online eco-actions</Text>
+            </View>
+
+            <View style={styles.numberContainer}>
+              <Text style={styles.numberText}>
+                {filtered.onlineEcoActions.length}
+              </Text>
+            </View>
+
+            <Pressable 
+              style={styles.subtitleContainer}
+              onPress={() => router.push('/(tabs)/volunteer')}
+            >
+              <Text style={styles.subtitleText}>See all eco-actions</Text>
+              <ChevronRight color="#0282D3"/>
+            </Pressable>
+          </View>
+
+          {/* In-Person Eco-Actions */}
+          <View style={styles.gridBox}>
+            <View style={styles.titleContainer}>
+              <Text style={styles.titleText}>In-person eco-actions</Text>
+            </View>
+
+            <View style={styles.numberContainer}>
+              <Text style={styles.numberText}>
+                {filtered.inPersonEcoActions.length}
+              </Text>
+            </View>
+
+            <Pressable
+              style={styles.subtitleContainer}
+              onPress={() => router.push('/(tabs)/volunteer')}
+            >
+              <Text style={styles.subtitleText}>See all eco-actions</Text>
+              <ChevronRight color="#0282D3"/>
+            </Pressable>
+          </View>
+
+          {/* Newsletter Subscriptions */}
+          <View style={styles.gridBox}>
+            <View style={styles.titleContainer}>
+              <Text style={styles.titleText}>Subscriptions</Text>
+            </View>
+
+            <View style={styles.numberContainer}>
+              <Text style={styles.numberText}>
+                64 {/* Placeholder newsletter subscription count */}
+              </Text>
+            </View>
+
+            <Pressable 
+              style={styles.subtitleContainer}
+              onPress={() => router.push('/(tabs)/newsletter')}
+            >
+              <Text style={styles.subtitleText}>See newsletters</Text>
+              <ChevronRight color="#0282D3" style={{margin: 0}}/>
+            </Pressable>
+          </View>
+
+          {/* Newsletter Reads */}
+          <View style={styles.gridBox}>
+            <View style={styles.titleContainer}>
+              <Text style={styles.titleText}>Newsletter reads</Text>
+            </View>
+
+            <View style={styles.numberContainer}>
+              <Text style={styles.numberText}>
+                {filtered.news.length}
+              </Text>
+            </View>
+
+            <Pressable 
+              style={styles.subtitleContainer}
+              onPress={() => router.push('/(tabs)/newsletter')}
+            >
+              <Text style={styles.subtitleText}>See newsletters</Text>
+              <ChevronRight color="#0282D3"/>
+            </Pressable>
+          </View>
+
+        </View>
+      </View>
+    </ScrollView>
   );
-}
-
-return (
-  <ScrollView
-    style={styles.container}
-    contentContainerStyle={{ flexGrow: 1 }}
-  >
-    
-      <View style={styles.dateColumnContainer}>
-
-        <View style={styles.dateColumn}>
-          <Text style={styles.dateHeader}>Start Date
-            <Text style={{color: "#ef4444"}}>*</Text>
-          </Text>
-
-          <Pressable
-            style={styles.dateBoxFull}
-            onPress={() => {
-              setPickerMode("start");
-              setShowPicker(true);
-            }}
-          >
-            <Text style={startDate ? styles.dateText : styles.emptyDateText}>
-              {startDate ? startDate.toLocaleDateString() : "Set date"}
-            </Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.dateColumn}>
-          <Text style={styles.dateHeader}>End Date
-            <Text style={{color: "#ef4444"}}>*</Text>
-          </Text>
-
-          <Pressable
-            style={styles.dateBoxFull}
-            onPress={() => {
-              setPickerMode("end");
-              setShowPicker(true);
-            }}
-          >
-            <Text style={endDate ? styles.dateText : styles.emptyDateText}>
-              {endDate ? endDate.toLocaleDateString() : "Set date"}
-            </Text>
-          </Pressable>
-        </View>
-
-      </View>
-
-      {showPicker && (
-        <DateTimePicker
-          style={{alignSelf: 'center'}}
-          value={
-            pickerMode === "start"
-              ? startDate || new Date()
-              : endDate || new Date()
-          }
-          textColor="black"
-          mode="date"
-          display={Platform.OS === "ios" ? "spinner" : "default"}
-          onChange={changeDate}
-        />
-      )}
-    <View style={styles.dashboardContainer}>
-      <View style={styles.gridContainer}>
-
-        {/* Active Users */}
-        <View style={styles.gridBox}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.titleText}>Active users</Text>
-          </View>
-
-          <View style={styles.numberContainer}>
-            <Text style={styles.numberText}>{dashboardTimestamps.users.length}</Text>
-          </View>
-
-          <Pressable
-            style={styles.subtitleContainer}
-            onPress={() => router.push('/(tabs)/VolunteerView')}
-          >
-            <Text style={styles.subtitleText}>View</Text>
-            <ChevronRight color="#0282D3"/>
-          </Pressable>
-        </View>
-
-        {/* Events */}
-        <View style={styles.gridBox}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.titleText}>Events this month</Text>
-          </View>
-
-          <View style={styles.numberContainer}>
-            <Text style={styles.numberText}>
-              {dashboardTimestamps.events.length}
-            </Text>
-          </View>
-
-          <View style={styles.subtitleContainer}>
-            <Text style={styles.subtitleText}>See all events</Text>
-            <ChevronRight color="#0282D3"/>
-          </View>
-        </View>
-
-        {/* Online Eco-Actions */}
-        <View style={styles.gridBox}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.titleText}>Online eco-actions</Text>
-          </View>
-
-          <View style={styles.numberContainer}>
-            <Text style={styles.numberText}>
-              {dashboardTimestamps.onlineEcoActions.length}
-            </Text>
-          </View>
-
-          <View style={styles.subtitleContainer}>
-            <Text style={styles.subtitleText}>See all eco-actions</Text>
-            <ChevronRight color="#0282D3"/>
-          </View>
-        </View>
-
-        {/* In-Person Eco-Actions */}
-        <View style={styles.gridBox}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.titleText}>In-person eco-actions</Text>
-          </View>
-
-          <View style={styles.numberContainer}>
-            <Text style={styles.numberText}>
-              {dashboardTimestamps.inPersonEcoActions.length}
-            </Text>
-          </View>
-
-          <View style={styles.subtitleContainer}>
-            <Text style={styles.subtitleText}>See all eco-actions</Text>
-            <ChevronRight color="#0282D3"/>
-          </View>
-        </View>
-
-        {/* Newsletter Subscriptions */}
-        <View style={styles.gridBox}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.titleText}>Subscriptions</Text>
-          </View>
-
-          <View style={styles.numberContainer}>
-            <Text style={styles.numberText}>
-              64
-            </Text>
-          </View>
-
-          <Pressable style={styles.subtitleContainer}
-            onPress={() => router.push('/(tabs)/newsletter')}>
-            <Text style={styles.subtitleText}>See newsletters</Text>
-            <ChevronRight color="#0282D3" style={{margin: 0}}/>
-          </Pressable>
-        </View>
-
-        {/* Newsletter Reads */}
-        <View style={styles.gridBox}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.titleText}>Newsletter reads</Text>
-          </View>
-
-          <View style={styles.numberContainer}>
-            <Text style={styles.numberText}>
-              {dashboardTimestamps.news.length}
-            </Text>
-          </View>
-
-          <Pressable style={styles.subtitleContainer}
-            onPress={() => router.push('/(tabs)/newsletter')}>
-            <Text style={styles.subtitleText}>See newsletters</Text>
-            <ChevronRight color="#0282D3"/>
-          </Pressable>
-        </View>
-
-      </View>
-    </View>
-  </ScrollView>
-);
 }
 
 const styles = {
