@@ -26,11 +26,11 @@ export const formatEventDate = (start: Date, end: Date) => {
   // Format time range
   const startTime = startDate.toLocaleTimeString("en-US", {
     hour: "numeric",
-    minute: undefined,
+    minute: "2-digit",
   });
   const endTime = endDate.toLocaleTimeString("en-US", {
     hour: "numeric",
-    minute: undefined,
+    minute: "2-digit",
   });
   return `${day} | ${startTime}–${endTime}`;
 }
