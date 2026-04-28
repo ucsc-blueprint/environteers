@@ -4,7 +4,8 @@ import { Ionicons } from '@expo/vector-icons'
 import Octicons from '@expo/vector-icons/Octicons'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { useAuth } from '@/context/AuthContext'
-import { Text } from 'react-native'
+import { Text, Pressable, View } from 'react-native'
+import { User } from 'lucide-react-native'
 
 
 
@@ -79,6 +80,29 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="view-dashboard" size={size} color={color} />
           ),
+
+          headerRight: () => {
+
+            return (
+              <Pressable
+                onPress={() => router.push('/profile')}
+                style={{ marginRight: 16 }}
+              >
+                <View
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 16,
+                    backgroundColor: '#f0f0f0',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  <User size={25} color="#555" />
+                </View>
+              </Pressable>
+            );
+          },
         }}
       />
       <Tabs.Screen
