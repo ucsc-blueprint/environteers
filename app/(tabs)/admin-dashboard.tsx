@@ -151,7 +151,7 @@ export default function AdminDashboard() {
 
       return timestamps.filter((timestamp) => {
         const afterStart = startDate ? timestamp >= startDate : true;
-        const beforeEnd = endDate ? timestamp <= endDate : true;
+        const beforeEnd = endDate ? timestamp < new Date(endDate.getTime() + 86400000) : true;
         return afterStart && beforeEnd;
       });
     };
@@ -160,7 +160,7 @@ export default function AdminDashboard() {
       if (!endDate) return timestamps;
 
       return timestamps.filter((timestamp) => {
-        return endDate ? timestamp <= endDate : true;
+        return endDate ? timestamp < new Date(endDate.getTime() + 86400000) : true;
       })
     }
 
