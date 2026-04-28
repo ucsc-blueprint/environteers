@@ -156,8 +156,16 @@ export default function AdminDashboard() {
       });
     };
 
+    const filterUsers = (timestamps: Date[]) => {
+      if (!endDate) return timestamps;
+
+      return timestamps.filter((timestamp) => {
+        return endDate ? timestamp <= endDate : true;
+      })
+    }
+
     return {
-      users: filter(dashboardTimestamps.users),
+      users: filterUsers(dashboardTimestamps.users),
       news: filter(dashboardTimestamps.news),
       onlineEcoActions: filter(dashboardTimestamps.onlineEcoActions),
       inPersonEcoActions: filter(dashboardTimestamps.inPersonEcoActions),
