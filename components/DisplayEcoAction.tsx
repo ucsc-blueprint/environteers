@@ -7,10 +7,10 @@ import { actions, RichEditor, RichToolbar } from 'react-native-pell-rich-editor'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Dispatch, SetStateAction } from 'react';
-import { Activity } from 'lucide-react-native';
 import { ActivityIndicator } from 'react-native-paper';
 type Props = {
   typeOfAction: string;
+  isEdit: boolean;
 
   title: string;
   setTitle: Dispatch<SetStateAction<string>>;
@@ -26,9 +26,6 @@ type Props = {
 
   link: string;
   setLink: Dispatch<SetStateAction<string>>;
-
-  googleCalendarLink: string;
-  setGoogleCalendarLink: Dispatch<SetStateAction<string>>;
 
   eventDate: Date | null;
   setEventDate: Dispatch<SetStateAction<Date | null>>;
@@ -57,6 +54,7 @@ type Props = {
 };
 export const DisplayEcoAction = ({
     typeOfAction,
+    isEdit,
 
     title,
     setTitle,
@@ -72,9 +70,6 @@ export const DisplayEcoAction = ({
 
     link,
     setLink,
-
-    googleCalendarLink,
-    setGoogleCalendarLink,
 
     eventDate,
     setEventDate,
@@ -106,6 +101,7 @@ export const DisplayEcoAction = ({
         const [filterOpen, setFilterOpen] = useState(false);
         const richText = useRef<RichEditor>(null);
 
+        const actionWord = isEdit? "Edit": "Add";
     if (loading)
     {
       return (<ActivityIndicator animating={true} color="#86AE42" size="large" style={{flex: 1, justifyContent: "center", alignItems: "center"}}/>);
@@ -128,15 +124,15 @@ export const DisplayEcoAction = ({
           <Pressable style = {styles.leftButton} onPress={() => handleCancel()}>
             <Ionicons name="close" size={28} color="black" />
           </Pressable>
-          {typeOfAction === "in-person" || typeOfAction === "online" ? (
+            {typeOfAction === "in-person" || typeOfAction === "online" ? (
 
-              <Text style={styles.headerTitle}>Add {typeOfAction} eco-action</Text>
-            ) 
-            : typeOfAction === "event" ? (
-              <Text style={styles.headerTitle}>Add event</Text>
-            )
-            : null
-          }
+                <Text style={styles.headerTitle}>{actionWord} {typeOfAction} eco-action</Text>
+              ) 
+              : typeOfAction === "event" ? (
+                <Text style={styles.headerTitle}>{actionWord} event</Text>
+              )
+              : null
+            }
 
           <Pressable
             style={[styles.rightButton, submitting && { opacity: 0.5}]}
@@ -202,7 +198,9 @@ export const DisplayEcoAction = ({
               ]}
               onPress={() => { setPickerMode("start"); setShowPicker(!showPicker); }}
             >
-              <Text>{startTime!.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} -</Text>
+              <Text>
+                {startTime ? startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Start time"} -
+              </Text>
             </Pressable>
             )}
           
@@ -274,19 +272,22 @@ export const DisplayEcoAction = ({
                   );
                   setStartTime(newStart);
 
-                } else if (pickerMode === "end") 
-                {
-                  if (!eventDate) return;
-
-                  const newEnd = new Date(selectedDate);
-                  newEnd.setFullYear(
-                  eventDate.getFullYear(),
-                  eventDate.getMonth(),
-                  eventDate.getDate()
-                  );
-                  setEndTime(newEnd);
-                }
-              }}
+                } else if (pickerMode === "end") {
+                  if (typeOfAction === "online") {
+                    setEndTime(selectedDate);
+                  } else {
+                    if (!eventDate) return;
+                    const newEnd = new Date(selectedDate);
+                    newEnd.setFullYear(
+                      eventDate.getFullYear(),
+                      eventDate.getMonth(),
+                      eventDate.getDate()
+                    );
+                    setEndTime(newEnd);
+                  }
+                }              
+              }
+            }
             />
           )}
         </View>
@@ -347,19 +348,6 @@ export const DisplayEcoAction = ({
             />
           </View>
           
-          {typeOfAction === "event" && (
-          <View style={styles.section}>
-            <Text style={styles.label}>Google Calendar Link</Text>
-            <TextInput
-              style={styles.input}
-              placeholder= "Paste Calendar Link"
-              placeholderTextColor= "#888"
-              value={googleCalendarLink}
-              onChangeText={setGoogleCalendarLink}
-            />
-          </View>
-          )}
-
           {typeOfAction === "online" && (
           <View style={styles.section}>
             

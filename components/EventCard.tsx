@@ -5,9 +5,11 @@ import { mdiOpenInNew } from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
-import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addClick } from "@/app/utils/cards";
+import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp, addClick } from "@/app/utils/cards";
+import { router, useRouter } from "expo-router";
 import { supabase } from "@/constants/supabase";
 import { useInteractions } from "@/context/InteractionsContext";
+import { ActivityFeedback } from "@/components/ActivityFeedback";
 
 export type EventCardData = {
   id: string,
@@ -28,11 +30,14 @@ export type EventCardDataProps = {
   signed_up: boolean | null,
   completed: boolean | null,
   clicked: boolean,
+  feedback: boolean | null,
 }
 
 type EventCardProps = EventCardDataProps & {
   expanded?: boolean;
   onToggle?: () => void;
+  feedbackVisible: boolean;
+  setFeedbackVisible: (val: boolean) => void;
   highlight?: boolean;
 };
 
@@ -42,13 +47,17 @@ export const EventCard = ({
   signed_up,
   completed,
   clicked,
+  feedback,
+  feedbackVisible,
+  setFeedbackVisible,
   expanded: externalExpanded,
   onToggle,
   highlight,
 }: EventCardProps) => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const isAdmin = profile?.is_admin === true;
 
-  const { updateLike, updateSignUp, updateCompleted, updateClicked } = useInteractions();
+  const { updateLike, updateSignUp, updateCompleted, updateClicked, updateFeedback } = useInteractions();
 
   const [internalExpanded, setInternalExpanded] = useState(false);
   const expanded = externalExpanded !== undefined ? externalExpanded : internalExpanded;
@@ -89,7 +98,7 @@ export const EventCard = ({
           .eq("user_id", user.id);
 
         updateSignUp(
-          { cardType: "event", cardInfo, liked, signed_up, completed, clicked },
+          { cardType: "event", cardInfo, liked, signed_up, completed, clicked, feedback },
           null
         );
       }
@@ -102,12 +111,13 @@ export const EventCard = ({
       );
 
       updateClicked(
-        { cardType: "event", cardInfo, liked, signed_up, completed, clicked }
+        { cardType: "event", cardInfo, liked, signed_up, completed, clicked, feedback }
       );
     }
 
     Linking.openURL(link);
   };
+  
 
   const handleSignUp = async (response: boolean) => {
     if (!user?.id) return;
@@ -119,7 +129,7 @@ export const EventCard = ({
       .eq("user_id", user.id);
 
     updateSignUp(
-      { cardType: "event", cardInfo, liked, signed_up, completed, clicked },
+      { cardType: "event", cardInfo, liked, signed_up, completed, clicked, feedback },
       response
     );
 
@@ -137,13 +147,59 @@ export const EventCard = ({
       .eq("event_id", cardInfo.id)
       .eq("user_id", user.id);
 
-    updateCompleted(
-      { cardType: "event", cardInfo, liked, signed_up, completed, clicked },
-      response
-    );
-
-    toggleExpanded();
+    if (response) {
+      setFeedbackVisible(true);
+    } else {
+      updateCompleted(
+        { cardType: "event", cardInfo, liked, signed_up, completed, clicked, feedback },
+        response
+      );
+      toggleExpanded();
+    }
   };
+
+  const handleFeedbackSubmit = async (feedbackText: string) => {
+    if (!user?.id) return;
+
+    await Promise.all([
+      supabase
+        .from("feedback")
+        .insert({
+          user_id: user.id,
+          content: feedbackText,
+          event_id: cardInfo.id,
+        }),
+      supabase
+        .from("interactions_events")
+        .update({ feedback: true })
+        .eq("event_id", cardInfo.id)
+        .eq("user_id", user.id)
+    ])
+      
+    setFeedbackVisible(false);
+    updateCompleted(
+      { cardType: "event", cardInfo, liked, signed_up, completed: true, clicked, feedback },
+      true
+    );
+    updateFeedback(
+      { cardType: "event", cardInfo, liked, signed_up, completed: true, clicked, feedback },
+      true
+    );
+    toggleExpanded()
+  }
+
+  const handleFeedbackCancel = () => {
+    setFeedbackVisible(false);
+    updateCompleted(
+      { cardType: "event", cardInfo, liked, signed_up, completed: true, clicked, feedback },
+      true
+    );
+    updateFeedback(
+      { cardType: "event", cardInfo, liked, signed_up, completed: true, clicked, feedback },
+      false
+    );
+    toggleExpanded()
+  }
 
   const handleLikes = async () => {
     if (!user?.id) {
@@ -160,17 +216,21 @@ export const EventCard = ({
     );
     
     updateLike(
-      { cardType: "event", cardInfo, liked, signed_up, completed, clicked }, !liked
+      { cardType: "event", cardInfo, liked, signed_up, completed, clicked, feedback }, !liked
     );
   };
 
   return (
-    <View
-      style={[
+    <View style={[
         CardStyles.card,
         highlight && CardStyles.requiredCard
       ]}
     >
+      <ActivityFeedback 
+        visible={feedbackVisible} 
+        onSubmit={handleFeedbackSubmit} 
+        onCancel={handleFeedbackCancel} 
+      />
 
     {/* // <View style={CardStyles.card}> */}
       <Pressable onPress={toggleExpanded}>
@@ -189,6 +249,13 @@ export const EventCard = ({
                 <Text>{formatEventDate(cardInfo.start_date, cardInfo.end_date)}</Text>
               </View>
             }
+
+            {isAdmin && (
+            <View style={[CardStyles.formatRow, CardStyles.rsvpContainer]}>
+              <Text style = {[CardStyles.rsvp]}>24 current RSVPs</Text>
+            </View>
+            )}
+
             { cardInfo.location &&
               <View style={CardStyles.formatRow}>
                 <MaterialIcons name="location-on" size={25} color={'black'} />
@@ -197,9 +264,28 @@ export const EventCard = ({
             }
           </View>
           {/* Like/Share Icons */}
+          {isAdmin ? (
+            <View style={CardStyles.iconsColumn}>
+              <View style={CardStyles.iconBackgrounds}> 
+              <MaterialCommunityIcons
+                name="pencil-outline"
+                size={25}
+                color={'#0282D3'}
+                onPress={() => {
+                  console.log("Edit pressed, id: ", cardInfo.id);
+                  router.push({
+                    pathname: '/(tabs)/AdminEditEcoAction',
+                    params: { typeOfAction: "event", id: cardInfo.id}
+                  })
+                }}
+              />
+              </View>
+              <View style={CardStyles.deleteIconBackground}><MaterialCommunityIcons name="trash-can-outline" size={25} color="#EA4335" /></View>    
+              </View>
+          ): (
           <View style={CardStyles.iconsColumn}>
             <View style={CardStyles.iconBackgrounds}>
-              <MaterialCommunityIcons
+            <MaterialCommunityIcons
                 name={liked ? "cards-heart" : "cards-heart-outline"}
                 size={25}
                 color={'#0282D3'}
@@ -209,6 +295,7 @@ export const EventCard = ({
             </View>
             <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>
           </View>
+          )}
         </View>
           {/* Expanded Content */}
           { expanded && 
@@ -270,13 +357,19 @@ export const EventCard = ({
               {/* Sign Up Button */}
               { cardInfo.sign_up_link &&
                 <View style={CardStyles.signUpButtonContainer}>
-                  <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => openSignUpLink(cardInfo.sign_up_link!)}> 
-                    { signed_up ? 
-                      <Text style={CardStyles.signUpText}>Revisit Link</Text> : 
-                      <Text style={CardStyles.signUpText}>Take Action</Text> 
-                    }
-                    {renderIcon(15, mdiOpenInNew, 'white')}
-                  </Pressable>
+                  { completed && !feedback ? (
+                    <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => setFeedbackVisible(true)}>
+                      <Text style={CardStyles.signUpText}>Provide Feedback</Text>
+                    </Pressable>
+                  ) : (
+                    <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => openSignUpLink(cardInfo.sign_up_link!)}> 
+                      { signed_up ? 
+                        <Text style={CardStyles.signUpText}>Revisit Link</Text> : 
+                        <Text style={CardStyles.signUpText}>Take Action</Text> 
+                      }
+                      {renderIcon(15, mdiOpenInNew, 'white')}
+                    </Pressable>
+                  )}
                 </View>
               }
             </View>

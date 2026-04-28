@@ -233,6 +233,7 @@ export default function Map() {
           end_date: e.end_date,
           sign_up_link: e.sign_up_link,
           summary: e.summary ?? undefined,
+          google_calendar_link: e.google_calendar_link ?? undefined,
         },
         liked: false,
         signed_up: null,

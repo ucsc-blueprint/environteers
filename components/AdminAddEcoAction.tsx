@@ -8,25 +8,34 @@ import * as FileSystem from 'expo-file-system/legacy'
 import { decode } from 'base64-arraybuffer';
 import { DisplayEcoAction } from '@/components/DisplayEcoAction';
 
+export const buildGoogleCalendarUrl = (title, startTime, endTime, description, location) => {
+    const formatDate = (date) =>
+        date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+    const params = new URLSearchParams({
+        action: 'TEMPLATE',
+        text: title,
+        dates: `${formatDate(new Date(startTime))}/${formatDate(new Date(endTime))}`,
+        details: description || '',
+        location: location || '',
+    });
+
+    return `https://calendar.google.com/calendar/render?${params.toString()}`;
+};
 
 export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { // in-person or online
     //values for supabase
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
-    const [eventDate, setEventDate] = useState<Date | null>(
-      (typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null
-    );
-    const [startTime, setStartTime] = useState<Date | null>(
-      (typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null
-    );
-    const [endTime, setEndTime] = useState<Date | null>(
-      (typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null
-    );
+
+    const [eventDate, setEventDate] = useState<Date | null>(null);
+    const [startTime, setStartTime] = useState<Date | null>(null);
+    const [endTime, setEndTime] = useState<Date | null>(null);
+
     const [coverPhoto, setCoverPhoto] = useState("");
     const [campaignType, setCampaignType] = useState("");
     const [location, setLocation] = useState("");
     const [link, setLink] = useState("");
-    const [googleCalendarLink, setGoogleCalendarLink] = useState("");
     const BUCKETNAME = 'eco-action images'
 
 
@@ -96,10 +105,9 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         setLink("")
         setCampaignType("")
         setCustomCampaignType("")
-        setGoogleCalendarLink("")
-        setEventDate((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
-        setStartTime((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
-        setEndTime((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
+        setEventDate(null);
+        setStartTime(null);
+        setEndTime(null);
         setResetKey(prev => prev + 1) // resets rich text editor  
       }
       
@@ -170,6 +178,7 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
               return;
             }
             Alert.alert("Eco action created successfully");
+            router.push("/(tabs)/volunteer");
           }
           else if (typeOfAction === "in-person") {
             const { error } = await supabase.from("inperson_ecoactions").insert({
@@ -181,12 +190,14 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
               sign_up_link: link,
               cover_photo: imageUrl,
               host_organization: host,
+              google_calendar_link: buildGoogleCalendarUrl(title, startTime, endTime, description, location),
             });
             if (error) {
                 Alert.alert(error.message);
                 return;
             }
             Alert.alert("Eco action created successfully");
+            router.push("/(tabs)/volunteer");
           }
           else if (typeOfAction === "event") {
             const { error } = await supabase.from("events").insert({
@@ -198,14 +209,14 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
               sign_up_link: link,
               cover_photo: imageUrl,
               host_organization: host,
-              google_calendar_link: googleCalendarLink,
+              google_calendar_link: buildGoogleCalendarUrl(title, startTime, endTime, description, location),
             });
             if (error) {
                 Alert.alert(error.message);
                 return;
             }
           Alert.alert("Event created successfully");
-          router.push("/(tabs)/volunteer")
+          router.push("/(tabs)/volunteer");
           }
 
         resetAll();
@@ -216,10 +227,10 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
       }
     };
     return (
-      <SafeAreaView style={{flex: 1}}>
         <DisplayEcoAction
           key = {resetKey}// forces remount of component to reset the rich text editor
           typeOfAction={typeOfAction}
+          isEdit= {false}
 
           title={title}
           setTitle={setTitle}
@@ -235,9 +246,6 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
 
           link={link}
           setLink={setLink}
-
-          googleCalendarLink={googleCalendarLink}
-          setGoogleCalendarLink={setGoogleCalendarLink}
 
           eventDate={eventDate}
           setEventDate={setEventDate}
@@ -262,7 +270,6 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
           handleCancel={handleCancel}
           getImage = {getImage}
         />
-      </SafeAreaView>
     )}
 
 

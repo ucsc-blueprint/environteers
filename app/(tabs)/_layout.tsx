@@ -75,6 +75,7 @@ export default function TabsLayout() {
         name="admin-dashboard"
         options={{
           title: 'Dashboard',
+          href: profile?.is_admin ? undefined : null,
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="view-dashboard" size={size} color={color} />
           ),
@@ -114,10 +115,15 @@ export default function TabsLayout() {
       <Tabs.Screen
        name = "AddEcoAction"
         options = {{
+          href: null,
           title: 'Add Eco Action',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="add-outline" size={size} color={color} />
-          ),
+        }}
+      />
+      <Tabs.Screen
+       name = "AdminEditEcoAction"
+        options = {{
+          href: null,
+          title: 'Edit Eco Action',
         }}
       />
       <Tabs.Screen

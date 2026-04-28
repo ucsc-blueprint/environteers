@@ -137,6 +137,21 @@ export const CardStyles = StyleSheet.create({
     marginVertical: 5,
   },
 
+  rsvp: {
+    fontSize: 12,
+    color: "#4F6629",
+    fontWeight: '700',
+  },
+  
+  rsvpContainer: {
+    backgroundColor: '#E0FAE2',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 30,
+    alignSelf: 'flex-start',
+    marginBottom: 5,
+  },
+
   location: {
     flexShrink: 1,
     minWidth: 0,
@@ -265,6 +280,16 @@ export const CardStyles = StyleSheet.create({
     color: '#3A5513',
   },
 
+  deleteIconBackground:{
+    backgroundColor: '#FFE3E1',
+    width: 35,
+    height: 35,
+    borderRadius: 50,
+    alignItems: 'center',
+    display: 'flex',
+    justifyContent: 'center',
+  },
+  
   // Required Cards
   requiredCard: {
     backgroundColor: '#FFF4DF',
