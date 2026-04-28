@@ -8,6 +8,9 @@ import { CardStyles } from "@/app/stylesheets/CardStyles";
 import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addClick, addCompletion } from "@/app/utils/cards";
 import { useInteractions } from "@/context/InteractionsContext";
 import { supabase } from "@/constants/supabase";
+import { ActivityFeedback } from "@/components/ActivityFeedback";
+import Toast from 'react-native-toast-message';
+import { router, useRouter } from "expo-router";
 
 export type InPersonCardData = {
   id: string,
@@ -19,6 +22,7 @@ export type InPersonCardData = {
   end_date: Date,
   sign_up_link: string,
   summary?: string,
+  google_calendar_link?: string,
 }
 
 export type InPersonCardDataProps = {
@@ -28,11 +32,14 @@ export type InPersonCardDataProps = {
   signed_up: boolean | null,
   completed: boolean | null,
   clicked: boolean,
+  feedback: boolean | null,
 }
 
 type InPersonCardProps = InPersonCardDataProps & {
   expanded?: boolean;
   onToggle?: () => void;
+  feedbackVisible: boolean;
+  setFeedbackVisible: (val: boolean) => void;
   highlight?: boolean;
 };
 
@@ -42,12 +49,16 @@ export const InPersonCard = ({
   signed_up,
   completed,
   clicked,
+  feedback,
+  feedbackVisible,
+  setFeedbackVisible,
   expanded: externalExpanded,
   onToggle,
   highlight,
 }: InPersonCardProps) => {
-  const { updateLike, updateSignUp, updateCompleted, updateClicked } = useInteractions();
-  const { user } = useAuth();
+  const { updateLike, updateSignUp, updateCompleted, updateClicked, updateFeedback } = useInteractions();
+  const { user, profile } = useAuth();
+  const isAdmin = profile?.is_admin === true;
 
   const [internalExpanded, setInternalExpanded] = useState(false);
   const expanded = externalExpanded !== undefined ? externalExpanded : internalExpanded;
@@ -88,7 +99,7 @@ export const InPersonCard = ({
 
         // Update context
         updateSignUp(
-          { cardType: "in_person", cardInfo, liked, signed_up: null, completed, clicked },
+          { cardType: "in_person", cardInfo, liked, signed_up: null, completed, clicked, feedback },
           null
         );
       }
@@ -97,7 +108,7 @@ export const InPersonCard = ({
 
       // No refresh (just updates local state)
       updateClicked(
-        { cardType: "in_person", cardInfo, liked, signed_up: signed_up, completed, clicked }
+        { cardType: "in_person", cardInfo, liked, signed_up: signed_up, completed, clicked, feedback }
       );
     }
 
@@ -115,44 +126,46 @@ export const InPersonCard = ({
     
       // Update context
     updateSignUp (
-      { cardType: "in_person", cardInfo, liked, signed_up: response, completed, clicked }, response
+      { cardType: "in_person", cardInfo, liked, signed_up: response, completed, clicked, feedback }, response
     );
     toggleExpanded();
   };
       
 
-    // const handleCompletion = async (response: boolean) => {
-    //   if (!user?.id) return;
-    
-    //   await supabase
-    //     .from("interactions_eco_inperson")
-    //     .update({ completed: response })
-    //     .eq("action_id", cardInfo.id)
-    //     .eq("user_id", user.id);
-    
-    //   toggleExpanded(); 
+  // const handleCompletion = async (response: boolean) => {
+  //   if (!user?.id) return;
 
-    //   // Update context
-    //   updateCompleted(
-    //     { cardType: "in_person", cardInfo, liked, signed_up: signed_up, completed: response, clicked },
-    //     response
-    //   );
+  //   await supabase
+  //     .from("interactions_eco_inperson")
+  //     .update({ completed: response })
+  //     .eq("action_id", cardInfo.id)
+  //     .eq("user_id", user.id);
 
-    // };
-
-    const handleCompletion = async (response: boolean) => {
-      if (!user?.id) return;
-    
-      await addCompletion(
-        "interactions_eco_inperson",
-        cardInfo.id,
-        user.id,
-        "action_id",
-        response
-      );
-    
-      toggleExpanded();
-    
+  //   if (response) {
+  //     setFeedbackVisible(true);
+  //   } else {
+  //     // Update context
+  //     updateCompleted(
+  //       { cardType: "in_person", cardInfo, liked, signed_up: signed_up, completed: response, clicked, feedback },
+  //       response
+  //     );
+  //     toggleExpanded(); 
+  //   }
+  // };
+  const handleCompletion = async (response: boolean) => {
+    if (!user?.id) return;
+  
+    await addCompletion(
+      "interactions_eco_inperson",
+      cardInfo.id,
+      user.id,
+      "action_id",
+      response
+    );
+  
+    if (response) {
+      setFeedbackVisible(true);
+    } else {
       updateCompleted(
         {
           cardType: "in_person",
@@ -161,14 +174,65 @@ export const InPersonCard = ({
           signed_up,
           completed: response,
           clicked,
+          feedback,
         },
         response
       );
-    };
+  
+      toggleExpanded();
+    }
+  };
 
-    
+  const handleFeedbackSubmit = async (feedbackText: string) => {
+    if (!user?.id) return;
+
+    await Promise.all([
+      supabase
+        .from("feedback")
+        .insert({
+          user_id: user.id,
+          content: feedbackText,
+          inperson_ecoaction_id: cardInfo.id,
+        }),
+      supabase
+        .from("interactions_eco_inperson")
+        .update({ feedback: true })
+        .eq("action_id", cardInfo.id)
+        .eq("user_id", user.id)
+    ])
+      
+    setFeedbackVisible(false);
+    updateCompleted(
+      { cardType: "in_person", cardInfo, liked, signed_up: signed_up, completed: true, clicked, feedback },
+      true
+    );
+    updateFeedback(
+      { cardType: "in_person", cardInfo, liked, signed_up: signed_up, completed: true, clicked, feedback },
+      true
+    );
+    toggleExpanded()
+
+    Toast.show({
+      type: 'success',
+      text1: 'Thank you for your feedback!',
+    })
+  }
+
+  const handleFeedbackCancel = () => {
+    setFeedbackVisible(false);
+    updateCompleted(
+      { cardType: "in_person", cardInfo, liked, signed_up: signed_up, completed: true, clicked, feedback },
+      true
+    );
+    updateFeedback(
+      { cardType: "in_person", cardInfo, liked, signed_up: signed_up, completed: true, clicked, feedback },
+      false
+    );
+    toggleExpanded();
+  }
 
   const handleLikes = async (cardInfo: InPersonCardData) => {
+
     if (user?.id) {
       await toggleLike(
         "interactions_eco_inperson",
@@ -178,7 +242,7 @@ export const InPersonCard = ({
         'action_id'
       );
       updateLike (
-        { cardType: "in_person", cardInfo, liked, signed_up: signed_up, completed, clicked }, !liked
+        { cardType: "in_person", cardInfo, liked, signed_up: signed_up, completed, clicked, feedback }, !liked
       );
 
       return;
@@ -193,7 +257,13 @@ export const InPersonCard = ({
         CardStyles.card,
         highlight && CardStyles.requiredCard
       ]}
-    >      
+    >
+      <ActivityFeedback 
+        visible={feedbackVisible} 
+        onSubmit={handleFeedbackSubmit} 
+        onCancel={handleFeedbackCancel} 
+      />
+
       <Pressable onPress={toggleExpanded}>
         <View style={CardStyles.cardInfo}>
           {/* Cover Photo */}
@@ -212,6 +282,13 @@ export const InPersonCard = ({
                 <Text>{formatEventDate(cardInfo.start_date, cardInfo.end_date)}</Text>
               </View>
             }
+
+            {isAdmin && (
+            <View style={[CardStyles.formatRow, CardStyles.rsvpContainer]}>
+              <Text style = {[CardStyles.rsvp]}>24 current RSVPs</Text>
+            </View>
+            )}
+
             { cardInfo.location &&
               <View style={CardStyles.formatRow}>
                 <MaterialIcons name="location-on" size={25} color={'black'} />
@@ -220,6 +297,25 @@ export const InPersonCard = ({
             }
           </View>
           {/* Like/Share Icons */}
+          {isAdmin ? (
+            <View style={CardStyles.iconsColumn}>
+              <View style={CardStyles.iconBackgrounds}> 
+              <MaterialCommunityIcons
+                name="pencil-outline"
+                size={25}
+                color={'#0282D3'}
+                onPress={() => {
+                  console.log("Edit pressed, id: ", cardInfo.id);
+                  router.push({
+                    pathname: '/(tabs)/AdminEditEcoAction',
+                    params: { typeOfAction: "in-person", id: cardInfo.id}
+                  })
+                }}
+              />
+              </View>
+              <View style={CardStyles.deleteIconBackground}><MaterialCommunityIcons name="trash-can-outline" size={25} color="#EA4335" /></View>    
+              </View>
+          ): (
           <View style={CardStyles.iconsColumn}>
             <View style={CardStyles.iconBackgrounds}>
             <MaterialCommunityIcons
@@ -232,6 +328,7 @@ export const InPersonCard = ({
             </View>
             <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>
           </View>
+          )}
         </View>
         {/* Expanded Content */}
         { expanded && 
@@ -279,7 +376,6 @@ export const InPersonCard = ({
                     <Text>No</Text>
                     <MaterialCommunityIcons name="close" size={20} color="black" />
                   </Pressable>
-
                 </View>
               </View>
             )}
@@ -287,13 +383,19 @@ export const InPersonCard = ({
             {/* Sign Up Button */}
             { cardInfo.sign_up_link &&
               <View style={CardStyles.signUpButtonContainer}>
-                <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => openSignUpLink(cardInfo.sign_up_link!)}> 
-                  { signed_up ? 
-                    <Text style={CardStyles.signUpText}>Revisit Link</Text> : 
-                    <Text style={CardStyles.signUpText}>Take Action</Text> 
-                  }
-                  {renderIcon(15, mdiOpenInNew, 'white')}
-                </Pressable>
+                { completed && !feedback ? (
+                  <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => setFeedbackVisible(true)}>
+                    <Text style={CardStyles.signUpText}>Provide Feedback</Text>
+                  </Pressable>
+                ) : (
+                  <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => openSignUpLink(cardInfo.sign_up_link!)}> 
+                    { signed_up ? 
+                      <Text style={CardStyles.signUpText}>Revisit Link</Text> : 
+                      <Text style={CardStyles.signUpText}>Take Action</Text> 
+                    }
+                    {renderIcon(15, mdiOpenInNew, 'white')}
+                  </Pressable>
+                )}
               </View>
             }
           </View>
