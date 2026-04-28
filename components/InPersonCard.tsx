@@ -5,7 +5,7 @@ import { mdiOpenInNew } from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
-import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addClick } from "@/app/utils/cards";
+import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addClick, addCompletion } from "@/app/utils/cards";
 import { useInteractions } from "@/context/InteractionsContext";
 import { supabase } from "@/constants/supabase";
 
@@ -121,23 +121,50 @@ export const InPersonCard = ({
   };
       
 
+    // const handleCompletion = async (response: boolean) => {
+    //   if (!user?.id) return;
+    
+    //   await supabase
+    //     .from("interactions_eco_inperson")
+    //     .update({ completed: response })
+    //     .eq("action_id", cardInfo.id)
+    //     .eq("user_id", user.id);
+    
+    //   toggleExpanded(); 
+
+    //   // Update context
+    //   updateCompleted(
+    //     { cardType: "in_person", cardInfo, liked, signed_up: signed_up, completed: response, clicked },
+    //     response
+    //   );
+
+    // };
+
     const handleCompletion = async (response: boolean) => {
       if (!user?.id) return;
     
-      await supabase
-        .from("interactions_eco_inperson")
-        .update({ completed: response })
-        .eq("action_id", cardInfo.id)
-        .eq("user_id", user.id);
-    
-      toggleExpanded(); 
-
-      // Update context
-      updateCompleted(
-        { cardType: "in_person", cardInfo, liked, signed_up: signed_up, completed: response, clicked },
+      await addCompletion(
+        "interactions_eco_inperson",
+        cardInfo.id,
+        user.id,
+        "action_id",
         response
       );
-
+    
+      toggleExpanded();
+    
+      // Update context
+      updateCompleted(
+        {
+          cardType: "in_person",
+          cardInfo,
+          liked,
+          signed_up,
+          completed: response,
+          clicked,
+        },
+        response
+      );
     };
 
   const handleLikes = async (cardInfo: InPersonCardData) => {
