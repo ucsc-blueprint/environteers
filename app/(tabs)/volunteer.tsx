@@ -28,6 +28,7 @@ const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => 
   return R * c;
 };
 
+
 export default function Volunteer() {
   const { user, profile } = useAuth();
   const [items, setItems] = useState<CardProps[]>([]);
@@ -144,6 +145,8 @@ export default function Volunteer() {
   const filteredItems = useMemo(() => {
     return items
       .filter((item) => {
+        const isNotHidden = 
+          !item.cardInfo.hidden
         const matchesSearch =
           item.cardInfo.title
             ?.toLowerCase()
@@ -160,13 +163,41 @@ export default function Volunteer() {
           return getDistance(userLocation.latitude, userLocation.longitude, lat, lon) <= maxDistance;
         })();
 
-        return matchesSearch && matchesType && matchesDistance;
+        return isNotHidden && matchesSearch && matchesType && matchesDistance;
       })
       .map(item => ({
         ...item,
         ...getInteractionState(item.cardInfo.id, item.cardType)
       }));
   }, [items, search, filterTypes, maxDistance, userLocation, getInteractionState]);
+
+  const TABLE_MAP: Record<string, string> = 
+  {
+    in_person: "inperson_ecoactions",
+    online: "online_ecoactions",
+    event: "events",
+  };
+
+  const handleFullDelete = useCallback(async (id: string, cardType: string) => 
+  {
+    console.log("fully deleting")
+    const table = TABLE_MAP[cardType];
+    if (!table) return;
+    const { error } = await supabase.from(table).delete().eq("id", id);
+    if (error) { console.error(error); return; }
+    setItems(prev => prev.filter(item => !(item.cardInfo.id === id && item.cardType === cardType)));
+  }, []);
+
+  const handleHide = useCallback(async (id: string, cardType: string) => 
+  {
+    const table = TABLE_MAP[cardType];
+    if (!table) return;
+    const { error } = await supabase.from(table).update({ hidden: true }).eq("id", id);
+    if (error) { console.error(error); return; }
+    setItems(prev => prev.filter(item => !(item.cardInfo.id === id && item.cardType === cardType)));
+  }, []);
+  
+
 
   return (
     <LinearGradient
@@ -191,7 +222,13 @@ export default function Volunteer() {
         
         { loading && <ActivityIndicator size="large" color="#0000ff" />}
         { !loading && filteredItems.map((card) => ( 
-          <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
+          <EcoFeed 
+            key={`${card.cardType}-${card.cardInfo.id}`}
+            card={card}
+            onDelete = {() => handleFullDelete(card.cardInfo.id, card.cardType)}
+            onHide = {() => handleHide(card.cardInfo.id, card.cardType)}
+          />
+
         ))}
       </ScrollView>
       {isAdmin ? (

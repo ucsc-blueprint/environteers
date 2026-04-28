@@ -11,6 +11,7 @@ import { supabase } from "@/constants/supabase";
 import { ActivityFeedback } from "@/components/ActivityFeedback";
 import Toast from 'react-native-toast-message';
 import { router, useRouter } from "expo-router";
+import { DeleteActionModal } from "./DeleteActionModal";
 
 export type InPersonCardData = {
   id: string,
@@ -23,6 +24,7 @@ export type InPersonCardData = {
   sign_up_link: string,
   summary?: string,
   google_calendar_link?: string,
+  hidden : boolean,
 }
 
 export type InPersonCardDataProps = {
@@ -33,6 +35,8 @@ export type InPersonCardDataProps = {
   completed: boolean | null,
   clicked: boolean,
   feedback: boolean | null,
+  onDelete?: () => void;
+  onHide?: () => void; 
 }
 
 type InPersonCardProps = InPersonCardDataProps & {
@@ -55,11 +59,14 @@ export const InPersonCard = ({
   expanded: externalExpanded,
   onToggle,
   highlight,
+  onHide,
+  onDelete,
 }: InPersonCardProps) => {
   const { updateLike, updateSignUp, updateCompleted, updateClicked, updateFeedback } = useInteractions();
   const { user, profile } = useAuth();
   const isAdmin = profile?.is_admin === true;
 
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [internalExpanded, setInternalExpanded] = useState(false);
   const expanded = externalExpanded !== undefined ? externalExpanded : internalExpanded;
   const toggleExpanded = () => {
@@ -233,6 +240,12 @@ export const InPersonCard = ({
         onSubmit={handleFeedbackSubmit} 
         onCancel={handleFeedbackCancel} 
       />
+      <DeleteActionModal
+        visible={deleteModalVisible}
+        onClose={() => setDeleteModalVisible(false)}
+        onFullDelete={() => { setDeleteModalVisible(false); onDelete?.(); }}
+        onHide={() => { setDeleteModalVisible(false); onHide?.(); }}
+      />
 
       <Pressable onPress={toggleExpanded}>
         <View style={CardStyles.cardInfo}>
@@ -283,8 +296,18 @@ export const InPersonCard = ({
                 }}
               />
               </View>
-              <View style={CardStyles.deleteIconBackground}><MaterialCommunityIcons name="trash-can-outline" size={25} color="#EA4335" /></View>    
-              </View>
+              <View style={CardStyles.deleteIconBackground}>
+                <MaterialCommunityIcons name="trash-can-outline"
+                  size={25} color=";
+                  #EA4335"
+                  onPress = {() => 
+                  {
+                    console.log("delete press, id: ", cardInfo.id);
+                    setDeleteModalVisible(true);
+                  }}
+                />
+              </View>    
+            </View>
           ): (
           <View style={CardStyles.iconsColumn}>
             <View style={CardStyles.iconBackgrounds}>

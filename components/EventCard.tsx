@@ -10,6 +10,7 @@ import { router, useRouter } from "expo-router";
 import { supabase } from "@/constants/supabase";
 import { useInteractions } from "@/context/InteractionsContext";
 import { ActivityFeedback } from "@/components/ActivityFeedback";
+import { DeleteActionModal } from "./DeleteActionModal";
 
 export type EventCardData = {
   id: string,
@@ -21,6 +22,7 @@ export type EventCardData = {
   google_calendar_link?: string,
   description?: string,
   sign_up_link?: string,
+  hidden: boolean,
 }
 
 export type EventCardDataProps = {
@@ -39,6 +41,8 @@ type EventCardProps = EventCardDataProps & {
   feedbackVisible: boolean;
   setFeedbackVisible: (val: boolean) => void;
   highlight?: boolean;
+  onDelete?: () => void;
+  onHide?: () => void; 
 };
 
 export const EventCard = ({
@@ -53,11 +57,15 @@ export const EventCard = ({
   expanded: externalExpanded,
   onToggle,
   highlight,
+  onDelete,
+  onHide,
 }: EventCardProps) => {
   const { user, profile } = useAuth();
   const isAdmin = profile?.is_admin === true;
 
   const { updateLike, updateSignUp, updateCompleted, updateClicked, updateFeedback } = useInteractions();
+
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false); 
 
   const [internalExpanded, setInternalExpanded] = useState(false);
   const expanded = externalExpanded !== undefined ? externalExpanded : internalExpanded;
@@ -231,6 +239,12 @@ export const EventCard = ({
         onSubmit={handleFeedbackSubmit} 
         onCancel={handleFeedbackCancel} 
       />
+      <DeleteActionModal
+        visible={deleteModalVisible}
+        onClose={() => setDeleteModalVisible(false)}
+        onFullDelete={() => { setDeleteModalVisible(false); onDelete?.(); }}
+        onHide={() => { setDeleteModalVisible(false); onHide?.(); }}
+      />
 
     {/* // <View style={CardStyles.card}> */}
       <Pressable onPress={toggleExpanded}>
@@ -280,7 +294,15 @@ export const EventCard = ({
                 }}
               />
               </View>
-              <View style={CardStyles.deleteIconBackground}><MaterialCommunityIcons name="trash-can-outline" size={25} color="#EA4335" /></View>    
+                <View style={CardStyles.deleteIconBackground}>
+                  <MaterialCommunityIcons name="trash-can-outline" size={25} color="#EA4335" 
+                  onPress = {() => 
+                  {
+                    console.log("delete press, id: ", cardInfo.id);
+                    setDeleteModalVisible(true);
+                  }}
+                  />
+                </View>    
               </View>
           ): (
           <View style={CardStyles.iconsColumn}>
