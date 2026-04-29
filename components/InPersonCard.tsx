@@ -245,6 +245,8 @@ export const InPersonCard = ({
         onClose={() => setDeleteModalVisible(false)}
         onFullDelete={() => { setDeleteModalVisible(false); onDelete?.(); }}
         onHide={() => { setDeleteModalVisible(false); onHide?.(); }}
+        cardTitle= {cardInfo.title}
+        cardType= "in_person"
       />
 
       <Pressable onPress={toggleExpanded}>

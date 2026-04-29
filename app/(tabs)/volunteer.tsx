@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator, Text, Modal } from "react-native";
+import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator, Text, Modal, Alert} from "react-native";
 import { Header, EcoFeed } from "@/components/EcoFeed";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/constants/supabase";
@@ -9,6 +9,7 @@ import { useInteractions } from "@/context/InteractionsContext";
 import { InPersonCardDataProps } from "@/components/InPersonCard";
 import { OnlineCardDataProps } from "@/components/OnlineCard";
 import { EventCardDataProps } from "@/components/EventCard";
+import {DeleteToast} from "@/components/DeleteToast"
 import { router } from "expo-router";
 import * as Location from 'expo-location';
 
@@ -39,6 +40,8 @@ export default function Volunteer() {
   const [filterTypes, setFilterTypes] = useState<string[]>([]);
   const [maxDistance, setMaxDistance] = useState<number | null>(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [toast, setToast] = useState<{ message: string; description: string } | null>(null);
+
 
   const { cards: interactionCards } = useInteractions();
 
@@ -146,7 +149,7 @@ export default function Volunteer() {
     return items
       .filter((item) => {
         const isNotHidden = 
-          !item.cardInfo.hidden
+          !item.cardInfo.hidden // if hidden is false, displaying card should be true and vice versa
         const matchesSearch =
           item.cardInfo.title
             ?.toLowerCase()
@@ -186,6 +189,7 @@ export default function Volunteer() {
     const { error } = await supabase.from(table).delete().eq("id", id);
     if (error) { console.error(error); return; }
     setItems(prev => prev.filter(item => !(item.cardInfo.id === id && item.cardType === cardType)));
+    setToast({ message: "Eco-action deleted", description: "Users can no longer access this event" });
   }, []);
 
   const handleHide = useCallback(async (id: string, cardType: string) => 
@@ -195,6 +199,7 @@ export default function Volunteer() {
     const { error } = await supabase.from(table).update({ hidden: true }).eq("id", id);
     if (error) { console.error(error); return; }
     setItems(prev => prev.filter(item => !(item.cardInfo.id === id && item.cardType === cardType)));
+    setToast({ message: "Event deleted", description: "Non-registered users can no longer see this event on their feed." });
   }, []);
   
 
@@ -207,8 +212,17 @@ export default function Volunteer() {
         end={{ x: 0, y: 0.5 }}
         style={styles.gradient}
       >
+      {toast && 
+      (
+        <DeleteToast
+          visible={!!toast}
+          message={toast.message}
+          description={toast.description}
+          onClose={() => setToast(null)}
+        />
+      )}
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
-        
+
         <Header 
           resultsCount={items.length}
           search={search}

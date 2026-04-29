@@ -199,6 +199,8 @@ export const OnlineCard = ({
         onClose={() => setDeleteModalVisible(false)}
         onFullDelete={() => { setDeleteModalVisible(false); onDelete?.(); }}
         onHide={() => { setDeleteModalVisible(false); onHide?.(); }}
+        cardTitle= {cardInfo.title}
+        cardType="online"
       />
       <Pressable onPress={toggleExpanded}>
         <View style={CardStyles.cardInfo}>

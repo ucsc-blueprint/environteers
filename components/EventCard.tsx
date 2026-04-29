@@ -244,6 +244,8 @@ export const EventCard = ({
         onClose={() => setDeleteModalVisible(false)}
         onFullDelete={() => { setDeleteModalVisible(false); onDelete?.(); }}
         onHide={() => { setDeleteModalVisible(false); onHide?.(); }}
+        cardTitle = {cardInfo.title}
+        cardType = "event"
       />
 
     {/* // <View style={CardStyles.card}> */}
