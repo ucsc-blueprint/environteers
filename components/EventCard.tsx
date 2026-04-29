@@ -5,7 +5,7 @@ import { mdiOpenInNew } from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
-import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp, addClick } from "@/app/utils/cards";
+import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp, addClick, isPast } from "@/app/utils/cards";
 import { router, useRouter } from "expo-router";
 import { supabase } from "@/constants/supabase";
 import { useInteractions } from "@/context/InteractionsContext";
@@ -68,11 +68,12 @@ export const EventCard = ({
       setInternalExpanded(prev => !prev);
     }
   };
-
-  const isPastEvent =
-    cardInfo.end_date
-      ? new Date(cardInfo.end_date).getTime() < Date.now()
-      : false;
+  
+  const isPastEvent = isPast(cardInfo.end_date);
+  // const isPastEvent =
+  //   cardInfo.end_date
+  //     ? new Date(cardInfo.end_date).getTime() < Date.now()
+  //     : false;
 
   const shouldShowCompletionPrompt =
     expanded &&

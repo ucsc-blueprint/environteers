@@ -2,6 +2,7 @@
 import { Image, Alert } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { supabase } from "@/constants/supabase";
+import { CardProps } from "@/app/(tabs)/volunteer";
 
 
 /** UI Rendering/Text Formatting Functions */
@@ -173,4 +174,34 @@ export async function addClick (
       console.log(error);
       Alert.alert('Error. Something went wrong. Please try again');
     }
+};
+
+export const isPast = (date?: Date | string | null) => {
+  if (!date) return false;
+
+  return new Date(date).getTime() < Date.now();
+};
+
+export const isUpcoming = (date?: Date | string | null) => {
+  if (!date) return true;
+
+  return new Date(date).getTime() >= Date.now();
+};
+
+export const getVisibleEcoActions = (cards: CardProps[]) => {
+  return cards.filter((card) => {
+    const info = card.cardInfo as any;
+
+    switch (card.cardType) {
+      case "event":
+      case "in_person":
+        return isUpcoming(info.end_date);
+
+      case "online":
+        return !info.end_date || isUpcoming(info.end_date);
+
+      default:
+        return true;
+    }
+  });
 };

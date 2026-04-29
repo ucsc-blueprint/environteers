@@ -1,32 +1,54 @@
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator, Pressable } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  ActivityIndicator,
+  Pressable,
+} from "react-native";
 import { useState, useEffect } from "react";
 import { LogoutButton } from "@/components/LogoutButton";
 import { EcoFeed } from "@/components/EcoFeed";
 import { CardProps, useInteractions } from "@/context/InteractionsContext";
-import { SlidersHorizontal } from "lucide-react-native";
+import { SlidersHorizontal, ChevronRight, ChevronDown } from "lucide-react-native";
 import * as Location from "expo-location";
 import { EcoFeedFilterDropdown } from "@/components/EcoFeedFilterDropdown";
 
 export default function Activity() {
   const { cards, loading } = useInteractions();
 
-  const [selectedFilter, setSelectedFilter] = useState<"signups" | "favorites">("signups");
+  const [selectedFilter, setSelectedFilter] = useState<
+    "signups" | "favorites"
+  >("signups");
 
-  // Filter state
+  // Filters
   const [filterTypes, setFilterTypes] = useState<string[]>([]);
   const [maxDistance, setMaxDistance] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [userLocation, setUserLocation] = useState<{latitude: number; longitude: number} | null>(null);
+
+  // Collapsible sections
+  const [requiresActionOpen, setRequiresActionOpen] = useState(true);
+  const [upcomingOpen, setUpcomingOpen] = useState(true);
+  const [completedOpen, setCompletedOpen] = useState(true);
+  const [favoritesOpen, setFavoritesOpen] = useState(true);
+
+  // User location
+  const [userLocation, setUserLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
 
   const now = new Date();
 
-  // Get user location
+  // Get location
   useEffect(() => {
     const getLocation = async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
+
       if (status !== "granted") return;
 
       const location = await Location.getCurrentPositionAsync({});
+
       setUserLocation({
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
@@ -37,37 +59,56 @@ export default function Activity() {
   }, []);
 
   // Distance helper
-  const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const getDistance = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+  ) => {
     const R = 3958.8;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
+
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
 
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    
+
     return R * c;
   };
 
-  // Date helper function
+  // Date helper
   const getCardDate = (card: CardProps) => {
     if (!card?.cardInfo) return null;
 
-    if ((card.cardType === "event" || card.cardType === "in_person") && card.cardInfo.start_date) {
-      return new Date(card.cardInfo.start_date);
+    if (
+      (card.cardType === "event" ||
+        card.cardType === "in_person" ||
+        card.cardType === "online") &&
+      card.cardInfo.end_date
+    ) {
+      return new Date(card.cardInfo.end_date);
     }
 
     return null;
   };
 
-  // Filtered Cards
+  // Apply filters
   const filteredCards = cards.filter((card) => {
-    const matchesType = filterTypes.length === 0 || filterTypes.includes(card.cardType);
+    const matchesType =
+      filterTypes.length === 0 || filterTypes.includes(card.cardType);
 
     const matchesDistance = (() => {
-      if (!maxDistance || !userLocation || card.cardType === "online") {
+      if (
+        !maxDistance ||
+        !userLocation ||
+        card.cardType === "online"
+      ) {
         return true;
       }
 
@@ -76,13 +117,20 @@ export default function Activity() {
 
       if (!lat || !lon) return true;
 
-      return (getDistance(userLocation.latitude, userLocation.longitude, lat, lon ) <= maxDistance);
+      return (
+        getDistance(
+          userLocation.latitude,
+          userLocation.longitude,
+          lat,
+          lon
+        ) <= maxDistance
+      );
     })();
 
     return matchesType && matchesDistance;
   });
 
-  // Derived card States
+  // Card groups
   const likedCards = filteredCards.filter((c) => c.liked === true);
 
   const completedCards = filteredCards.filter(
@@ -91,23 +139,32 @@ export default function Activity() {
 
   const upcomingCards = filteredCards.filter((card) => {
     const date = getCardDate(card);
+
     return (
-      (card.cardType === "event" || card.cardType === "in_person") &&
+      (card.cardType === "event" ||
+        card.cardType === "in_person") &&
       card.signed_up === true &&
-      date && date > now
+      date &&
+      date > now
     );
   });
 
   const requiresActionCards = filteredCards.filter((card) => {
     const date = getCardDate(card);
+
     const isPast = date ? date < now : false;
 
     if (card.cardType === "online") {
       return card.clicked === true && card.completed === null;
     }
 
-    if (card.cardType === "event" || card.cardType === "in_person") {
-      const notSignedUpYet = card.clicked === true && card.signed_up === null;
+    if (
+      card.cardType === "event" ||
+      card.cardType === "in_person"
+    ) {
+      const notSignedUpYet =
+        card.clicked === true &&
+        card.signed_up === null;
 
       const needsCompletion =
         card.clicked === true &&
@@ -117,15 +174,76 @@ export default function Activity() {
 
       return notSignedUpYet || needsCompletion;
     }
+
     return false;
   });
 
+  const renderSection = (
+    title: string,
+    cardsToRender: CardProps[],
+    isOpen: boolean,
+    setIsOpen: (value: boolean) => void,
+    highlight = false
+  ) => {
+    return (
+      <View style={styles.sectionContainer}>
+        <Pressable
+          style={styles.sectionHeader}
+          onPress={() => setIsOpen(!isOpen)}
+        >
+          <Text style={styles.headerText}>{title}</Text>
+
+          <View style={styles.rightSection}>
+            <Text style={styles.count}>
+              {cardsToRender.length}
+            </Text>
+
+            {isOpen ? (
+              <ChevronDown size={22} color="#2F4068" />
+            ) : (
+              <ChevronRight size={22} color="#2F4068" />
+            )}
+          </View>
+        </Pressable>
+
+        {isOpen && (
+          <View style={styles.cardsContainer}>
+            {cardsToRender.length === 0 ? (
+              <Text style={styles.emptyText}>
+                No activity yet...
+                {"\n"}
+                Go to the home page to discover your next opportunity!
+              </Text>
+            ) : (
+              cardsToRender.map((card) => (
+                <EcoFeed
+                  key={`${card.cardType}-${card.cardInfo.id}`}
+                  card={card}
+                  highlight={highlight}
+                />
+              ))
+            )}
+          </View>
+        )}
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
-        {loading && <ActivityIndicator size="large" color="#0000ff" />}
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+      >
+        {loading && (
+          <ActivityIndicator
+            size="large"
+            color="#0000ff"
+          />
+        )}
+
         <Text style={styles.title}>Activities</Text>
-        {/* Filter options */}
+
+        {/* Top Controls */}
         <View style={styles.filterItemsContainer}>
           <View style={styles.buttonContainer}>
             <Pressable
@@ -135,11 +253,15 @@ export default function Activity() {
                   ? styles.selectedButton
                   : styles.unselectedButton,
               ]}
-              onPress={() => setSelectedFilter("signups")}
+              onPress={() =>
+                setSelectedFilter("signups")
+              }
             >
-              <Text style={[
+              <Text
+                style={[
                   styles.buttonText,
-                  selectedFilter !== "signups" && styles.nonSelectedButtonText,
+                  selectedFilter !== "signups" &&
+                    styles.nonSelectedButtonText,
                 ]}
               >
                 Sign-ups
@@ -153,7 +275,9 @@ export default function Activity() {
                   ? styles.selectedButton
                   : styles.unselectedButton,
               ]}
-              onPress={() => setSelectedFilter("favorites")}
+              onPress={() =>
+                setSelectedFilter("favorites")
+              }
             >
               <Text
                 style={[
@@ -169,20 +293,34 @@ export default function Activity() {
 
           <Pressable
             style={styles.filterBackground}
-            onPress={() => setShowFilters((prev) => !prev)}
+            onPress={() =>
+              setShowFilters((prev) => !prev)
+            }
           >
-            <SlidersHorizontal size={18} color="black" />
+            <SlidersHorizontal
+              size={18}
+              color="black"
+            />
           </Pressable>
         </View>
 
-        {/* Dropdown */}
+        {/* Filters */}
         {showFilters && (
           <View style={{ marginTop: 12 }}>
             <EcoFeedFilterDropdown
               typeOptions={[
-                { label: "In-Person Eco Actions", value: "in_person" },
-                { label: "Online Eco Actions", value: "online" },
-                { label: "Events", value: "event" },
+                {
+                  label: "In-Person Eco Actions",
+                  value: "in_person",
+                },
+                {
+                  label: "Online Eco Actions",
+                  value: "online",
+                },
+                {
+                  label: "Events",
+                  value: "event",
+                },
               ]}
               selectedTypes={filterTypes}
               selectedDistance={maxDistance}
@@ -196,50 +334,40 @@ export default function Activity() {
         )}
 
         {/* Main Content */}
-        {selectedFilter === "favorites" ? (
-          <>
-            <Text>Favorites</Text>
-            {!loading && likedCards.map((card) => (
-                <EcoFeed
-                  key={`${card.cardType}-${card.cardInfo.id}`}
-                  card={card}
-                />
-              ))}
-          </>
-        ) : (
-          <>
-            <View style={styles.cardCountContainer}>
-              <Text style={styles.headerText}>Requires Action</Text>
-              <Text style={styles.count}>{requiresActionCards.length}</Text>
-            </View>            
-            {!loading &&
-              requiresActionCards.map((card) => (
-                <EcoFeed
-                  key={`${card.cardType}-${card.cardInfo.id}`}
-                  card={card}
-                  highlight={true}
-                />
-              ))}
+        {!loading &&
+          (selectedFilter === "favorites" ? (
+            renderSection(
+              "Favorites",
+              likedCards,
+              favoritesOpen,
+              setFavoritesOpen
+            )
+          ) : (
+            <>
+              {renderSection(
+                "Requires Action",
+                requiresActionCards,
+                requiresActionOpen,
+                setRequiresActionOpen,
+                true
+              )}
 
-            <Text style={styles.headerText}>Upcoming</Text>
-            {!loading &&
-              upcomingCards.map((card) => (
-                <EcoFeed
-                  key={`${card.cardType}-${card.cardInfo.id}`}
-                  card={card}
-                />
-              ))}
+              {renderSection(
+                "Upcoming",
+                upcomingCards,
+                upcomingOpen,
+                setUpcomingOpen
+              )}
 
-            <Text style={styles.headerText}>Completed</Text>
-            {!loading &&
-              completedCards.map((card) => (
-                <EcoFeed
-                  key={`${card.cardType}-${card.cardInfo.id}`}
-                  card={card}
-                />
-              ))}
-          </>
-        )}
+              {renderSection(
+                "Completed",
+                completedCards,
+                completedOpen,
+                setCompletedOpen
+              )}
+            </>
+          ))}
+
         <LogoutButton />
       </ScrollView>
     </View>
@@ -249,14 +377,27 @@ export default function Activity() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
-    fontFamily: 'Mulish',
+    backgroundColor: "white",
+  },
+
+  scrollContainer: {
+    padding: 16,
+    gap: 16,
+    paddingBottom: 40,
+  },
+
+  title: {
+    color: "black",
+    fontSize: 24,
+    textAlign: "center",
+    marginVertical: 10,
+    fontWeight: "600",
   },
 
   filterItemsContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginVertical: 10,
+    alignItems: "center",
   },
 
   buttonContainer: {
@@ -265,7 +406,7 @@ const styles = StyleSheet.create({
   },
 
   activityButtons: {
-    padding: 10,
+    paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 10,
   },
@@ -283,7 +424,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "white",
     fontSize: 14,
-    fontWeight: "400",
+    fontWeight: "500",
   },
 
   nonSelectedButtonText: {
@@ -298,114 +439,332 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 5,
   },
-  title: {
-    color: 'black',
-    fontSize: 24,
-    textAlign: 'center',
-    marginVertical: 10,
+
+  sectionContainer: {
+    gap: 10,
   },
+
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 6,
+  },
+
   headerText: {
-    color: '#2F4068',
+    color: "#2F4068",
     fontSize: 20,
+    fontWeight: "600",
   },
-  // Count
-  cardCountContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+
+  rightSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
   },
+
   count: {
-    backgroundColor: '#FF9212',
+    backgroundColor: "#FF9212",
     borderRadius: 20,
-    padding: 5,
+    paddingVertical: 4,
     paddingHorizontal: 10,
-    color: 'white',
+    color: "white",
+    overflow: "hidden",
+    fontWeight: "600",
+    minWidth: 32,
+    textAlign: "center",
+  },
+
+  cardsContainer: {
+    gap: 12,
+  },
+
+  emptyText: {
+    color: "#777",
+    fontSize: 15,
+    fontStyle: "italic",
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    textAlign: "center",
+    lineHeight: 22,
   },
 });
 
 
 
-// import { View, Text, ScrollView, StyleSheet, ActivityIndicator, Pressable } from "react-native";
+
+
+
+
+
+// import {
+//   View,
+//   Text,
+//   ScrollView,
+//   StyleSheet,
+//   ActivityIndicator,
+//   Pressable,
+// } from "react-native";
+// import { useState, useEffect } from "react";
 // import { LogoutButton } from "@/components/LogoutButton";
 // import { EcoFeed } from "@/components/EcoFeed";
 // import { CardProps, useInteractions } from "@/context/InteractionsContext";
 // import { SlidersHorizontal } from "lucide-react-native";
-// import { useState } from "react";
+// import * as Location from "expo-location";
+// import { EcoFeedFilterDropdown } from "@/components/EcoFeedFilterDropdown";
+
+// type SectionHeaderProps = {
+//   title: string;
+//   count?: number;
+//   expanded: boolean;
+//   onToggle: () => void;
+// };
+
+// const SectionHeader = ({
+//   title,
+//   count,
+//   expanded,
+//   onToggle,
+// }: SectionHeaderProps) => {
+//   return (
+//     <Pressable
+//       onPress={onToggle}
+//       style={styles.sectionHeaderContainer}
+//     >
+//       <View style={styles.sectionHeaderLeft}>
+//         <Text style={styles.headerText}>{title}</Text>
+
+//         {count !== undefined && (
+//           <Text style={styles.count}>{count}</Text>
+//         )}
+//       </View>
+
+//       <Text style={styles.chevron}>
+//         {expanded ? "−" : "+"}
+//       </Text>
+//     </Pressable>
+//   );
+// };
 
 // export default function Activity() {
 //   const { cards, loading } = useInteractions();
-//   const [selectedFilter, setSelectedFilter] = useState<"signups" | "favorites">("signups");
+
+//   const [selectedFilter, setSelectedFilter] = useState<
+//     "signups" | "favorites"
+//   >("signups");
+
+//   // Filter state
+//   const [filterTypes, setFilterTypes] = useState<string[]>([]);
+//   const [maxDistance, setMaxDistance] = useState<number | null>(null);
+//   const [showFilters, setShowFilters] = useState(false);
+
+//   const [userLocation, setUserLocation] = useState<{
+//     latitude: number;
+//     longitude: number;
+//   } | null>(null);
+
+//   // Collapsible sections
+//   const [showRequiresAction, setShowRequiresAction] = useState(true);
+//   const [showUpcoming, setShowUpcoming] = useState(true);
+//   const [showCompleted, setShowCompleted] = useState(true);
+
 //   const now = new Date();
 
-//   const getCardDate = (card: CardProps) => {
-//     if (!card?.cardInfo) return null;
-//     if (card.cardType === "event" && card.cardInfo.start_date) {
-//       return new Date(card.cardInfo.start_date);
-//     }  
-//     if (card.cardType === "in_person" && card.cardInfo.start_date) {
-//       return new Date(card.cardInfo.start_date);
-//     } 
-//     return null;
+//   // Get user location
+//   useEffect(() => {
+//     const getLocation = async () => {
+//       const { status } =
+//         await Location.requestForegroundPermissionsAsync();
+
+//       if (status !== "granted") return;
+
+//       const location = await Location.getCurrentPositionAsync({});
+
+//       setUserLocation({
+//         latitude: location.coords.latitude,
+//         longitude: location.coords.longitude,
+//       });
 //     };
 
-//   // Derived cards from card state
-//   const likedCards = cards.filter(card => card.liked === true);
-//   const completedCards = cards.filter(card => card.completed === true); 
-  
-//   const upcomingCards = cards.filter(card => {
-//     const date = getCardDate(card);
-//     const isUpcoming = date && date > now;
-//     return (
-//       (card.cardType === "event" || card.cardType === "in_person") &&
-//       card.signed_up === true && isUpcoming
-//     );
+//     getLocation();
+//   }, []);
 
-//   })
+//   // Distance helper
+//   const getDistance = (
+//     lat1: number,
+//     lon1: number,
+//     lat2: number,
+//     lon2: number
+//   ) => {
+//     const R = 3958.8;
 
-  
-//   const requiresActionCards = cards.filter(card => {
-//     const date = getCardDate(card);
-//     const isPast = date ? date < now : false;
+//     const dLat = ((lat2 - lat1) * Math.PI) / 180;
+//     const dLon = ((lon2 - lon1) * Math.PI) / 180;
 
-//     // ONLINE
-//     if (card.cardType === "online") {
-//       return card.clicked === true && card.completed === null;
+//     const a =
+//       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+//       Math.cos((lat1 * Math.PI) / 180) *
+//         Math.cos((lat2 * Math.PI) / 180) *
+//         Math.sin(dLon / 2) *
+//         Math.sin(dLon / 2);
+
+//     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+//     return R * c;
+//   };
+
+//   // Date helper
+//   const getCardDate = (card: CardProps) => {
+//     if (!card?.cardInfo) return null;
+
+//     if (
+//       (card.cardType === "event" ||
+//         card.cardType === "in_person") &&
+//       card.cardInfo.end_date
+//     ) {
+//       return new Date(card.cardInfo.end_date);
 //     }
 
-//     // EVENTS / IN-PERSON
-//     if (card.cardType === "event" || card.cardType === "in_person") {
-//       const notSignedUpYet =
-//         card.clicked === true && card.signed_up === null;
+//     if (
+//       card.cardType === "online" &&
+//       card.cardInfo.end_date
+//     ) {
+//       return new Date(card.cardInfo.end_date);
+//     }
 
-//       const needsCompletionAfterEvent =
+//     return null;
+//   };
+
+//   // Filtered cards
+//   const filteredCards = cards.filter((card) => {
+//     const matchesType =
+//       filterTypes.length === 0 ||
+//       filterTypes.includes(card.cardType);
+
+//     const matchesDistance = (() => {
+//       if (
+//         !maxDistance ||
+//         !userLocation ||
+//         card.cardType === "online"
+//       ) {
+//         return true;
+//       }
+
+//       const lat = (card.cardInfo as any).location_latitude;
+//       const lon = (card.cardInfo as any).location_longitude;
+
+//       if (!lat || !lon) return true;
+
+//       return (
+//         getDistance(
+//           userLocation.latitude,
+//           userLocation.longitude,
+//           lat,
+//           lon
+//         ) <= maxDistance
+//       );
+//     })();
+
+//     return matchesType && matchesDistance;
+//   });
+
+//   // Derived card states
+//   const likedCards = filteredCards.filter(
+//     (c) => c.liked === true
+//   );
+
+//   const completedCards = filteredCards.filter(
+//     (c) => c.completed === true
+//   );
+
+//   const upcomingCards = filteredCards.filter((card) => {
+//     const date = getCardDate(card);
+
+//     return (
+//       (card.cardType === "event" ||
+//         card.cardType === "in_person") &&
+//       card.signed_up === true &&
+//       date &&
+//       date > now
+//     );
+//   });
+
+//   const requiresActionCards = filteredCards.filter((card) => {
+//     const date = getCardDate(card);
+
+//     const isPast = date ? date < now : false;
+
+//     if (card.cardType === "online") {
+//       return (
+//         card.clicked === true &&
+//         card.completed === null
+//       );
+//     }
+
+//     if (
+//       card.cardType === "event" ||
+//       card.cardType === "in_person"
+//     ) {
+//       const notSignedUpYet =
+//         card.clicked === true &&
+//         card.signed_up === null;
+
+//       const needsCompletion =
 //         card.clicked === true &&
 //         card.signed_up === true &&
 //         isPast &&
 //         card.completed === null;
 
-//       return notSignedUpYet || needsCompletionAfterEvent;
+//       return notSignedUpYet || needsCompletion;
 //     }
 
 //     return false;
 //   });
 
+//   // Empty states
+//   const hasNoSignupsActivity =
+//     requiresActionCards.length === 0 &&
+//     upcomingCards.length === 0 &&
+//     completedCards.length === 0;
+
+//   const hasNoFavorites = likedCards.length === 0;
+
 //   return (
 //     <View style={styles.container}>
-//       <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
-//         { loading && <ActivityIndicator size="large" color="#0000ff" />}
+//       <ScrollView
+//         contentContainerStyle={{
+//           padding: 16,
+//           gap: 16,
+//         }}
+//       >
+//         {loading && (
+//           <ActivityIndicator
+//             size="large"
+//             color="#0000ff"
+//           />
+//         )}
+
+//         <Text style={styles.title}>Activities</Text>
+
+//         {/* Filter options */}
 //         <View style={styles.filterItemsContainer}>
 //           <View style={styles.buttonContainer}>
 //             <Pressable
 //               style={[
 //                 styles.activityButtons,
-//                 selectedFilter === "signups" && styles.selectedButton
+//                 selectedFilter === "signups"
+//                   ? styles.selectedButton
+//                   : styles.unselectedButton,
 //               ]}
-//               onPress={() => setSelectedFilter("signups")}
+//               onPress={() =>
+//                 setSelectedFilter("signups")
+//               }
 //             >
 //               <Text
 //                 style={[
 //                   styles.buttonText,
-//                   selectedFilter !== "signups" && styles.nonSelectedButtonText
+//                   selectedFilter !== "signups" &&
+//                     styles.nonSelectedButtonText,
 //                 ]}
 //               >
 //                 Sign-ups
@@ -415,72 +774,193 @@ const styles = StyleSheet.create({
 //             <Pressable
 //               style={[
 //                 styles.activityButtons,
-//                 selectedFilter === "favorites" && styles.selectedButton
+//                 selectedFilter === "favorites"
+//                   ? styles.selectedButton
+//                   : styles.unselectedButton,
 //               ]}
-//               onPress={() => setSelectedFilter("favorites")}
+//               onPress={() =>
+//                 setSelectedFilter("favorites")
+//               }
 //             >
 //               <Text
 //                 style={[
 //                   styles.buttonText,
-//                   selectedFilter !== "favorites" && styles.nonSelectedButtonText
+//                   selectedFilter !== "favorites" &&
+//                     styles.nonSelectedButtonText,
 //                 ]}
 //               >
 //                 Favorites
 //               </Text>
 //             </Pressable>
 //           </View>
-//           <View style={styles.filterBackground}>
-//             <SlidersHorizontal size={18} color="black" />
-//           </View>
+
+//           <Pressable
+//             style={styles.filterBackground}
+//             onPress={() =>
+//               setShowFilters((prev) => !prev)
+//             }
+//           >
+//             <SlidersHorizontal
+//               size={18}
+//               color="black"
+//             />
+//           </Pressable>
 //         </View>
+
+//         {/* Dropdown */}
+//         {showFilters && (
+//           <View style={{ marginTop: 12 }}>
+//             <EcoFeedFilterDropdown
+//               typeOptions={[
+//                 {
+//                   label: "In-Person Eco Actions",
+//                   value: "in_person",
+//                 },
+//                 {
+//                   label: "Online Eco Actions",
+//                   value: "online",
+//                 },
+//                 {
+//                   label: "Events",
+//                   value: "event",
+//                 },
+//               ]}
+//               selectedTypes={filterTypes}
+//               selectedDistance={maxDistance}
+//               onApply={(types, distance) => {
+//                 setFilterTypes(types);
+//                 setMaxDistance(distance);
+//                 setShowFilters(false);
+//               }}
+//             />
+//           </View>
+//         )}
+
+//         {/* Main Content */}
 //         {selectedFilter === "favorites" ? (
 //           <>
-//             <Text>Favorites</Text>
-//             {!loading && likedCards?.map(card => (
-//               <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
-//             ))}
+//             <SectionHeader
+//               title="Favorites"
+//               expanded={true}
+//               onToggle={() => {}}
+//             />
+
+//             {hasNoFavorites ? (
+//               <View style={styles.emptyStateContainer}>
+//                 <Text style={styles.emptyStateText}>
+//                   No favorites yet.
+//                 </Text>
+
+//                 <Text style={styles.emptyStateSubtext}>
+//                   Like eco-actions or events to save
+//                   them here.
+//                 </Text>
+//               </View>
+//             ) : (
+//               likedCards.map((card) => (
+//                 <EcoFeed
+//                   key={`${card.cardType}-${card.cardInfo.id}`}
+//                   card={card}
+//                 />
+//               ))
+//             )}
 //           </>
 //         ) : (
 //           <>
-//             <Text>Requires Action:</Text>
-//             {!loading && requiresActionCards?.map(card => (
-//               <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
-//             ))}
+//             {hasNoSignupsActivity ? (
+//               <View style={styles.emptyStateContainer}>
+//                 <Text style={styles.emptyStateText}>
+//                   No activity yet.
+//                 </Text>
 
-//             <Text>Upcoming:</Text>
-//             {!loading && upcomingCards?.map(card => (
-//               <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
-//             ))}
+//                 <Text style={styles.emptyStateSubtext}>
+//                   Sign up for eco-actions or events to
+//                   track them here.
+//                 </Text>
+//               </View>
+//             ) : (
+//               <>
+//                 {/* Requires Action */}
+//                 {requiresActionCards.length > 0 && (
+//                   <>
+//                     <SectionHeader
+//                       title="Requires Action"
+//                       count={
+//                         requiresActionCards.length
+//                       }
+//                       expanded={showRequiresAction}
+//                       onToggle={() =>
+//                         setShowRequiresAction(
+//                           (prev) => !prev
+//                         )
+//                       }
+//                     />
 
-//             <Text>Completed:</Text>
-//             {!loading && completedCards?.map(card => (
-//               <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
-//             ))}
+//                     {showRequiresAction &&
+//                       requiresActionCards.map(
+//                         (card) => (
+//                           <EcoFeed
+//                             key={`${card.cardType}-${card.cardInfo.id}`}
+//                             card={card}
+//                             highlight={true}
+//                           />
+//                         )
+//                       )}
+//                   </>
+//                 )}
+
+//                 {/* Upcoming */}
+//                 {upcomingCards.length > 0 && (
+//                   <>
+//                     <SectionHeader
+//                       title="Upcoming"
+//                       expanded={showUpcoming}
+//                       onToggle={() =>
+//                         setShowUpcoming(
+//                           (prev) => !prev
+//                         )
+//                       }
+//                     />
+
+//                     {showUpcoming &&
+//                       upcomingCards.map((card) => (
+//                         <EcoFeed
+//                           key={`${card.cardType}-${card.cardInfo.id}`}
+//                           card={card}
+//                         />
+//                       ))}
+//                   </>
+//                 )}
+
+//                 {/* Completed */}
+//                 {completedCards.length > 0 && (
+//                   <>
+//                     <SectionHeader
+//                       title="Completed"
+//                       expanded={showCompleted}
+//                       onToggle={() =>
+//                         setShowCompleted(
+//                           (prev) => !prev
+//                         )
+//                       }
+//                     />
+
+//                     {showCompleted &&
+//                       completedCards.map((card) => (
+//                         <EcoFeed
+//                           key={`${card.cardType}-${card.cardInfo.id}`}
+//                           card={card}
+//                         />
+//                       ))}
+//                   </>
+//                 )}
+//               </>
+//             )}
 //           </>
 //         )}
-//         {/* <Text>Favorites</Text>
-//         <Text>Likes:</Text>
-//         { !loading && likedCards?.map(card => (
-//           <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
-//         ))}
 
-//         <Text>Requires Action:</Text>
-//         { !loading && requiresActionCards?.map(card => (
-//           <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
-//         ))}
-
-//         <Text>Upcoming:</Text>
-//         { !loading && upcomingCards?.map(card => (
-//           <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
-//         ))}
-        
-
-//         <Text>Completed:</Text>
-//         { !loading && completedCards?.map(card => (
-//           <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
-//         ))} */}
-//       <LogoutButton/>
-//     </ScrollView>
+//         <LogoutButton />
+//       </ScrollView>
 //     </View>
 //   );
 // }
@@ -488,68 +968,122 @@ const styles = StyleSheet.create({
 // const styles = StyleSheet.create({
 //   container: {
 //     flex: 1,
-//     flexDirection: 'column',
-//     gap: 20,
+//     backgroundColor: "white",
+//     fontFamily: "Mulish",
 //   },
+
 //   filterItemsContainer: {
-//     display: 'flex',
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
+//     flexDirection: "row",
+//     justifyContent: "space-between",
+//     marginVertical: 10,
 //   },
+
 //   buttonContainer: {
-//     display: 'flex',
-//     flexDirection: 'row',
+//     flexDirection: "row",
 //     gap: 20,
 //   },
-//   // activityButtons: {
-//   //   backgroundColor: '#3A5513',
-//   //   color: '#F2F7F5',
-//   //   padding: 8,
-//   //   borderRadius: 10,
-//   // },
-//   nonSelectedButton: {
-//     backgroundColor: '#F2F7F5',
-//     color: '#3A5513',
-//     borderWidth: 2,
-//     borderColor: '#3A5513',
+
+//   activityButtons: {
+//     padding: 10,
+//     paddingHorizontal: 15,
+//     borderRadius: 10,
 //   },
-  
-//   // buttonText: {
-//   //   color: 'white',
-//   //   fontSize: 14,
-//   //   fontWeight: 400,
-//   // },
+
+//   selectedButton: {
+//     backgroundColor: "#3A5513",
+//   },
+
+//   unselectedButton: {
+//     backgroundColor: "white",
+//     borderWidth: 2,
+//     borderColor: "#3A5513",
+//   },
+
+//   buttonText: {
+//     color: "white",
+//     fontSize: 14,
+//     fontWeight: "400",
+//   },
+
+//   nonSelectedButtonText: {
+//     color: "#3A5513",
+//   },
+
 //   filterBackground: {
-//     backgroundColor: '#D9E0DE',
-//     justifyContent: 'center',
-//     alignItems: 'center',
+//     backgroundColor: "#D9E0DE",
+//     justifyContent: "center",
+//     alignItems: "center",
 //     paddingHorizontal: 8,
 //     paddingVertical: 5,
 //     borderRadius: 5,
 //   },
-//   activityButtons: {
-//   padding: 8,
-//   borderRadius: 10,
-//   backgroundColor: '#3A5513',
+
+//   title: {
+//     color: "black",
+//     fontSize: 24,
+//     textAlign: "center",
+//     marginVertical: 10,
 //   },
 
-//   selectedButton: {
-//     backgroundColor: '#3A5513',
+//   headerText: {
+//     color: "#2F4068",
+//     fontSize: 20,
+//     fontWeight: "600",
 //   },
 
-//   unselectedButton: {
-//     backgroundColor: '#F2F7F5',
-//     borderWidth: 2,
-//     borderColor: '#3A5513',
+//   count: {
+//     backgroundColor: "#FF9212",
+//     borderRadius: 20,
+//     padding: 5,
+//     paddingHorizontal: 10,
+//     color: "white",
+//     overflow: "hidden",
 //   },
 
-//   buttonText: {
-//     color: 'white',
-//     fontSize: 14,
-//     fontWeight: '400',
+//   sectionHeaderContainer: {
+//     flexDirection: "row",
+//     justifyContent: "space-between",
+//     alignItems: "center",
+//     marginTop: 10,
 //   },
 
-//   nonSelectedButtonText: {
-//     color: '#3A5513',
+//   sectionHeaderLeft: {
+//     flexDirection: "row",
+//     alignItems: "center",
+//     gap: 10,
+//   },
+
+//   chevron: {
+//     fontSize: 24,
+//     color: "#2F4068",
+//     fontWeight: "300",
+//   },
+
+//   emptyStateContainer: {
+//     paddingVertical: 50,
+//     alignItems: "center",
+//     justifyContent: "center",
+//   },
+
+//   emptyStateText: {
+//     fontSize: 20,
+//     fontWeight: "600",
+//     color: "#2F4068",
+//   },
+
+//   emptyStateSubtext: {
+//     marginTop: 10,
+//     textAlign: "center",
+//     color: "#6B7280",
+//     paddingHorizontal: 30,
+//     lineHeight: 22,
 //   },
 // });
+
+
+
+
+
+
+
+

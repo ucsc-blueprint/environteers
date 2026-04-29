@@ -11,6 +11,7 @@ import { OnlineCardDataProps } from "@/components/OnlineCard";
 import { EventCardDataProps } from "@/components/EventCard";
 import { router } from "expo-router";
 import * as Location from 'expo-location';
+import { getVisibleEcoActions } from "@/app/utils/cards";
 
 export type CardProps = InPersonCardDataProps | OnlineCardDataProps | EventCardDataProps;
 
@@ -27,6 +28,7 @@ const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => 
   
   return R * c;
 };
+
 
 export default function Volunteer() {
   const { user, profile } = useAuth();
@@ -141,8 +143,12 @@ export default function Volunteer() {
     fetchData();
   }, [user?.id]);
 
+  const visibleItems = useMemo(() => {
+    return getVisibleEcoActions(items);
+  }, [items]);
+
   const filteredItems = useMemo(() => {
-    return items
+    return visibleItems
       .filter((item) => {
         const matchesSearch =
           item.cardInfo.title
