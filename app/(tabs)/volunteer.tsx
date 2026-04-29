@@ -165,8 +165,17 @@ export default function Volunteer() {
           if (!lat || !lon) return true;
           return getDistance(userLocation.latitude, userLocation.longitude, lat, lon) <= maxDistance;
         })();
+        
+        const now = new Date().getTime();
+        const matchesDate = (() => {
+          const end = item.cardInfo.end_date
+            ? new Date(item.cardInfo.end_date).getTime()
+            : null;
 
-        return matchesSearch && matchesType && matchesDistance;
+          return end ? end >= now : true;
+        })();
+
+        return matchesSearch && matchesType && matchesDistance && matchesDate;
       })
       .map(item => ({
         ...item,

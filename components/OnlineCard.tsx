@@ -1,5 +1,5 @@
 import { useAuth } from "@/context/AuthContext";
-import { View, Text, Pressable, Linking } from 'react-native';
+import { View, Text, Pressable, Linking, Share, Alert } from 'react-native';
 import { useState } from "react";
 import { 
   mdiListBoxOutline,
@@ -173,6 +173,20 @@ export const OnlineCard = ({
     );
     toggleExpanded();
   }
+  
+  const handleShare = async () => {
+    try {
+      const message = `From the Environteers app: 
+        ${cardInfo.title}
+        ${cardInfo.end_date ?? ""}
+        ${cardInfo.campaign_type ?? "" }
+        ${cardInfo.summary ?? "" }      
+      `
+      await Share.share({ message });
+    } catch (error) {
+      console.error("Error sharing:", error);
+    }
+  };
 
   // RENDER END DATE
   return (
@@ -237,7 +251,7 @@ export const OnlineCard = ({
                 disabled={!user?.id}
               />
             </View>
-            <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>
+            <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} onPress={handleShare}/></View>
           </View>
           )}
         </View>

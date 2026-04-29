@@ -1,5 +1,5 @@
 import { useAuth } from "@/context/AuthContext";
-import { View, Image, Text, Pressable, Linking, Alert } from 'react-native';
+import { View, Image, Text, Pressable, Linking, Alert, Share } from 'react-native';
 import { useState } from "react";
 import { mdiOpenInNew } from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
@@ -221,6 +221,29 @@ export const InPersonCard = ({
     Alert.alert("Not signed in! Can't like post");
   };
 
+  const handleShare = async () => {
+    try {
+      const message = `From the Environteers app: 
+        ${cardInfo.title}
+        ${cardInfo.start_date ? formatEventDate(cardInfo.start_date, cardInfo.end_date!) : ""}
+        ${cardInfo.location ?? "" }
+        ${cardInfo.summary ?? "" }      
+      `
+      await Share.share({ message });
+    } catch (error) {
+      console.error("Error sharing:", error);
+    }
+  };
+
+  const openLink = async (url: string) => {
+    const supported = await Linking.canOpenURL(url);
+    if (supported) {
+      await Linking.openURL(url);
+    } else {
+      Alert.alert("Invalid link");
+    }
+  };
+
   return (
     <View
       style={[
@@ -245,10 +268,14 @@ export const InPersonCard = ({
             <Text>{cardInfo.title}</Text>
             { cardInfo.start_date && cardInfo.end_date &&
               <View style={[CardStyles.formatRow, CardStyles.date]}>
-                <Image
-                  source={require("../assets/images/google-calendar.png")}
-                  style={{ width: 18, height: 18 }}
-                />
+                {cardInfo.google_calendar_link && (
+                  <Pressable onPress={() => openLink(cardInfo.google_calendar_link!)}>
+                    <Image
+                      source={require("../assets/images/google-calendar.png")}
+                      style={{ width: 18, height: 18 }}
+                    />
+                  </Pressable>
+                )}
                 <Text>{formatEventDate(cardInfo.start_date, cardInfo.end_date)}</Text>
               </View>
             }
@@ -296,7 +323,7 @@ export const InPersonCard = ({
                 disabled={!user?.id}
               />
             </View>
-            <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>
+            <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} onPress={handleShare}/></View>
           </View>
           )}
         </View>
