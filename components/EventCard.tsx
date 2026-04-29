@@ -1,11 +1,11 @@
 import { useAuth } from "@/context/AuthContext";
-import { View, Image, Text, Pressable, Linking, Alert } from 'react-native';
+import { View, Image, Text, Pressable, Linking, Alert, Share } from 'react-native';
 import { useState } from "react";
 import { mdiOpenInNew } from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
-import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp, addClick } from "@/app/utils/cards";
+import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp, addClick, isPast } from "@/app/utils/cards";
 import { router, useRouter } from "expo-router";
 import { supabase } from "@/constants/supabase";
 import { useInteractions } from "@/context/InteractionsContext";
@@ -68,11 +68,12 @@ export const EventCard = ({
       setInternalExpanded(prev => !prev);
     }
   };
-
-  const isPastEvent =
-    cardInfo.end_date
-      ? new Date(cardInfo.end_date).getTime() < Date.now()
-      : false;
+  
+  const isPastEvent = isPast(cardInfo.end_date);
+  // const isPastEvent =
+  //   cardInfo.end_date
+  //     ? new Date(cardInfo.end_date).getTime() < Date.now()
+  //     : false;
 
   const shouldShowCompletionPrompt =
     expanded &&
@@ -220,6 +221,29 @@ export const EventCard = ({
     );
   };
 
+  const handleShare = async () => {
+    try {
+      const message = `From the Environteers app: 
+        ${cardInfo.title}
+        ${cardInfo.start_date ? formatEventDate(cardInfo.start_date, cardInfo.end_date!) : ""}
+        ${cardInfo.location ?? "" }
+        ${cardInfo.description ?? "" }      
+      `
+      await Share.share({ message });
+    } catch (error) {
+      console.error("Error sharing:", error);
+    }
+  };
+
+  const openLink = async (url: string) => {
+    const supported = await Linking.canOpenURL(url);
+    if (supported) {
+      await Linking.openURL(url);
+    } else {
+      Alert.alert("Invalid link");
+    }
+  };
+
   return (
     <View style={[
         CardStyles.card,
@@ -242,10 +266,14 @@ export const EventCard = ({
             <Text>{cardInfo.title}</Text>
             { cardInfo.start_date && cardInfo.end_date &&
               <View style={[CardStyles.formatRow, CardStyles.date]}>
-                <Image
-                  source={require("../assets/images/google-calendar.png")}
-                  style={{ width: 18, height: 18 }}
-                />
+                {cardInfo.google_calendar_link && (
+                  <Pressable onPress={() => openLink(cardInfo.google_calendar_link!)}>
+                    <Image
+                      source={require("../assets/images/google-calendar.png")}
+                      style={{ width: 18, height: 18 }}
+                    />
+                  </Pressable>
+                )}
                 <Text>{formatEventDate(cardInfo.start_date, cardInfo.end_date)}</Text>
               </View>
             }
@@ -293,7 +321,7 @@ export const EventCard = ({
                 disabled={!user?.id}
               />
             </View>
-            <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} /></View>
+            <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} onPress={handleShare}/></View>
           </View>
           )}
         </View>

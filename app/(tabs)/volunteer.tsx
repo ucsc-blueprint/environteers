@@ -11,6 +11,7 @@ import { OnlineCardDataProps } from "@/components/OnlineCard";
 import { EventCardDataProps } from "@/components/EventCard";
 import { router } from "expo-router";
 import * as Location from 'expo-location';
+import { getVisibleEcoActions } from "@/app/utils/cards";
 
 export type CardProps = InPersonCardDataProps | OnlineCardDataProps | EventCardDataProps;
 
@@ -27,6 +28,7 @@ const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => 
   
   return R * c;
 };
+
 
 export default function Volunteer() {
   const { user, profile } = useAuth();
@@ -141,8 +143,12 @@ export default function Volunteer() {
     fetchData();
   }, [user?.id]);
 
+  const visibleItems = useMemo(() => {
+    return getVisibleEcoActions(items);
+  }, [items]);
+
   const filteredItems = useMemo(() => {
-    return items
+    return visibleItems
       .filter((item) => {
         const matchesSearch =
           item.cardInfo.title
@@ -159,14 +165,23 @@ export default function Volunteer() {
           if (!lat || !lon) return true;
           return getDistance(userLocation.latitude, userLocation.longitude, lat, lon) <= maxDistance;
         })();
+        
+        const now = new Date().getTime();
+        const matchesDate = (() => {
+          const end = item.cardInfo.end_date
+            ? new Date(item.cardInfo.end_date).getTime()
+            : null;
 
-        return matchesSearch && matchesType && matchesDistance;
+          return end ? end >= now : true;
+        })();
+
+        return matchesSearch && matchesType && matchesDistance && matchesDate;
       })
       .map(item => ({
         ...item,
         ...getInteractionState(item.cardInfo.id, item.cardType)
       }));
-  }, [items, search, filterTypes, maxDistance, userLocation, getInteractionState]);
+  }, [visibleItems, search, filterTypes, maxDistance, userLocation, getInteractionState]);
 
   return (
     <LinearGradient
@@ -179,7 +194,7 @@ export default function Volunteer() {
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
         
         <Header 
-          resultsCount={items.length}
+          resultsCount={filteredItems.length}
           search={search}
           setSearch={setSearch}
           filterTypes={filterTypes}
