@@ -14,8 +14,9 @@ type Props = {
 export const DeleteActionModal = ({ visible, onClose, onFullDelete, onHide, cardTitle, cardType }: Props) => {
 
     const label = cardType === 'event' ? 'event' : 'eco-action';
-    
-  return (
+
+    return (
+        
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose}>
         <Pressable style={styles.popup} onPress={() => {}}>
@@ -29,14 +30,13 @@ export const DeleteActionModal = ({ visible, onClose, onFullDelete, onHide, card
             </Pressable>
           </View>
 
-          <Text style={styles.body}>
-            You're about to delete{' '}
+        <Text style={styles.body}>
+            {"You're about to delete "}
             <Text style={styles.eventName}>{cardTitle}</Text>
-            {'. '}
-            Would you like to: take down for those who have not yet signed up, or fully delete it?
-          </Text>
+            {". Would you like to: take down for those who have not yet signed up, or fully delete it?"}
+        </Text>
 
-          <View style={styles.buttonRow}>
+        <View style={styles.buttonRow}>
             <Pressable onPress={onFullDelete} style={styles.deleteTextButton}>
               <Text style={styles.deleteTextLabel}>Fully delete</Text>
             </Pressable>
