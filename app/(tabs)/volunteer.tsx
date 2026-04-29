@@ -181,7 +181,7 @@ export default function Volunteer() {
         ...item,
         ...getInteractionState(item.cardInfo.id, item.cardType)
       }));
-  }, [items, search, filterTypes, maxDistance, userLocation, getInteractionState]);
+  }, [visibleItems, search, filterTypes, maxDistance, userLocation, getInteractionState]);
 
   return (
     <LinearGradient
@@ -194,7 +194,7 @@ export default function Volunteer() {
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
         
         <Header 
-          resultsCount={items.length}
+          resultsCount={filteredItems.length}
           search={search}
           setSearch={setSearch}
           filterTypes={filterTypes}
