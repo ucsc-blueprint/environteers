@@ -357,8 +357,7 @@ export const InPersonCard = ({
               </View>
               <View style={CardStyles.deleteIconBackground}>
                 <MaterialCommunityIcons name="trash-can-outline"
-                  size={25} color=";
-                  #EA4335"
+                  size={25} color="#EA4335"
                   onPress = {() => 
                   {
                     console.log("delete press, id: ", cardInfo.id);
