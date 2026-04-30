@@ -252,7 +252,6 @@ export default function Map() {
             completed: null,
             clicked: false,
             feedback: null,
-            hidden: false,
           })) ?? [];
 
 
@@ -299,7 +298,6 @@ export default function Map() {
             completed: null,
             clicked: false,
             feedback: null,
-            hidden: false,
           }));
 
       // const markerResults = await Promise.all([
