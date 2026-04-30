@@ -9,6 +9,7 @@ import { useInteractions } from "@/context/InteractionsContext";
 import { InPersonCardDataProps } from "@/components/InPersonCard";
 import { OnlineCardDataProps } from "@/components/OnlineCard";
 import { EventCardDataProps } from "@/components/EventCard";
+import {DeleteToast} from "@/components/DeleteToast"
 import { router } from "expo-router";
 import * as Location from 'expo-location';
 import { getVisibleEcoActions } from "@/app/utils/cards";
@@ -30,6 +31,12 @@ const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => 
 };
 
 
+const TABLE_MAP: Record<string, string> = {
+  in_person: "inperson_ecoactions",
+  online: "online_ecoactions",
+  event: "events",
+};
+
 export default function Volunteer() {
   const { user, profile } = useAuth();
   const [items, setItems] = useState<CardProps[]>([]);
@@ -40,6 +47,8 @@ export default function Volunteer() {
   const [filterTypes, setFilterTypes] = useState<string[]>([]);
   const [maxDistance, setMaxDistance] = useState<number | null>(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [toast, setToast] = useState<{ message: string; description: string } | null>(null);
+
 
   const { cards: interactionCards } = useInteractions();
 
@@ -114,6 +123,7 @@ export default function Volunteer() {
         signed_up: null,
         completed: null,
         clicked: false,
+        feedback: false,
       }));
 
       const onlineCardData: CardProps[] = (onlineData ?? []).map(card => ({
@@ -123,6 +133,7 @@ export default function Volunteer() {
         signed_up: null,
         completed: null,
         clicked: false,
+        feedback: false,
       })); 
     
       const eventCardData: CardProps[] = (eventData ?? []).map(event => ({
@@ -132,6 +143,7 @@ export default function Volunteer() {
         signed_up: null,
         completed: null,
         clicked: false,
+        feedback: false, 
       }));
 
       const fullData = [...inPersonCardData, ...onlineCardData, ...eventCardData]
@@ -150,6 +162,8 @@ export default function Volunteer() {
   const filteredItems = useMemo(() => {
     return visibleItems
       .filter((item) => {
+        const isNotHidden = 
+          isAdmin || !item.cardInfo.hidden // if hidden is false, displaying card should be true and vice versa
         const matchesSearch =
           item.cardInfo.title
             ?.toLowerCase()
@@ -165,7 +179,7 @@ export default function Volunteer() {
           if (!lat || !lon) return true;
           return getDistance(userLocation.latitude, userLocation.longitude, lat, lon) <= maxDistance;
         })();
-        
+
         const now = new Date().getTime();
         const matchesDate = (() => {
           const end = item.cardInfo.end_date
@@ -175,13 +189,42 @@ export default function Volunteer() {
           return end ? end >= now : true;
         })();
 
-        return matchesSearch && matchesType && matchesDistance && matchesDate;
+        return isNotHidden && matchesSearch && matchesType && matchesDistance && matchesDate;
       })
       .map(item => ({
         ...item,
         ...getInteractionState(item.cardInfo.id, item.cardType)
       }));
-  }, [visibleItems, search, filterTypes, maxDistance, userLocation, getInteractionState]);
+  }, [visibleItems, search, filterTypes, maxDistance, userLocation, getInteractionState, isAdmin]);
+
+  const handleFullDelete = useCallback(async (id: string, cardType: string) => 
+  {
+    console.log("fully deleting")
+    const table = TABLE_MAP[cardType];
+    if (!table) return;
+    const { error } = await supabase.from(table).delete().eq("id", id);
+    if (error) { console.error(error); return; }
+    setItems(prev => prev.filter(item => !(item.cardInfo.id === id && item.cardType === cardType)));
+    setToast({ message: "Eco-action deleted", description: "Users can no longer access this event" });
+  }, []);
+
+  const handleHide = useCallback(async (id: string, cardType: string) => 
+  {
+    const table = TABLE_MAP[cardType];
+    if (!table) return;
+    const { error } = await supabase.from(table).update({ hidden: true }).eq("id", id);
+    if (error) { console.error(error); return; }
+
+    // update hidden flag
+    setItems(prev => prev.map(item =>
+      item.cardInfo.id === id && item.cardType === cardType
+        ? { ...item, cardInfo: { ...item.cardInfo, hidden: true } }
+        : item
+    ));
+    setToast({ message: "Event deleted", description: "Non-registered users can no longer see this event on their feed." });
+  }, []);
+  
+
 
   return (
     <LinearGradient
@@ -191,8 +234,17 @@ export default function Volunteer() {
         end={{ x: 0, y: 0.5 }}
         style={styles.gradient}
       >
+      {toast && 
+      (
+        <DeleteToast
+          visible={!!toast}
+          message={toast.message}
+          description={toast.description}
+          onClose={() => setToast(null)}
+        />
+      )}
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
-        
+
         <Header 
           resultsCount={filteredItems.length}
           search={search}
@@ -206,7 +258,13 @@ export default function Volunteer() {
         
         { loading && <ActivityIndicator size="large" color="#0000ff" />}
         { !loading && filteredItems.map((card) => ( 
-          <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
+          <EcoFeed 
+            key={`${card.cardType}-${card.cardInfo.id}`}
+            card={card}
+            onDelete = {() => handleFullDelete(card.cardInfo.id, card.cardType)}
+            onHide = {() => handleHide(card.cardInfo.id, card.cardType)}
+          />
+
         ))}
       </ScrollView>
       {isAdmin ? (

@@ -13,6 +13,7 @@ import { useInteractions } from "@/context/InteractionsContext";
 import { ActivityFeedback } from "@/components/ActivityFeedback";
 import { supabase } from "@/constants/supabase";
 import { router, useRouter } from "expo-router";
+import { DeleteActionModal } from "./DeleteActionModal";
 
 export type OnlineCardData = {
   id: string,
@@ -23,6 +24,7 @@ export type OnlineCardData = {
   campaign_type?: string,
   email_link?: string,
   summary?: string,
+  hidden: boolean
 }
 
 export type OnlineCardDataProps = {
@@ -38,6 +40,8 @@ type OnlineCardProps = OnlineCardDataProps & {
   expanded?: boolean;
   onToggle?: () => void;
   highlight?: boolean;
+  onDelete?: () => void;
+  onHide?: () => void; 
 };
 
 export const OnlineCard = ({
@@ -47,6 +51,8 @@ export const OnlineCard = ({
   clicked,
   feedback,
   highlight,
+  onHide,
+  onDelete,
 }: OnlineCardProps) => {
   const [expanded, setExpanded] = useState(false);
   const [feedbackVisible, setFeedbackVisible] = useState(false);
@@ -54,6 +60,7 @@ export const OnlineCard = ({
   const isAdmin = profile?.is_admin === true;
 
   const { updateLike, updateCompleted, updateClicked, updateFeedback } = useInteractions();
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
   const toggleExpanded = () => {
     setExpanded(prev => !prev);
@@ -201,6 +208,14 @@ export const OnlineCard = ({
         onSubmit={handleFeedbackSubmit} 
         onCancel={handleFeedbackCancel} 
       />
+      <DeleteActionModal
+        visible={deleteModalVisible}
+        onClose={() => setDeleteModalVisible(false)}
+        onFullDelete={() => { setDeleteModalVisible(false); onDelete?.(); }}
+        onHide={() => { setDeleteModalVisible(false); onHide?.(); }}
+        cardTitle= {cardInfo.title}
+        cardType="online"
+      />
       <Pressable onPress={toggleExpanded}>
         <View style={CardStyles.cardInfo}>
           {/* Cover Photo */}
@@ -236,9 +251,17 @@ export const OnlineCard = ({
                     params: { typeOfAction: "online", id: cardInfo.id}
                   })
                 }}
-              />
+              /> 
               </View>
-              <View style={CardStyles.deleteIconBackground}><MaterialCommunityIcons name="trash-can-outline" size={25} color="#EA4335" /></View>    
+                <View style={CardStyles.deleteIconBackground}>
+                  <MaterialCommunityIcons name="trash-can-outline" size={25} color="#EA4335" 
+                  onPress = {() => 
+                  {
+                    console.log("delete press, id: ", cardInfo.id);
+                    setDeleteModalVisible(true);
+                  }}
+                  />
+                </View>    
               </View>
           ): (
           <View style={CardStyles.iconsColumn}>
