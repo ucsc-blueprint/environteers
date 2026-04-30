@@ -214,7 +214,13 @@ export default function Volunteer() {
     if (!table) return;
     const { error } = await supabase.from(table).update({ hidden: true }).eq("id", id);
     if (error) { console.error(error); return; }
-    setItems(prev => prev.filter(item => !(item.cardInfo.id === id && item.cardType === cardType)));
+
+    // update hidden flag
+    setItems(prev => prev.map(item =>
+      item.cardInfo.id === id && item.cardType === cardType
+        ? { ...item, cardInfo: { ...item.cardInfo, hidden: true } }
+        : item
+    ));
     setToast({ message: "Event deleted", description: "Non-registered users can no longer see this event on their feed." });
   }, []);
   
