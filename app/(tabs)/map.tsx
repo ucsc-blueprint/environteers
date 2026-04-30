@@ -56,6 +56,16 @@ const MapMarker = ({ coordinate, type, onPress, selected }: MapMarkerProps) => {
   )
 };
 
+// for filtering past events/in-person cards
+const now = new Date();
+const getItemEndDate = (item: any) => {
+  return item.end_date ? new Date(item.end_date) : null;
+};
+const isPastItem = (item: any) => {
+  const endDate = getItemEndDate(item);
+  return endDate ? endDate < now : false;
+};
+
 const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
   const R = 3958.8;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -201,50 +211,107 @@ export default function Map() {
         };
       };
 
-      const events: EventCardDataProps[] = event?.map((e) => ({
-        cardType: "event",
-        cardInfo: {
-          id: e.id,
-          title: e.title,
-          start_date: e.start_date ?? undefined,
-          end_date: e.end_date ?? undefined,
-          location: e.location ?? undefined,
-          cover_photo: e.cover_photo ?? undefined,
-          google_calendar_link: e.google_calendar_link ?? undefined,
-          description: e.description ?? undefined,
-          sign_up_link: e.sign_up_link ?? undefined,
-        },
-        liked: false,
-        signed_up: null,
-        completed: null,
-        clicked: false,
-      })) ?? [];
+      // const events: EventCardDataProps[] = event?.map((e) => ({
+      //   cardType: "event",
+      //   cardInfo: {
+      //     id: e.id,
+      //     title: e.title,
+      //     start_date: e.start_date ?? undefined,
+      //     end_date: e.end_date ?? undefined,
+      //     location: e.location ?? undefined,
+      //     cover_photo: e.cover_photo ?? undefined,
+      //     google_calendar_link: e.google_calendar_link ?? undefined,
+      //     description: e.description ?? undefined,
+      //     sign_up_link: e.sign_up_link ?? undefined,
+      //   },
+      //   liked: false,
+      //   signed_up: null,
+      //   completed: null,
+      //   clicked: false,
+      // })) ?? [];
+
+      const events: EventCardDataProps[] =
+        event
+          ?.filter((e) => !isPastItem(e))
+          .map((e) => ({
+            cardType: "event",
+            cardInfo: {
+              id: e.id,
+              title: e.title,
+              start_date: e.start_date ?? undefined,
+              end_date: e.end_date ?? undefined,
+              location: e.location ?? undefined,
+              cover_photo: e.cover_photo ?? undefined,
+              google_calendar_link: e.google_calendar_link ?? undefined,
+              description: e.description ?? undefined,
+              sign_up_link: e.sign_up_link ?? undefined,
+            },
+            liked: false,
+            signed_up: null,
+            completed: null,
+            clicked: false,
+            feedback: null,
+          })) ?? [];
 
 
-      const inPersonEcoItems: InPersonCardDataProps[] = ecoInPerson?.map((e) => ({
-        cardType: "in_person",
-        cardInfo: {
-          id: e.id,
-          created_at: e.created_at,
-          cover_photo: e.cover_photo ?? undefined,
-          title: e.title,
-          location: e.location ?? undefined,
-          start_date: e.start_date,
-          end_date: e.end_date,
-          sign_up_link: e.sign_up_link,
-          summary: e.summary ?? undefined,
-          google_calendar_link: e.google_calendar_link ?? undefined,
-        },
-        liked: false,
-        signed_up: null,
-        completed: null,
-        clicked: false,
-      })) ?? [];
+      // const inPersonEcoItems: InPersonCardDataProps[] = ecoInPerson?.map((e) => ({
+      //   cardType: "in_person",
+      //   cardInfo: {
+      //     id: e.id,
+      //     created_at: e.created_at,
+      //     cover_photo: e.cover_photo ?? undefined,
+      //     title: e.title,
+      //     location: e.location ?? undefined,
+      //     start_date: e.start_date,
+      //     end_date: e.end_date,
+      //     sign_up_link: e.sign_up_link,
+      //     summary: e.summary ?? undefined,
+      //     google_calendar_link: e.google_calendar_link ?? undefined,
+      //   },
+      //   liked: false,
+      //   signed_up: null,
+      //   completed: null,
+      //   clicked: false,
+      // })) ?? [];
+
+      const inPersonEcoItems: InPersonCardDataProps[] =
+        (ecoInPerson ?? [])
+          .filter((e) => !isPastItem(e))
+          .map((e) => ({
+            cardType: "in_person",
+            cardInfo: {
+              id: e.id,
+              created_at: e.created_at,
+              cover_photo: e.cover_photo ?? undefined,
+              title: e.title,
+              location: e.location ?? undefined,
+              start_date: e.start_date,
+              end_date: e.end_date,
+              sign_up_link: e.sign_up_link,
+              summary: e.summary ?? undefined,
+              google_calendar_link: e.google_calendar_link ?? undefined,
+            },
+            liked: false,
+            signed_up: null,
+            completed: null,
+            clicked: false,
+            feedback: null,
+          }));
+
+      // const markerResults = await Promise.all([
+      //   ...((event || []).map((e) => processLocation(e, "event"))),
+      //   ...((ecoInPerson || []).map((e) => processLocation(e, "in_person"))),
+      // ])
 
       const markerResults = await Promise.all([
-        ...((event || []).map((e) => processLocation(e, "event"))),
-        ...((ecoInPerson || []).map((e) => processLocation(e, "in_person"))),
-      ])
+        ...((event || [])
+          .filter((e) => !isPastItem(e))
+          .map((e) => processLocation(e, "event"))),
+      
+        ...((ecoInPerson || [])
+          .filter((e) => !isPastItem(e))
+          .map((e) => processLocation(e, "in_person"))),
+      ]);
 
       const markers = markerResults.filter((m) => m !== null);
 
