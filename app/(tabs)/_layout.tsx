@@ -7,8 +7,6 @@ import { useAuth } from '@/context/AuthContext'
 import { Text, Pressable, View } from 'react-native'
 import { User } from 'lucide-react-native'
 
-
-
 export default function TabsLayout() {
   const router = useRouter();
   const { user, loading, profile } = useAuth()
@@ -22,6 +20,9 @@ export default function TabsLayout() {
   if (loading) {
     return <Text>Loading...</Text>
   }
+  
+  const adminHref = profile?.is_admin ? null : undefined
+  const userHref = profile?.is_admin ? undefined : null
 
   return (
     <Tabs>
@@ -29,6 +30,7 @@ export default function TabsLayout() {
         name="home"
         options={{
           title: 'Home',
+          href: adminHref,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" size={size} color={color} />
           ),
@@ -38,6 +40,7 @@ export default function TabsLayout() {
         name="activity"
         options={{
           title: 'Activity',
+          href: adminHref,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="analytics-outline" size={size} color={color} />
           ),
@@ -48,6 +51,7 @@ export default function TabsLayout() {
         name="volunteer"
         options={{
           title: 'Volunteer',
+          href: adminHref,
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="hand-extended" size={size} color={color} />
           ),
@@ -67,18 +71,21 @@ export default function TabsLayout() {
         name="newsletter"
         options={{
           title: 'Newsletter',
+          href: adminHref,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="newspaper" size={size} color={color} />
           ),
         }}
       />
+
+       {/* Admin only tabs */}
       <Tabs.Screen
         name="admin-dashboard"
         options={{
           title: 'Dashboard',
-          href: profile?.is_admin ? undefined : null,
+          href: userHref,
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="view-dashboard" size={size} color={color} />
+            <MaterialCommunityIcons name="home-variant-outline" size={size} color={color} />
           ),
 
           headerRight: () => {
@@ -109,13 +116,14 @@ export default function TabsLayout() {
         name="profile"
         options={{
           title: 'Profile',
+          href: adminHref,
           tabBarIcon: ({ color, size }) => (
             <Octicons name="person" size={size} color={color} />
           ),
         }}
       />
 
-      {/* Admin only tabs */}
+     
       <Tabs.Screen
         name="admin-analytics"
         options={{
@@ -129,7 +137,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="VolunteerView"
         options={{
-          href: profile?.is_admin ? undefined : null,
+          href: null,
           title: 'Volunteer View',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="bar-chart" size = {size} color = {color}></Ionicons>
@@ -164,6 +172,17 @@ export default function TabsLayout() {
         title: 'Edit Newsletter',
       }}
     />
+      <Tabs.Screen
+      name="ContentEdit"
+      options={{
+        href: userHref,
+        headerShown: false,
+        title: "Content Edit",
+        tabBarIcon: ({ color, size }) => (
+          <MaterialCommunityIcons name="newspaper-variant-multiple" size={size} color={color} />
+        ),
+      }}
+      />
     </Tabs>
   );
 
