@@ -152,7 +152,7 @@ export default function Volunteer() {
     return items
       .filter((item) => {
         const isNotHidden = 
-          !item.cardInfo.hidden // if hidden is false, displaying card should be true and vice versa
+          isAdmin || !item.cardInfo.hidden // if hidden is false, displaying card should be true and vice versa
         const matchesSearch =
           item.cardInfo.title
             ?.toLowerCase()
@@ -175,7 +175,7 @@ export default function Volunteer() {
         ...item,
         ...getInteractionState(item.cardInfo.id, item.cardType)
       }));
-  }, [items, search, filterTypes, maxDistance, userLocation, getInteractionState]);
+  }, [items, search, filterTypes, maxDistance, userLocation, getInteractionState, isAdmin]);
 
   const TABLE_MAP: Record<string, string> = 
   {
