@@ -16,7 +16,7 @@ export const DeleteToast = ({ visible, message, description, onClose }: Props) =
         const timer = setTimeout(onClose, 5000); //up for 5 seconds 
         return () => clearTimeout(timer);
         }
-    }, [visible]);
+    }, [visible, onClose]);
 
   if (!visible) return null;
 

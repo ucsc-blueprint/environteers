@@ -12,7 +12,6 @@ import { EventCardDataProps } from "@/components/EventCard";
 import {DeleteToast} from "@/components/DeleteToast"
 import { router } from "expo-router";
 import * as Location from 'expo-location';
-import { getVisibleEcoActions } from "@/app/utils/cards";
 
 export type CardProps = InPersonCardDataProps | OnlineCardDataProps | EventCardDataProps;
 
@@ -117,6 +116,7 @@ export default function Volunteer() {
         signed_up: null,
         completed: null,
         clicked: false,
+        feedback: false,
       }));
 
       const onlineCardData: CardProps[] = (onlineData ?? []).map(card => ({
@@ -126,6 +126,7 @@ export default function Volunteer() {
         signed_up: null,
         completed: null,
         clicked: false,
+        feedback: false,
       })); 
     
       const eventCardData: CardProps[] = (eventData ?? []).map(event => ({
@@ -135,6 +136,7 @@ export default function Volunteer() {
         signed_up: null,
         completed: null,
         clicked: false,
+        feedback: false, 
       }));
 
       const fullData = [...inPersonCardData, ...onlineCardData, ...eventCardData]
@@ -146,12 +148,8 @@ export default function Volunteer() {
     fetchData();
   }, [user?.id]);
 
-  const visibleItems = useMemo(() => {
-    return getVisibleEcoActions(items);
-  }, [items]);
-
   const filteredItems = useMemo(() => {
-    return visibleItems
+    return items
       .filter((item) => {
         const isNotHidden = 
           !item.cardInfo.hidden // if hidden is false, displaying card should be true and vice versa
@@ -170,23 +168,14 @@ export default function Volunteer() {
           if (!lat || !lon) return true;
           return getDistance(userLocation.latitude, userLocation.longitude, lat, lon) <= maxDistance;
         })();
-        
-        const now = new Date().getTime();
-        const matchesDate = (() => {
-          const end = item.cardInfo.end_date
-            ? new Date(item.cardInfo.end_date).getTime()
-            : null;
 
-          return end ? end >= now : true;
-        })();
-
-        return isNotHidden && matchesSearch && matchesType && matchesDistance && matchesDate;
+        return isNotHidden && matchesSearch && matchesType && matchesDistance;
       })
       .map(item => ({
         ...item,
         ...getInteractionState(item.cardInfo.id, item.cardType)
       }));
-  }, [visibleItems, search, filterTypes, maxDistance, userLocation, getInteractionState]);
+  }, [items, search, filterTypes, maxDistance, userLocation, getInteractionState]);
 
   const TABLE_MAP: Record<string, string> = 
   {
@@ -204,7 +193,7 @@ export default function Volunteer() {
     if (error) { console.error(error); return; }
     setItems(prev => prev.filter(item => !(item.cardInfo.id === id && item.cardType === cardType)));
     setToast({ message: "Eco-action deleted", description: "Users can no longer access this event" });
-  }, []);
+  }, [TABLE_MAP]);
 
   const handleHide = useCallback(async (id: string, cardType: string) => 
   {
@@ -214,7 +203,7 @@ export default function Volunteer() {
     if (error) { console.error(error); return; }
     setItems(prev => prev.filter(item => !(item.cardInfo.id === id && item.cardType === cardType)));
     setToast({ message: "Event deleted", description: "Non-registered users can no longer see this event on their feed." });
-  }, []);
+  }, [TABLE_MAP]);
   
 
 
@@ -238,7 +227,7 @@ export default function Volunteer() {
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
 
         <Header 
-          resultsCount={filteredItems.length}
+          resultsCount={items.length}
           search={search}
           setSearch={setSearch}
           filterTypes={filterTypes}
