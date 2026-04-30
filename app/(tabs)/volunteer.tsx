@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator, Text, Modal} from "react-native";
+import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator, Text, Modal } from "react-native";
 import { Header, EcoFeed } from "@/components/EcoFeed";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/constants/supabase";
@@ -30,6 +30,12 @@ const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => 
   return R * c;
 };
 
+
+const TABLE_MAP: Record<string, string> = {
+  in_person: "inperson_ecoactions",
+  online: "online_ecoactions",
+  event: "events",
+};
 
 export default function Volunteer() {
   const { user, profile } = useAuth();
@@ -191,13 +197,6 @@ export default function Volunteer() {
       }));
   }, [visibleItems, search, filterTypes, maxDistance, userLocation, getInteractionState, isAdmin]);
 
-  const TABLE_MAP: Record<string, string> = 
-  {
-    in_person: "inperson_ecoactions",
-    online: "online_ecoactions",
-    event: "events",
-  };
-
   const handleFullDelete = useCallback(async (id: string, cardType: string) => 
   {
     console.log("fully deleting")
@@ -207,7 +206,7 @@ export default function Volunteer() {
     if (error) { console.error(error); return; }
     setItems(prev => prev.filter(item => !(item.cardInfo.id === id && item.cardType === cardType)));
     setToast({ message: "Eco-action deleted", description: "Users can no longer access this event" });
-  }, [TABLE_MAP]);
+  }, []);
 
   const handleHide = useCallback(async (id: string, cardType: string) => 
   {
@@ -217,7 +216,7 @@ export default function Volunteer() {
     if (error) { console.error(error); return; }
     setItems(prev => prev.filter(item => !(item.cardInfo.id === id && item.cardType === cardType)));
     setToast({ message: "Event deleted", description: "Non-registered users can no longer see this event on their feed." });
-  }, [TABLE_MAP]);
+  }, []);
   
 
 
