@@ -245,12 +245,14 @@ export default function Map() {
               google_calendar_link: e.google_calendar_link ?? undefined,
               description: e.description ?? undefined,
               sign_up_link: e.sign_up_link ?? undefined,
+              hidden: false,
             },
             liked: false,
             signed_up: null,
             completed: null,
             clicked: false,
             feedback: null,
+            hidden: false,
           })) ?? [];
 
 
@@ -290,12 +292,14 @@ export default function Map() {
               sign_up_link: e.sign_up_link,
               summary: e.summary ?? undefined,
               google_calendar_link: e.google_calendar_link ?? undefined,
+              hidden: false,
             },
             liked: false,
             signed_up: null,
             completed: null,
             clicked: false,
             feedback: null,
+            hidden: false,
           }));
 
       // const markerResults = await Promise.all([
