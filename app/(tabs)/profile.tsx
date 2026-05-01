@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator, Text, View, ScrollView, StyleSheet,
   Image, FlatList, Pressable, Modal
@@ -10,6 +10,7 @@ import { useInteractions } from '@/context/InteractionsContext';
 import { Redirect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ConfettiCannon from "react-native-confetti-cannon";
 
 const ACHIEVEMENTS = [
   { threshold: 5,  label: "Novice",    description: "Complete your first five eco-actions." },
@@ -33,6 +34,7 @@ export default function Profile() {
 
   const [newAchievement, setNewAchievement] = useState<typeof ACHIEVEMENTS[0] | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const confettiRef = useRef<ConfettiCannon>(null);
 
   const completedCount = (cards ?? []).filter(i => i.completed).length;
 
@@ -53,12 +55,12 @@ export default function Profile() {
       const stored = await AsyncStorage.getItem(key);
       const lastCount = stored ? parseInt(stored) : 0;
 
-      const newlyUnlocked = ACHIEVEMENTS.find(
+      const newlyUnlocked = ACHIEVEMENTS.filter(
         a => completedCount >= a.threshold && lastCount < a.threshold
       );
 
-      if (newlyUnlocked) {
-        setNewAchievement(newlyUnlocked);
+      if (newlyUnlocked.length > 0) {
+        setNewAchievement(newlyUnlocked[newlyUnlocked.length - 1]); // show highest unlocked
         setShowModal(true);
       }
 
@@ -66,7 +68,7 @@ export default function Profile() {
     };
 
     checkNewAchievement();
-  }, [completedCount]);
+  }, [completedCount, user]);
 
   if (loading) return <ActivityIndicator size="large" color="#000000" />;
   if (!profile) return <Redirect href="/" />;
@@ -90,12 +92,20 @@ export default function Profile() {
             <View style={styles.modalFooter}>
               <Pressable
                 style={styles.congratsButton}
-                onPress={() => setShowModal(false)}
+                onPress={() => confettiRef.current?.start()}
               >
                 <Text style={styles.congratsText}>Congrats!</Text>
               </Pressable>
             </View>
           </View>
+          <ConfettiCannon
+            ref={confettiRef}
+            count={80}
+            origin={{ x: 200, y: 0 }}
+            autoStart={false}
+            fadeOut
+            onAnimationEnd={() => setShowModal(false)}
+          />
         </View>
       </Modal>
 
