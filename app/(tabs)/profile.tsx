@@ -33,9 +33,6 @@ export default function Profile() {
   const [newAchievement, setNewAchievement] = useState<typeof ACHIEVEMENTS[0] | null>(null);
   const [showModal, setShowModal] = useState(false);
 
-  if (loading) return <ActivityIndicator size="large" color="#000000" />;
-  if (!profile) return <Redirect href="/" />;
-
   const completedCount = (cards ?? []).filter(i => i.completed).length;
 
   const lastUnlocked = [...ACHIEVEMENTS].reverse().find(a => completedCount >= a.threshold);
@@ -67,6 +64,9 @@ export default function Profile() {
 
     checkNewAchievement();
   }, [completedCount]);
+
+  if (loading) return <ActivityIndicator size="large" color="#000000" />;
+  if (!profile) return <Redirect href="/" />;
 
   return (
     <ScrollView style={styles.container}>
