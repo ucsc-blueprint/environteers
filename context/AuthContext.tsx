@@ -6,6 +6,7 @@ type UserProfile = {
   first_name: string
   last_name: string
   is_admin: boolean
+  created_at: string
 }
 
 type AuthContextType = {
@@ -37,7 +38,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const { data } = await supabase
       .from('users')
-      .select('first_name, last_name, is_admin')
+      .select('first_name, last_name, is_admin, created_at')
       .eq('user_id', session.user.id)
       .single();
 

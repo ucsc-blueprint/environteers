@@ -1,9 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator, Text, View, ScrollView, StyleSheet,
   Image, FlatList, Pressable, Modal
 } from "react-native";
 import { LogoutButton } from "@/components/LogoutButton";
+import { formatMembership } from "@/components/AdminVolunteersView";
 import { useAuth } from '@/context/AuthContext';
 import { useInteractions } from '@/context/InteractionsContext';
 import { Redirect, useRouter } from 'expo-router';
@@ -26,7 +27,7 @@ const ACHIEVEMENTS = [
 ];
 
 export default function Profile() {
-  const { profile, loading } = useAuth();
+  const { profile, loading, user } = useAuth();
   const { cards } = useInteractions();
   const router = useRouter();
 
@@ -47,7 +48,9 @@ export default function Profile() {
 
   useEffect(() => {
     const checkNewAchievement = async () => {
-      const stored = await AsyncStorage.getItem('lastCompletedCount');
+      if (!user) return;
+      const key = `lastCompletedCount_${user.id}`;
+      const stored = await AsyncStorage.getItem(key);
       const lastCount = stored ? parseInt(stored) : 0;
 
       const newlyUnlocked = ACHIEVEMENTS.find(
@@ -59,7 +62,7 @@ export default function Profile() {
         setShowModal(true);
       }
 
-      await AsyncStorage.setItem('lastCompletedCount', String(completedCount));
+      await AsyncStorage.setItem(key, String(completedCount));
     };
 
     checkNewAchievement();
@@ -105,7 +108,7 @@ export default function Profile() {
       <View style={styles.avatarSection}>
         <Image style={styles.avatar} source={require('../../assets/images/PFP.png')} />
         <Text style={styles.name}>{profile.first_name} {profile.last_name}</Text>
-        <Text style={styles.memberSince}>Member for 3 years</Text>
+        <Text style={styles.memberSince}>{formatMembership(profile.created_at)}</Text>
       </View>
 
       {/* Stats card */}
