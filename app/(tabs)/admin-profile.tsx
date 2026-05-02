@@ -2,11 +2,10 @@ import React from 'react';
 import { View, ScrollView, Text, Image, ActivityIndicator, StyleSheet } from 'react-native';
 import { LogoutButton } from '@/components/LogoutButton';
 import { useAuth } from '@/context/AuthContext';
-import { Redirect, useRouter } from 'expo-router';
+import { Redirect } from 'expo-router';
 
 export default function AdminProfile() {
   const { profile, loading } = useAuth();
-  const router = useRouter();
 
   if (loading) return <ActivityIndicator size="large" color="#000000" />
   if (!profile) return <Redirect href="/" />
