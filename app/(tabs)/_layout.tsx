@@ -78,40 +78,6 @@ export default function TabsLayout() {
         }}
       />
 
-       {/* Admin only tabs */}
-      <Tabs.Screen
-        name="admin-dashboard"
-        options={{
-          title: 'Dashboard',
-          href: userHref,
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="home-variant-outline" size={size} color={color} />
-          ),
-
-          headerRight: () => {
-
-            return (
-              <Pressable
-                onPress={() => router.push('/profile')}
-                style={{ marginRight: 16 }}
-              >
-                <View
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 16,
-                    backgroundColor: '#f0f0f0',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}
-                >
-                  <User size={25} color="#555" />
-                </View>
-              </Pressable>
-            );
-          },
-        }}
-      />
       <Tabs.Screen
         name="profile"
         options={{
@@ -123,6 +89,40 @@ export default function TabsLayout() {
         }}
       />
 
+       {/* Admin only tabs */}
+      <Tabs.Screen
+        name="admin-dashboard"
+        options={{
+          title: 'Dashboard',
+          href: userHref,
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="home-variant-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="ContentEdit"
+        options={{
+          href: userHref,
+          headerShown: false,
+          title: "Content Edit",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="newspaper-variant-multiple" size={size} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="admin-profile"
+        options={{
+          title: 'Profile',
+          href: userHref,
+          tabBarIcon: ({ color, size }) => (
+            <Octicons name="person" size={size} color={color} />
+          ),
+        }}
+      />
      
       <Tabs.Screen
         name="admin-analytics"
@@ -166,22 +166,11 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-      name="AdminNewsEditFormView"
-      options={{
-        href: null,
-        title: 'Edit Newsletter',
-      }}
-    />
-      <Tabs.Screen
-      name="ContentEdit"
-      options={{
-        href: userHref,
-        headerShown: false,
-        title: "Content Edit",
-        tabBarIcon: ({ color, size }) => (
-          <MaterialCommunityIcons name="newspaper-variant-multiple" size={size} color={color} />
-        ),
-      }}
+        name="AdminNewsEditFormView"
+        options={{
+          href: null,
+          title: 'Edit Newsletter',
+        }}
       />
     </Tabs>
   );
