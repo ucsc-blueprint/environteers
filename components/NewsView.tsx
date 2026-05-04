@@ -1,4 +1,4 @@
-import { Text, TextInput, FlatList, Pressable, View, StyleSheet } from "react-native";
+import { Text, TextInput, FlatList, Pressable, View, StyleSheet, Modal, ActivityIndicator } from "react-native";
 import React, { useState, useCallback } from "react";
 import { NewsCard } from "@/components/NewsCard";
 import { DeleteNewsConfirmationModal } from "@/components/DeleteNewsConfirmationModal";
@@ -36,6 +36,13 @@ export interface newsLetterItem {
   read_count?: number;
 }
 
+const logSubscriptionClick = async (userId: string) => {
+  const { error } = await supabase
+    .from('newsletter_subscription_clicks')
+    .insert({ user_id: userId, opened_at: new Date().toISOString() });
+  if (error) console.warn('[Supabase] subscription log failed:', error.message);
+};
+
 export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
   const router = useRouter();
   const [newsLetters, setNewsLetters] = useState<newsLetterItem[]>([]);
@@ -46,6 +53,11 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [selectedNewsletter, setSelectedNewsletter] = useState<newsLetterItem | null>(null);
+  // newsletter subscription stuff below
+  const [signupModalVisible, setSignupModalVisible] = useState(false);
+  const [signupLoading, setSignupLoading] = useState(true);
+
+  const SIGNUP_URL = 'https://mailchi.mp/114704938e0e/weekly-email-update-signup';
 
   const fetchNewsletters = async () => {
     const { data, error } = await supabase
@@ -225,28 +237,48 @@ const deleteNewsletter = async (newsletter_id: string) => {
         )}
       />
 
-      {isAdmin && (
-        <>
-          <Pressable
-            style={styles.addNewsletterButton}
-            onPress={() => router.push({
-              pathname: '/(tabs)/AdminNewsAddFormView'
-            })}>
-            <Text style={styles.addNewsletterButtonText}>+ Add</Text>
-          </Pressable>
-
-          <DeleteNewsConfirmationModal
-            visible={deleteModalVisible}
-            onCancel={handleCancel}
-            onConfirm={handleDelete}
-            newsletterTitle={
-              selectedNewsletter
-                ? `Environteers Weekly Update: ${selectedNewsletter.edition_number}th Edition`
-                : "Selected newsletter"
-            }
-          />
-        </>
+      {!isAdmin && (
+        <Pressable
+          style={styles.subscribeFab}
+          onPress={async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            logSubscriptionClick(user?.id ?? 'anonymous');
+            setSignupLoading(true);
+            setSignupModalVisible(true);
+          }}
+        >
+          <Ionicons name="mail" size={24} color="#fff" />
+        </Pressable>
       )}
+
+      <Modal
+        visible={signupModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setSignupModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Subscribe to Newsletter</Text>
+            <Pressable onPress={() => setSignupModalVisible(false)} style={styles.modalCloseBtn}>
+              <Ionicons name="close" size={20} color="#555" />
+            </Pressable>
+          </View>
+          {signupLoading && (
+            <View style={styles.loadingOverlay}>
+              <ActivityIndicator size="large" color="#57801d" />
+            </View>
+          )}
+          <WebView
+            source={{ uri: SIGNUP_URL }}
+            style={{ flex: 1 }}
+            onLoadStart={() => setSignupLoading(true)}
+            onLoadEnd={() => setSignupLoading(false)}
+            javaScriptEnabled
+            domStorageEnabled
+          />
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -291,5 +323,55 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '600',
     fontSize: 16,
-  }
+  },
+  subscribeFab: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#57801d',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#ddd',
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  modalCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    top: 57,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
 });
