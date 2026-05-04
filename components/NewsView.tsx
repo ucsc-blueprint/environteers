@@ -236,6 +236,28 @@ const deleteNewsletter = async (newsletter_id: string) => {
           />
         )}
       />
+{isAdmin && (
+        <>
+          <Pressable
+            style={styles.addNewsletterButton}
+            onPress={() => router.push({
+              pathname: '/(tabs)/AdminNewsAddFormView'
+            })}>
+            <Text style={styles.addNewsletterButtonText}>+ Add</Text>
+          </Pressable>
+
+          <DeleteNewsConfirmationModal
+            visible={deleteModalVisible}
+            onCancel={handleCancel}
+            onConfirm={handleDelete}
+            newsletterTitle={
+              selectedNewsletter
+                ? `Environteers Weekly Update: ${selectedNewsletter.edition_number}th Edition`
+                : "Selected newsletter"
+            }
+          />
+        </>
+      )}
 
       {!isAdmin && (
         <Pressable
