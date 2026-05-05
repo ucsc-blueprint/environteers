@@ -4,8 +4,7 @@ import { Ionicons } from '@expo/vector-icons'
 import Octicons from '@expo/vector-icons/Octicons'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { useAuth } from '@/context/AuthContext'
-import { Text, Pressable, View } from 'react-native'
-import { User } from 'lucide-react-native'
+import { Text } from 'react-native'
 
 export default function TabsLayout() {
   const router = useRouter();

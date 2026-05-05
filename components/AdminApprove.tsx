@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, Modal, StyleSheet, Pressable } from 'react-native';
 import { X } from 'lucide-react-native';
 
@@ -35,7 +35,7 @@ export const AdminApprove = ({
 
           <View>
             <Text style={styles.message}>
-							You're about to approve <Text style={styles.name}>{name}</Text>&apos;s request for
+							You&apos;re about to approve <Text style={styles.name}>{name}</Text>&apos;s request for
 							admin access to the entire application. Ensure
 							that this is the correct individual you want to
 							give access to, as admins can edit content freely.
