@@ -117,6 +117,7 @@ export default function TabsLayout() {
         name="admin-profile"
         options={{
           title: 'Profile',
+          headerShown: false,
           href: userHref,
           tabBarIcon: ({ color, size }) => (
             <Octicons name="person" size={size} color={color} />
