@@ -212,7 +212,7 @@ export default function Activity() {
               <Text style={styles.emptyText}>
                 No activity yet...
                 {"\n"}
-                Go to the home page to discover your next opportunity!
+                Go to the Volunteer page to discover your next opportunity!
               </Text>
             ) : (
               cardsToRender.map((card) => (

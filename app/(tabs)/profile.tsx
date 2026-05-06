@@ -110,9 +110,16 @@ export default function Profile() {
       </Modal>
 
       {/* Settings button */}
-      <Pressable style={styles.settingsIcon} onPress={() => router.push('/profilesettings')}>
+      <Pressable
+        style={styles.settingsIcon}
+        onPress={() => router.push('/SettingsHub')}
+      >
         <Ionicons name="settings-outline" size={24} color="#333" />
       </Pressable>
+      {/* <Pressable style={styles.settingsIcon} onPress={() => router.push('/profilesettings')}>
+        <Ionicons name="settings-outline" size={24} color="#333" />
+      </Pressable> */}
+
 
       {/* Avatar + name */}
       <View style={styles.avatarSection}>
@@ -168,6 +175,15 @@ export default function Profile() {
           }}
         />
       </View>
+
+      {/* Contact Us */}
+      <Pressable
+        style={styles.contactButton}
+        onPress={() => router.push('/ContactUs')}
+      >
+        <Ionicons name="mail-outline" size={20} color="#fff" />
+        <Text style={styles.contactButtonText}>Contact Us</Text>
+      </Pressable>
 
       <LogoutButton />
     </ScrollView>
@@ -229,4 +245,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24, paddingVertical: 12,
   },
   congratsText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+
+  contactButton: {
+    backgroundColor: '#3A6EA5',
+    borderRadius: 14,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    gap: 8,
+  },
+  
+  contactButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
 });

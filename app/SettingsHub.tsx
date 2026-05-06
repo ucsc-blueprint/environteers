@@ -1,0 +1,322 @@
+// import React from 'react';
+// import {
+//   View,
+//   Text,
+//   StyleSheet,
+//   Pressable,
+//   ScrollView,
+// } from 'react-native';
+
+// import { Ionicons } from '@expo/vector-icons';
+// import { useRouter } from 'expo-router';
+
+// export default function SettingsHub() {
+//   const router = useRouter();
+
+//   return (
+//     <ScrollView style={styles.container}>
+//       {/* Header */}
+//       <View style={styles.header}>
+//         <Pressable onPress={() => router.back()}>
+//           <Ionicons name="chevron-back" size={30} color="#132433" />
+//         </Pressable>
+
+//         <Text style={styles.headerTitle}>Settings</Text>
+
+//         <View style={{ width: 30 }} />
+//       </View>
+
+//       {/* Settings Card */}
+//       <View style={styles.cardContainer}>
+//         {/* Manage Account */}
+//         <Pressable
+//           style={styles.option}
+//           onPress={() => router.push('/profilesettings')}
+//         >
+//           <View style={styles.optionLeft}>
+//             <View style={styles.iconCircle}>
+//               <Ionicons name="person-outline" size={32} color="#132433" />
+//             </View>
+
+//             <View>
+//               <Text style={styles.optionTitle}>Manage Account</Text>
+
+//               <Text style={styles.optionSubtitle}>
+//                 View account, email, and password reset
+//               </Text>
+//             </View>
+//           </View>
+
+//           <Ionicons
+//             name="chevron-forward"
+//             size={32}
+//             color="#132433"
+//           />
+//         </Pressable>
+
+//         <View style={styles.divider} />
+
+//         {/* Contact Us */}
+//         <Pressable
+//           style={styles.option}
+//           onPress={() => router.push('/ContactUs')}
+//         >
+//           <View style={styles.optionLeft}>
+//             <View style={styles.iconCircle}>
+//               <Ionicons name="chatbubble-outline" size={30} color="#132433" />
+//             </View>
+
+//             <View>
+//               <Text style={styles.optionTitle}>Contact Us</Text>
+
+//               <Text style={styles.optionSubtitle}>
+//                 Questions or comments? Let us know!
+//               </Text>
+//             </View>
+//           </View>
+
+//           <Ionicons
+//             name="chevron-forward"
+//             size={32}
+//             color="#132433"
+//           />
+//         </Pressable>
+//       </View>
+//     </ScrollView>
+//   );
+// }
+
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     backgroundColor: '#F5F7FA',
+//   },
+
+//   header: {
+//     height: 120,
+//     backgroundColor: '#FFFFFF',
+//     flexDirection: 'row',
+//     alignItems: 'flex-end',
+//     justifyContent: 'space-between',
+//     paddingHorizontal: 24,
+//     paddingBottom: 18,
+//   },
+
+//   headerTitle: {
+//     fontSize: 30,
+//     fontWeight: '600',
+//     color: '#132433',
+//   },
+
+//   cardContainer: {
+//     marginTop: 24,
+//     marginHorizontal: 20,
+//     backgroundColor: '#FFFFFF',
+//     borderRadius: 28,
+//     borderWidth: 2,
+//     borderColor: '#D2E5F1',
+//     overflow: 'hidden',
+//   },
+
+//   option: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     justifyContent: 'space-between',
+//     paddingHorizontal: 24,
+//     paddingVertical: 30,
+//   },
+
+//   optionLeft: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     flex: 1,
+//   },
+
+//   iconCircle: {
+//     width: 58,
+//     alignItems: 'center',
+//     marginRight: 18,
+//   },
+
+//   optionTitle: {
+//     fontSize: 24,
+//     fontWeight: '700',
+//     color: '#132433',
+//     marginBottom: 8,
+//   },
+
+//   optionSubtitle: {
+//     fontSize: 15,
+//     color: '#6C93B0',
+//     lineHeight: 22,
+//     paddingRight: 20,
+//   },
+
+//   divider: {
+//     height: 2,
+//     backgroundColor: '#D2E5F1',
+//   },
+// });
+
+import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  ScrollView,
+} from 'react-native';
+
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+
+export default function SettingsHub() {
+  const router = useRouter();
+
+  return (
+    <ScrollView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Pressable onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={30} color="#132433" />
+        </Pressable>
+
+        <Text style={styles.headerTitle}>Settings</Text>
+
+        <View style={{ width: 30 }} />
+      </View>
+
+      {/* Card */}
+      <View style={styles.cardContainer}>
+        {/* Manage Account */}
+        <Pressable
+          style={styles.option}
+          onPress={() => router.push('/profilesettings')}
+        >
+          <View style={styles.optionLeft}>
+            <View style={styles.iconCircle}>
+              <Ionicons name="person-outline" size={32} color="#132433" />
+            </View>
+
+            <View style={styles.textContainer}>
+              <Text style={styles.optionTitle}>Manage Account</Text>
+              <Text style={styles.optionSubtitle}>
+                View account, email, and password reset
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.chevron}>
+            <Ionicons name="chevron-forward" size={28} color="#132433" />
+          </View>
+        </Pressable>
+
+        <View style={styles.divider} />
+
+        {/* Contact Us */}
+        <Pressable
+          style={styles.option}
+          onPress={() => router.push('/ContactUs')}
+        >
+          <View style={styles.optionLeft}>
+            <View style={styles.iconCircle}>
+              <Ionicons name="chatbubble-outline" size={30} color="#132433" />
+            </View>
+
+            <View style={styles.textContainer}>
+              <Text style={styles.optionTitle}>Contact Us</Text>
+              <Text style={styles.optionSubtitle}>
+                Questions or comments? Let us know!
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.chevron}>
+            <Ionicons name="chevron-forward" size={28} color="#132433" />
+          </View>
+        </Pressable>
+      </View>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F5F7FA',
+  },
+
+  header: {
+    height: 120,
+    backgroundColor: '#FFFFFF',
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingBottom: 18,
+  },
+
+  headerTitle: {
+    fontSize: 30,
+    fontWeight: '600',
+    color: '#132433',
+  },
+
+  cardContainer: {
+    marginTop: 24,
+    marginHorizontal: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 28,
+    borderWidth: 2,
+    borderColor: '#D2E5F1',
+    overflow: 'hidden',
+  },
+
+  option: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingVertical: 30,
+  },
+
+  optionLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+
+  iconCircle: {
+    width: 58,
+    alignItems: 'center',
+    marginRight: 18,
+  },
+
+  textContainer: {
+    flex: 1, // ✅ KEY FIX: prevents overlap
+  },
+
+  optionTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#132433',
+    marginBottom: 8,
+  },
+
+  optionSubtitle: {
+    fontSize: 15,
+    color: '#6C93B0',
+    lineHeight: 22,
+  },
+
+  chevron: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+
+  divider: {
+    height: 2,
+    backgroundColor: '#D2E5F1',
+  },
+});
