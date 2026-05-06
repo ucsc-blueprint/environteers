@@ -7,7 +7,6 @@ import {
   Pressable,
 } from "react-native";
 import { useState, useEffect } from "react";
-import { LogoutButton } from "@/components/LogoutButton";
 import { EcoFeed } from "@/components/EcoFeed";
 import { CardProps, useInteractions } from "@/context/InteractionsContext";
 import { SlidersHorizontal, ChevronRight, ChevronDown } from "lucide-react-native";
@@ -368,7 +367,6 @@ export default function Activity() {
             </>
           ))}
 
-        <LogoutButton />
       </ScrollView>
     </View>
   );

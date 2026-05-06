@@ -27,12 +27,14 @@ export default function TabsLayout() {
     <Tabs>
       <Tabs.Screen
         name="home"
+        
         options={{
           title: 'Home',
           href: adminHref,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" size={size} color={color} />
           ),
+          headerShown: false,
         }}
       />
       <Tabs.Screen
@@ -43,6 +45,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="analytics-outline" size={size} color={color} />
           ),
+          headerShown: false,
         }}
       />
 
@@ -54,6 +57,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="hand-extended" size={size} color={color} />
           ),
+          headerShown: false,
         }}
       />
       <Tabs.Screen
@@ -64,6 +68,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="map" size={size} color={color} />
           ),
+          headerShown: false,
         }}
       />
       <Tabs.Screen
@@ -74,6 +79,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="newspaper" size={size} color={color} />
           ),
+          headerShown: false,
         }}
       />
 
@@ -85,6 +91,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => (
             <Octicons name="person" size={size} color={color} />
           ),
+          headerShown: false,
         }}
       />
 
@@ -97,6 +104,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="home-variant-outline" size={size} color={color} />
           ),
+          headerShown: false,
         }}
       />
 
@@ -132,6 +140,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="chart-bar" size={size} color={color} />
           ),
+          headerShown: false,
         }}
       />
       <Tabs.Screen
@@ -142,6 +151,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="bar-chart" size = {size} color = {color}></Ionicons>
           ),
+          headerShown: false,
         }}
       />
       <Tabs.Screen
@@ -149,6 +159,7 @@ export default function TabsLayout() {
         options = {{
           href: null,
           title: 'Add Eco Action',
+          headerShown: false,
         }}
       />
       <Tabs.Screen
@@ -156,6 +167,7 @@ export default function TabsLayout() {
         options = {{
           href: null,
           title: 'Edit Eco Action',
+          headerShown: false,
         }}
       />
       <Tabs.Screen
@@ -163,6 +175,7 @@ export default function TabsLayout() {
         options={{
           href: null,
           title: 'News Add Form',
+          headerShown: false,
         }}
       />
       <Tabs.Screen
@@ -170,6 +183,7 @@ export default function TabsLayout() {
         options={{
           href: null,
           title: 'Edit Newsletter',
+          headerShown: false,
         }}
       />
     </Tabs>
