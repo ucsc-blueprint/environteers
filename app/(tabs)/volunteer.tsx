@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator, Text, Modal } from "react-native";
+import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator, Text, Modal, RefreshControl } from "react-native";
 import { Header, EcoFeed } from "@/components/EcoFeed";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/constants/supabase";
@@ -49,6 +49,7 @@ export default function Volunteer() {
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [toast, setToast] = useState<{ message: string; description: string } | null>(null);
 
+  const [refreshing, setRefreshing] = useState(false);
 
   const { cards: interactionCards } = useInteractions();
 
@@ -218,13 +219,71 @@ export default function Volunteer() {
     // update hidden flag
     setItems(prev => prev.map(item =>
       item.cardInfo.id === id && item.cardType === cardType
-        ? { ...item, cardInfo: { ...item.cardInfo, hidden: true } }
+        ? { ...item, cardInfo: { ...item.cardInfo, hidden: true } } as CardProps
         : item
     ));
     setToast({ message: "Event deleted", description: "Non-registered users can no longer see this event on their feed." });
   }, []);
   
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
 
+    const [inPersonRes, onlineRes, eventRes] = await Promise.all([
+      supabase
+        .from("inperson_ecoactions")
+        .select(`*, location_latitude, location_longitude`),
+
+      supabase
+        .from("online_ecoactions")
+        .select(`*`),
+
+      supabase
+        .from("events")
+        .select(`*, location_latitude, location_longitude`)
+    ]);
+
+    if (inPersonRes.error) console.error(inPersonRes.error);
+    if (onlineRes.error) console.error(onlineRes.error);
+    if (eventRes.error) console.error(eventRes.error);
+
+    const inPersonData = inPersonRes.data ?? [];
+    const onlineData = onlineRes.data ?? [];
+    const eventData = eventRes.data ?? [];
+  
+    const inPersonCardData: CardProps[] = (inPersonData ?? []).map(card => ({
+      cardType: "in_person",
+      cardInfo: card,
+      liked: false,
+      signed_up: null,
+      completed: null,
+      clicked: false,
+      feedback: false,
+    }));
+
+    const onlineCardData: CardProps[] = (onlineData ?? []).map(card => ({
+      cardType: "online",
+      cardInfo: card,
+      liked: false,
+      signed_up: null,
+      completed: null,
+      clicked: false,
+      feedback: false,
+    })); 
+  
+    const eventCardData: CardProps[] = (eventData ?? []).map(event => ({
+      cardType: "event",
+      cardInfo: event,
+      liked: false,
+      signed_up: null,
+      completed: null,
+      clicked: false,
+      feedback: false, 
+    }));
+
+    const fullData = [...inPersonCardData, ...onlineCardData, ...eventCardData]
+    setItems(fullData);
+    setRefreshing(false);
+  }, []);
 
   return (
     <LinearGradient
@@ -243,7 +302,12 @@ export default function Volunteer() {
           onClose={() => setToast(null)}
         />
       )}
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
+      <ScrollView 
+        contentContainerStyle={{ padding: 16, gap: 16}}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
 
         <Header 
           resultsCount={filteredItems.length}
