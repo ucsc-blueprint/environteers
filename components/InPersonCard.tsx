@@ -10,7 +10,7 @@ import { useInteractions } from "@/context/InteractionsContext";
 import { supabase } from "@/constants/supabase";
 import { ActivityFeedback } from "@/components/ActivityFeedback";
 import Toast from 'react-native-toast-message';
-import { router, useRouter } from "expo-router";
+import { router } from "expo-router";
 import { DeleteActionModal } from "./DeleteActionModal";
 
 export type InPersonCardData = {

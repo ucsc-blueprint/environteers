@@ -1,5 +1,5 @@
 import { useAuth } from "@/context/AuthContext";
-import { View, Text, Pressable, Linking, Share, Alert } from 'react-native';
+import { View, Text, Pressable, Linking, Share } from 'react-native';
 import { useState } from "react";
 import { 
   mdiListBoxOutline,
@@ -12,7 +12,7 @@ import { renderIcon, renderCoverPhoto, toggleLike, addClick, addCompletion } fro
 import { useInteractions } from "@/context/InteractionsContext";
 import { ActivityFeedback } from "@/components/ActivityFeedback";
 import { supabase } from "@/constants/supabase";
-import { router, useRouter } from "expo-router";
+import { router } from "expo-router";
 import { DeleteActionModal } from "./DeleteActionModal";
 
 export type OnlineCardData = {

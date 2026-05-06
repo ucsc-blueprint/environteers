@@ -5,8 +5,8 @@ import { mdiOpenInNew } from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { MaterialIcons } from '@expo/vector-icons';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
-import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addSignUp, addClick, isPast } from "@/app/utils/cards";
-import { router, useRouter } from "expo-router";
+import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addClick, isPast } from "@/app/utils/cards";
+import { router } from "expo-router";
 import { supabase } from "@/constants/supabase";
 import { useInteractions } from "@/context/InteractionsContext";
 import { ActivityFeedback } from "@/components/ActivityFeedback";

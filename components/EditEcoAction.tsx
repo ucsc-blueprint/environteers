@@ -277,7 +277,7 @@ type Props =
         };
 
         fetchEcoAction();
-      }, [id])
+      }, [id, typeOfAction])
     );
         
     return (
