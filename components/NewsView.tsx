@@ -40,7 +40,7 @@ export interface newsLetterItem {
 const logSubscriptionClick = async (userId: string) => {
   const { error } = await supabase
     .from('newsletter_subscription_clicks')
-    .upsert({ user_id: userId, opened_at: new Date().toISOString() });
+    .upsert({ user_id: userId, opened_at: new Date().toISOString() }, { onConflict: 'user_id', ignoreDuplicates: true });
   if (error) console.warn('[Supabase] subscription log failed:', error.message);
 };
 
