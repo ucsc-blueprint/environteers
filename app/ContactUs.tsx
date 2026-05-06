@@ -1,142 +1,3 @@
-// import React, { useState } from 'react';
-// import {
-//   View,
-//   Text,
-//   StyleSheet,
-//   TextInput,
-//   Pressable,
-//   Alert,
-//   Linking,
-// } from 'react-native';
-
-// import { Ionicons } from '@expo/vector-icons';
-// import { useRouter } from 'expo-router';
-
-// export default function ContactUs() {
-//   const [feedback, setFeedback] = useState('');
-//   const router = useRouter();
-
-//   const sendFeedback = async () => {
-//     if (!feedback.trim()) {
-//       Alert.alert('Please enter feedback first.');
-//       return;
-//     }
-
-//     const subject = encodeURIComponent('Environteers Feedback');
-//     const body = encodeURIComponent(feedback);
-//     const email = 'your-email@gmail.com';
-
-//     // Prefer Gmail app if installed
-//     const gmailUrl =
-//       `googlegmail://co?to=${email}&subject=${subject}&body=${body}`;
-
-//     // Fallback to system mail
-//     const mailtoUrl =
-//       `mailto:${email}?subject=${subject}&body=${body}`;
-
-//     try {
-//       const canOpenGmail = await Linking.canOpenURL(gmailUrl);
-
-//       if (canOpenGmail) {
-//         await Linking.openURL(gmailUrl);
-//       } else {
-//         await Linking.openURL(mailtoUrl);
-//       }
-
-//       setFeedback('');
-//     } catch (err) {
-//       Alert.alert(
-//         'Could not open email app',
-//         'Please make sure Gmail or a mail app is installed.'
-//       );
-//     }
-//   };
-
-//   return (
-//     <View style={styles.container}>
-//       {/* Back button */}
-//       <Pressable style={styles.backButton} onPress={() => router.back()}>
-//         <Ionicons name="arrow-back" size={24} color="#172A36" />
-//       </Pressable>
-
-//       {/* Title */}
-//       <Text style={styles.title}>Contact Us</Text>
-
-//       <Text style={styles.subtitle}>
-//         Send us feedback, suggestions, or report issues with Environteers.
-//       </Text>
-
-//       {/* Input */}
-//       <TextInput
-//         style={styles.input}
-//         multiline
-//         placeholder="Write your feedback here..."
-//         value={feedback}
-//         onChangeText={setFeedback}
-//       />
-
-//       {/* Send button */}
-//       <Pressable style={styles.sendButton} onPress={sendFeedback}>
-//         <Ionicons name="send" size={18} color="#fff" />
-//         <Text style={styles.sendButtonText}>Send Feedback</Text>
-//       </Pressable>
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: '#EAF2F6',
-//     padding: 20,
-//   },
-
-//   backButton: {
-//     marginTop: 10,
-//     marginBottom: 20,
-//   },
-
-//   title: {
-//     fontSize: 30,
-//     fontWeight: 'bold',
-//     color: '#172A36',
-//     marginBottom: 10,
-//   },
-
-//   subtitle: {
-//     fontSize: 15,
-//     color: '#555',
-//     marginBottom: 20,
-//     lineHeight: 22,
-//   },
-
-//   input: {
-//     backgroundColor: '#fff',
-//     borderRadius: 16,
-//     padding: 16,
-//     minHeight: 180,
-//     textAlignVertical: 'top',
-//     fontSize: 15,
-//     marginBottom: 20,
-//   },
-
-//   sendButton: {
-//     backgroundColor: '#618E20',
-//     borderRadius: 14,
-//     paddingVertical: 14,
-//     flexDirection: 'row',
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     gap: 8,
-//   },
-
-//   sendButtonText: {
-//     color: '#fff',
-//     fontSize: 16,
-//     fontWeight: '600',
-//   },
-// });
-
 import React, { useState } from 'react';
 import {
   View,
@@ -146,11 +7,10 @@ import {
   Pressable,
   Alert,
   ScrollView,
+  Linking
 } from 'react-native';
-
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Linking } from 'react-native';
 import { useAuth } from '@/context/AuthContext';
 
 export default function ContactUs() {
@@ -309,6 +169,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 24,
     paddingBottom: 18,
+    fontFamily: 'Mulish'
   },
 
   headerTitle: {
@@ -322,13 +183,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 30,
     paddingBottom: 40,
+    fontFamily: 'Mulish',
   },
 
   title: {
     fontSize: 34,
-    fontWeight: '800',
+    fontWeight: '700',
     color: '#132433',
     marginBottom: 14,
+    fontFamily: 'Mulish',
   },
 
   description: {
