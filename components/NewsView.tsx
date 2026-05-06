@@ -9,6 +9,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Toast from 'react-native-toast-message';
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
+import { useAuth } from "@/context/AuthContext";
 
 const includesText = (str: string, search: string) =>
   str.toLowerCase().includes(search.toLowerCase());
@@ -39,7 +40,7 @@ export interface newsLetterItem {
 const logSubscriptionClick = async (userId: string) => {
   const { error } = await supabase
     .from('newsletter_subscription_clicks')
-    .insert({ user_id: userId, opened_at: new Date().toISOString() });
+    .upsert({ user_id: userId, opened_at: new Date().toISOString() });
   if (error) console.warn('[Supabase] subscription log failed:', error.message);
 };
 
@@ -56,6 +57,7 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
   // newsletter subscription stuff below
   const [signupModalVisible, setSignupModalVisible] = useState(false);
   const [signupLoading, setSignupLoading] = useState(true);
+  const { user } = useAuth();
 
   const SIGNUP_URL = 'https://mailchi.mp/114704938e0e/weekly-email-update-signup';
 
@@ -262,9 +264,9 @@ const deleteNewsletter = async (newsletter_id: string) => {
       {!isAdmin && (
         <Pressable
           style={styles.subscribeFab}
-          onPress={async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            logSubscriptionClick(user?.id ?? 'anonymous');
+          onPress={() => {
+            if (!user) return;
+            logSubscriptionClick(user.id);
             setSignupLoading(true);
             setSignupModalVisible(true);
           }}
