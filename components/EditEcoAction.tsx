@@ -3,7 +3,6 @@ import {Alert} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { supabase } from '@/constants/supabase';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import * as FileSystem from 'expo-file-system/legacy'
 import { decode } from 'base64-arraybuffer';
 import { DisplayEcoAction } from '@/components/DisplayEcoAction';
@@ -158,7 +157,7 @@ type Props =
           if (coverPhoto && !imageUrl) return;
 
           if (typeOfAction === "online") {
-                const { data, error } = await supabase
+                const { error } = await supabase
                 .from("online_ecoactions")
                 .update({
                     cover_photo: imageUrl,
@@ -178,7 +177,7 @@ type Props =
             router.push("/(tabs)/volunteer");
           }
           else if (typeOfAction === "in-person") {
-            const { data, error } = await supabase.from("inperson_ecoactions").update({
+            const { error } = await supabase.from("inperson_ecoactions").update({
               title: title,
               summary: description,
               start_date: startTime!.toISOString(),
@@ -198,7 +197,7 @@ type Props =
             router.push("/(tabs)/volunteer");
           }
           else if (typeOfAction === "event") {
-            const { data, error } = await supabase.from("events").update({
+            const { error } = await supabase.from("events").update({
               title: title,
               description: description,
               start_date: startTime!.toISOString(),

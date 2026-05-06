@@ -3,7 +3,6 @@ import {Alert} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/constants/supabase';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import * as FileSystem from 'expo-file-system/legacy'
 import { decode } from 'base64-arraybuffer';
 import { DisplayEcoAction } from '@/components/DisplayEcoAction';

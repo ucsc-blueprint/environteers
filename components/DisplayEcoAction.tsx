@@ -1,12 +1,11 @@
-import React, {useState, useRef} from 'react';
-import { StyleSheet, Text, View, Pressable, TextInput, Alert, Image, ScrollView, Platform, KeyboardAvoidingView, Keyboard} from 'react-native';
+import React, { useState, useRef, Dispatch, SetStateAction } from 'react';
+import { StyleSheet, Text, View, Pressable, TextInput, Image, Platform, Keyboard} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { actions, RichEditor, RichToolbar } from 'react-native-pell-rich-editor';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Dispatch, SetStateAction } from 'react';
 import { ActivityIndicator } from 'react-native-paper';
 type Props = {
   typeOfAction: string;
