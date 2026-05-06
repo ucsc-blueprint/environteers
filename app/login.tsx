@@ -1,11 +1,13 @@
 import { View } from 'react-native';
 import LoginForm from '@/components/LoginForm';
+import { useLocalSearchParams } from 'expo-router';
 import { supabase } from '@/constants/supabase';
 import Toast from 'react-native-toast-message';
 
 import React from 'react';
 export default function LoginScreen() {
-  
+  const { isAdmin : isAdminParam } = useLocalSearchParams();
+
   async function onSubmit(email: string, password: string) {
     const {error} = await supabase.auth.signInWithPassword({
       email: email,
@@ -19,6 +21,7 @@ export default function LoginScreen() {
       })
       return;
     }
+
     Toast.show({
       type: 'success',
       text1: 'You are now logged in',
@@ -26,7 +29,7 @@ export default function LoginScreen() {
   }
   return (
     <View style={{flex: 1}}>
-      <LoginForm onSubmit={onSubmit}/>
+      <LoginForm onSubmit={onSubmit} isAdmin={isAdminParam === 'true'} />
     </View>
   )
 }

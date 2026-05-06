@@ -6,13 +6,16 @@ import React from "react";
 
 export default function LandingIndex() {
   const router = useRouter();
-  const {user, profile} = useAuth();
-  
+  const { user, profile, loading } = useAuth();
+
   React.useEffect(() => {
+    if (loading) return;
+
     if (user && profile) {
-      router.push('/(tabs)/home')
+      router.replace('/(tabs)/volunteer');
     }
-  }, [user, profile, router])
+  }, [user, profile, loading, router]);
+
   return (
     <View
       style={{

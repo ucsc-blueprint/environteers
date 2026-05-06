@@ -1,52 +1,84 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {View, Text, TextInput, FlatList, Pressable, StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+
+import { supabase } from "@/constants/supabase";
 
 type Volunteer = {
   id: string;
   name: string;
-  years: number;
-  status: 'approved' | 'pending';
+  membership: string;
 };
 
-const MOCK_VOLUNTEERS: Volunteer[] = [
-  { id: '1', name: 'A Name', years: 3, status: 'approved' },
-  { id: '2', name: 'B Name', years: 2, status: 'approved' },
-  { id: '3', name: 'C Name', years: 1, status: 'pending' },
-  { id: '4', name: 'D Name', years: 4, status: 'pending' },
-  { id: '5', name: 'E Name', years: 2, status: 'approved' },
-  { id: '6', name: 'F Name', years: 2, status: 'approved' },
-  { id: '7', name: 'G Name', years: 2, status: 'approved' },
-  { id: '8', name: 'H Name', years: 2, status: 'approved' },
-  { id: '9', name: 'I Name', years: 2, status: 'approved' },
-  { id: '10', name: 'J Name', years: 2, status: 'approved' },
-  { id: '11', name: 'K Name', years: 2, status: 'approved' },
-  { id: '12', name: 'L Name', years: 2, status: 'approved' },
-  { id: '13', name: 'M Name', years: 2, status: 'approved' },
-];
-
 const includesText = (str: string, search: string) => 
-    {
-        if (str.toLowerCase().includes(search.toLowerCase()))
-        {
-          return true;
-        }
-        else
-          return false;
+  str.toLowerCase().includes(search.toLowerCase());
 
-    }
+export const formatMembership = (created_at: string) => {
+  const created = new Date(created_at);
+  const now = new Date();
+
+  const diffMs = now.getTime() - created.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+  if (diffDays === 0) return "Joined today";
+  if (diffDays < 30) return `Member for ${diffDays} day${diffDays === 1 ? "" : "s"}`;
+  
+  const months = Math.floor(diffDays / 30);
+  if (months < 12) return `Member for ${months} month${months === 1 ? "" : "s"}`; 
+
+  const years = Math.floor(months / 12);
+  const remainingMonths = months % 12;
+
+  if (remainingMonths === 0) return `Member for ${years} year${years === 1 ? "" : "s"}`;
+
+  return `Member for ${years} year${years === 1 ? "" : "s"} and ` +
+         `${remainingMonths} month${remainingMonths === 1 ? "" : "s"}`;
+}
 
 export const AdminVolunteersView = () => {
-  const [tab, setTab] = useState<'approved' | 'pending'>('approved');
+  const router = useRouter();
+  const [allVolunteers, setAllVolunteers] = useState<Volunteer[]>([]);
   const [searchText, setSearchText] = useState('');
 
-  // Filter volunteers by tab and search text
-  const filteredVolunteers = MOCK_VOLUNTEERS.filter(
-    (v) =>
-      v.status === tab &&
-      (includesText(v.name, searchText))
-  );
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('user_id, first_name, last_name, created_at')
+          .eq("is_admin", false);
+        
+        if (error) {
+          console.error("Error fetching users:", error);
+          return;
+        }
+
+        const users: Volunteer[] = (data ?? []).map(user => {
+          return {
+            id: user.user_id,
+            name: `${user.first_name} ${user.last_name}`,
+            membership: formatMembership(user.created_at)
+          };
+        });
+
+        setAllVolunteers(users);
+      } catch (error) {
+        console.error("Unexpected error:", error);
+      }
+    };
+
+    fetchUsers();
+  }, [])
+
+  const volunteers = useMemo(() => {
+    if (!searchText.trim()) return allVolunteers;
+
+    return allVolunteers.filter(user => 
+      includesText(user.name, searchText)
+    );
+  }, [allVolunteers, searchText]);
 
   return (
     <View style = {styles.container}>
@@ -58,7 +90,7 @@ export const AdminVolunteersView = () => {
         <TextInput
           placeholderTextColor='#999'
           
-          placeholder="Search for a name (or email??)"
+          placeholder="Search..."
           
 
           style={styles.search}
@@ -66,41 +98,27 @@ export const AdminVolunteersView = () => {
           onChangeText={setSearchText}
         />
 
-        {/* Tabs */}
-        <View style={styles.tabs}>
-          <Pressable onPress={() => setTab('approved')}>
-            <Text style={[styles.tabText, tab === 'approved' && styles.activeTab]}>
-              Approved
-            </Text>
-          </Pressable>
-
-          <Pressable onPress={() => setTab('pending')}>
-            <Text style={[styles.tabText, tab === 'pending' && styles.activeTab]}>
-              Pending Approval
-            </Text>
-          </Pressable>
-        </View>
-
         {/* volunteer list */}
         <FlatList
-          data={filteredVolunteers}
+          data={volunteers}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ paddingBottom: 24, paddingInline: 24}}
           renderItem={({ item }) => (
-            <View style={styles.row}>
+            <Pressable 
+              style={styles.row}
+              onPress={() => router.push({
+                pathname: '/(tabs)/admin-analytics',
+                params: { volunteerName: item.name, membershipStatus: item.membership, volunteerID: item.id }
+              })}
+            >
               <View style={styles.avatar} />
 
               <View style={{ flex: 1 }}>
                 <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.subtext}>Member for {item.years} years</Text>
+                <Text style={styles.subtext}>{item.membership}
+                </Text>
               </View>
-
-              {item.status === 'pending' && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>Pending</Text>
-                </View>
-              )}
-            </View>
+            </Pressable>
           )}
         />
       </View>

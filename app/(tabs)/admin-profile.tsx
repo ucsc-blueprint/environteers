@@ -1,0 +1,120 @@
+import React, { useState } from 'react';
+import { View, Text, ActivityIndicator, StyleSheet, Pressable, Image } from 'react-native';
+import { AdminProfileView } from '@/components/AdminProfileView';
+import { AdminPendingView } from '@/components/AdminPendingView';
+import { LogoutButton } from '@/components/LogoutButton';
+import { useAuth } from '@/context/AuthContext';
+import { Redirect } from 'expo-router';
+import { formatMembership } from '@/components/AdminVolunteersView'
+
+export default function AdminProfile() {
+  const [tab, setTab] = useState<"pending" | "active">("pending");
+  const { profile, loading } = useAuth();
+
+  if (loading) return <ActivityIndicator size="large" color="#000000" />
+  if (!profile) return <Redirect href="/" />
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.headerContainer}>
+        <Image style={styles.avatar} source={require('../../assets/images/PFP.png')} />
+        <View style={styles.names}>
+          <Text style={styles.name}>{profile.first_name} {profile.last_name}</Text>
+          <Text style={styles.membership}>{formatMembership(profile.created_at)}</Text>
+        </View>
+      </View>
+
+      <View style={styles.tabBar}>
+        <Pressable 
+          onPress={() => setTab("pending")}
+          style={[styles.tabButton, tab === "pending" && styles.activeTab]}
+        >
+          <Text style={[styles.tabText, tab === "pending" && styles.activeTabText]}>
+            Pending Requests
+          </Text>
+        </Pressable>
+
+        <Pressable 
+          onPress={() => setTab("active")}
+          style={[styles.tabButton, tab === "active" && styles.activeTab]}
+        >
+          <Text style={[styles.tabText, tab === "active" && styles.activeTabText]}>
+            Active Admins
+          </Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.content}>
+        {tab === "pending" ? <AdminPendingView /> : <AdminProfileView />}
+        
+        <LogoutButton />
+      </View>
+    </View>
+  )
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  headerContainer: {
+    backgroundColor: '#fff',
+    marginTop: '15%',
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  avatar: { 
+    width: 90, 
+    height: 90, 
+    borderRadius: 45, 
+    backgroundColor: '#ccc',
+  },
+  names: {
+    flexDirection: 'column',
+    margin: 10,
+  },
+  name: {
+    fontWeight: 700,
+    fontSize: 24,
+    color: "#57811D",
+  },
+  membership: {
+    fontWeight: 500,
+    fontSize: 16,
+    color: "#929292",
+  },
+  tabBar: {
+    flexDirection: "row",
+    backgroundColor: '#D5D5D5',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderBottomWidth: 3,
+    borderBottomColor: 'transparent',
+  },
+  activeTab: {
+    borderBottomColor: '#84bd00',
+  },
+  tabText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#666666',
+  },
+  activeTabText: {
+    color: '#000000',
+    fontWeight: '700',
+  },
+  content: {
+    flex: 1,
+    backgroundColor: "#EAF2F6",
+  }
+})

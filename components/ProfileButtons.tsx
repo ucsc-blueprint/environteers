@@ -72,19 +72,20 @@ export function ProfileButtons() {
       />
       <View style={styles.spacer} />
       <ProfileButton
-        label="Achievements"
-        isAchievements={true}
-        onPress={() => router.push('/achievements')}
-      />
-      <View style={styles.spacer} />
-      <ProfileButton
         label="Upcoming"
         header="Scheduled events:"
         eventText="• Nov 31: SC Mountains Trail Stewardship: Hike & Help at Arana Gulch..."
         onPress={() => router.push('/upcoming')}
       />
+      <ProfileButton
+      label="Account"
+      header="Options:"
+      eventText="Change username & password"
+      onPress={() => router.push('/profilesettings')}
+      />
     </View>
   );
+  
 }
 
 const styles = {
