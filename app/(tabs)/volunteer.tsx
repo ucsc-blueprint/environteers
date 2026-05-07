@@ -76,6 +76,65 @@ export default function Volunteer() {
 
   const isAdmin = profile?.is_admin === true;
 
+  const fetchData = useCallback(async () => {
+    if (!user?.id) return;
+
+    const [inPersonRes, onlineRes, eventRes] = await Promise.all([
+      supabase
+        .from("inperson_ecoactions")
+        .select(`*, location_latitude, location_longitude`),
+
+      supabase
+        .from("online_ecoactions")
+        .select(`*`),
+
+      supabase
+        .from("events")
+        .select(`*, location_latitude, location_longitude`)
+    ]);
+
+    if (inPersonRes.error) console.error(inPersonRes.error);
+    if (onlineRes.error) console.error(onlineRes.error);
+    if (eventRes.error) console.error(eventRes.error);
+
+    const inPersonData = inPersonRes.data ?? [];
+    const onlineData = onlineRes.data ?? [];
+    const eventData = eventRes.data ?? [];
+  
+    const inPersonCardData: CardProps[] = (inPersonData ?? []).map(card => ({
+      cardType: "in_person",
+      cardInfo: card,
+      liked: false,
+      signed_up: null,
+      completed: null,
+      clicked: false,
+      feedback: false,
+    }));
+
+    const onlineCardData: CardProps[] = (onlineData ?? []).map(card => ({
+      cardType: "online",
+      cardInfo: card,
+      liked: false,
+      signed_up: null,
+      completed: null,
+      clicked: false,
+      feedback: false,
+    })); 
+  
+    const eventCardData: CardProps[] = (eventData ?? []).map(event => ({
+      cardType: "event",
+      cardInfo: event,
+      liked: false,
+      signed_up: null,
+      completed: null,
+      clicked: false,
+      feedback: false, 
+    }));
+
+    const fullData = [...inPersonCardData, ...onlineCardData, ...eventCardData]
+    setItems(fullData);
+  }, [user?.id]);
+
   useEffect(() => {
     const getLocation = async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -87,74 +146,10 @@ export default function Volunteer() {
       });
     };
 
-    const fetchData = async () => {
-      setLoading(true);
-
-      if (!user?.id) {
-        setLoading(false);
-        return;
-      };
-
-      const [inPersonRes, onlineRes, eventRes] = await Promise.all([
-        supabase
-          .from("inperson_ecoactions")
-          .select(`*, location_latitude, location_longitude`),
-
-        supabase
-          .from("online_ecoactions")
-          .select(`*`),
-
-        supabase
-          .from("events")
-          .select(`*, location_latitude, location_longitude`)
-      ]);
-
-      if (inPersonRes.error) console.error(inPersonRes.error);
-      if (onlineRes.error) console.error(onlineRes.error);
-      if (eventRes.error) console.error(eventRes.error);
-
-      const inPersonData = inPersonRes.data ?? [];
-      const onlineData = onlineRes.data ?? [];
-      const eventData = eventRes.data ?? [];
-    
-      const inPersonCardData: CardProps[] = (inPersonData ?? []).map(card => ({
-        cardType: "in_person",
-        cardInfo: card,
-        liked: false,
-        signed_up: null,
-        completed: null,
-        clicked: false,
-        feedback: false,
-      }));
-
-      const onlineCardData: CardProps[] = (onlineData ?? []).map(card => ({
-        cardType: "online",
-        cardInfo: card,
-        liked: false,
-        signed_up: null,
-        completed: null,
-        clicked: false,
-        feedback: false,
-      })); 
-    
-      const eventCardData: CardProps[] = (eventData ?? []).map(event => ({
-        cardType: "event",
-        cardInfo: event,
-        liked: false,
-        signed_up: null,
-        completed: null,
-        clicked: false,
-        feedback: false, 
-      }));
-
-      const fullData = [...inPersonCardData, ...onlineCardData, ...eventCardData]
-      setItems(fullData);
-      setLoading(false);
-    };
-
     getLocation();
-    fetchData();
-  }, [user?.id]);
+    setLoading(true)
+    fetchData().finally(() => setLoading(false));
+  }, [fetchData]);
 
   const visibleItems = useMemo(() => {
     return getVisibleEcoActions(items);
@@ -227,63 +222,8 @@ export default function Volunteer() {
   
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-
-    const [inPersonRes, onlineRes, eventRes] = await Promise.all([
-      supabase
-        .from("inperson_ecoactions")
-        .select(`*, location_latitude, location_longitude`),
-
-      supabase
-        .from("online_ecoactions")
-        .select(`*`),
-
-      supabase
-        .from("events")
-        .select(`*, location_latitude, location_longitude`)
-    ]);
-
-    if (inPersonRes.error) console.error(inPersonRes.error);
-    if (onlineRes.error) console.error(onlineRes.error);
-    if (eventRes.error) console.error(eventRes.error);
-
-    const inPersonData = inPersonRes.data ?? [];
-    const onlineData = onlineRes.data ?? [];
-    const eventData = eventRes.data ?? [];
-  
-    const inPersonCardData: CardProps[] = (inPersonData ?? []).map(card => ({
-      cardType: "in_person",
-      cardInfo: card,
-      liked: false,
-      signed_up: null,
-      completed: null,
-      clicked: false,
-      feedback: false,
-    }));
-
-    const onlineCardData: CardProps[] = (onlineData ?? []).map(card => ({
-      cardType: "online",
-      cardInfo: card,
-      liked: false,
-      signed_up: null,
-      completed: null,
-      clicked: false,
-      feedback: false,
-    })); 
-  
-    const eventCardData: CardProps[] = (eventData ?? []).map(event => ({
-      cardType: "event",
-      cardInfo: event,
-      liked: false,
-      signed_up: null,
-      completed: null,
-      clicked: false,
-      feedback: false, 
-    }));
-
-    const fullData = [...inPersonCardData, ...onlineCardData, ...eventCardData]
-    setItems(fullData);
-    setRefreshing(false);
-  }, []);
+    await fetchData().finally(() => setRefreshing(false));
+  }, [fetchData]);
 
   return (
     <LinearGradient
