@@ -7,12 +7,10 @@ import {
   TextInput,
   Pressable,
   Alert,
-  ScrollView,
   Linking
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAuth } from '@/context/AuthContext';
 
 export default function ContactUs() {
   const router = useRouter();
@@ -21,7 +19,6 @@ export default function ContactUs() {
   const [lastName, setLastName] = useState('');
   //const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
-  const { user, profile } = useAuth();
 
   const handleSend = async () => {
     if (!firstName || !lastName || !message) {
@@ -31,14 +28,12 @@ export default function ContactUs() {
   
     //const userEmail = user?.email || profile?.email || 'unknown-user';
   
-    const subject = encodeURIComponent('Environteers Feedback');
+    const subject = encodeURIComponent('Environteers App Feedback');
   
-    const body = encodeURIComponent(
-  `Name: ${firstName} ${lastName}
-  
-  Message:
-  ${message}`
-    );
+    const body = encodeURIComponent(` 
+      Name: ${firstName} ${lastName}
+      Message: ${message}
+    `);
   
     const email = 'test-email@gmail.com';
   
@@ -60,7 +55,7 @@ export default function ContactUs() {
       setFirstName('');
       setLastName('');
       setMessage('');
-    } catch (err) {
+    } catch {
       Alert.alert(
         'Could not open email app',
         'Please make sure a mail app is installed.'
@@ -69,11 +64,7 @@ export default function ContactUs() {
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-      showsVerticalScrollIndicator={false}
-    >
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Pressable onPress={() => router.back()}>
@@ -148,14 +139,14 @@ export default function ContactUs() {
           <Text style={styles.sendButtonText}>Send</Text>
         </Pressable>
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#EAF2F6',
   },
 
   contentContainer: {
@@ -163,7 +154,7 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    height: 120,
+    height: 100,
     backgroundColor: '#FFFFFF',
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -174,13 +165,12 @@ const styles = StyleSheet.create({
   },
 
   headerTitle: {
-    fontSize: 30,
+    fontSize: 24,
     fontWeight: '600',
     color: '#132433',
   },
 
   card: {
-    backgroundColor: '#EAF2F6',
     paddingHorizontal: 24,
     paddingTop: 30,
     paddingBottom: 40,
@@ -188,9 +178,9 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 34,
+    fontSize: 30,
     fontWeight: '700',
-    color: '#132433',
+    color: '#2F4068',
     marginBottom: 14,
     fontFamily: 'Mulish',
   },
@@ -214,7 +204,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#C6DCEB',
     borderRadius: 16,
-    height: 68,
+    height: 50,
     paddingHorizontal: 20,
     fontSize: 16,
     marginBottom: 28,
@@ -235,8 +225,8 @@ const styles = StyleSheet.create({
   },
 
   sendButton: {
-    backgroundColor: '#5E8E16',
-    height: 72,
+    backgroundColor: '#57811D',
+    height: 50,
     borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
@@ -245,6 +235,6 @@ const styles = StyleSheet.create({
   sendButtonText: {
     color: '#FFFFFF',
     fontSize: 22,
-    fontWeight: '500',
+    // fontWeight: '500',
   },
 });

@@ -176,15 +176,6 @@ export default function Profile() {
         />
       </View>
 
-      {/* Contact Us */}
-      <Pressable
-        style={styles.contactButton}
-        onPress={() => router.push('/ContactUs')}
-      >
-        <Ionicons name="mail-outline" size={20} color="#fff" />
-        <Text style={styles.contactButtonText}>Contact Us</Text>
-      </Pressable>
-
       <LogoutButton />
     </ScrollView>
   );
