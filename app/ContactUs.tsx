@@ -9,6 +9,7 @@ import {
   Alert,
   Linking
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
@@ -64,7 +65,13 @@ export default function ContactUs() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAwareScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+      keyboardShouldPersistTaps="handled"
+      enableOnAndroid={true}
+      extraScrollHeight={40}
+    >
       {/* Header */}
       <View style={styles.header}>
         <Pressable onPress={() => router.back()}>
@@ -139,7 +146,7 @@ export default function ContactUs() {
           <Text style={styles.sendButtonText}>Send</Text>
         </Pressable>
       </View>
-    </View>
+    </KeyboardAwareScrollView>
   );
 }
 
