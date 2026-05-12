@@ -1,185 +1,193 @@
 import React from 'react';
-import { View, ScrollView, Text, TextInput, ActivityIndicator, StyleSheet, FlatList} from 'react-native';
-import { Leaf, Calendar, ChevronRight, Pencil } from 'lucide-react-native';
-import { LineChart } from 'react-native-chart-kit';
-import { CardProps, Divider } from 'react-native-paper';
-import { Redirect, useLocalSearchParams } from 'expo-router';
+import {
+  View, ScrollView, Text, ActivityIndicator,
+  StyleSheet, FlatList, Pressable,
+} from 'react-native';
+import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/context/AuthContext';
 import { AdminFeedbackList } from '@/components/AdminFeedbackList';
 import { supabase } from '@/constants/supabase';
-import {cardProps} from '@context/InteractionsContext';
-import { Ionicons } from '@expo/vector-icons';
 
-const achievements = [
-  { threshold: 5, label: "Novice", description: "complete first five eco-actions" }
-  { threshold: 10, label: "medium", description: "complete ten eco-actions" },
-  { threshold: 20, label: "pro", description: "complete twenty eco-actions" },
+const ACHIEVEMENTS = [
+  { threshold: 5,  label: 'Novice',    description: 'Complete your first five eco-actions.' },
+  { threshold: 10, label: 'Mid-level', description: 'Complete 10 eco-actions.' },
+  { threshold: 15, label: 'Eco-Taker', description: 'Complete 15 eco-actions.' },
+  { threshold: 20, label: 'Pro',       description: 'Complete 20 eco-actions.' },
+  { threshold: 25, label: 'Gold',      description: 'Complete 25 eco-actions.' },
+  { threshold: 30, label: 'Adept',     description: 'Complete 30 eco-actions.' },
+  { threshold: 35, label: 'Expert',    description: 'Complete 35 eco-actions.' },
+  { threshold: 40, label: 'Master',    description: 'Complete 40 eco-actions.' },
+  { threshold: 45, label: 'Elite',     description: 'Complete 45 eco-actions.' },
+  { threshold: 50, label: 'Legend',    description: 'Complete 50 eco-actions.' },
+  { threshold: 55, label: 'Champion',  description: 'Complete 55 eco-actions.' },
+  { threshold: 60, label: 'Icon',      description: 'Complete 60 eco-actions.' },
 ];
+
+type CompletedItem = {
+  id: string;
+  title: string;
+  type: 'event' | 'eco-action';
+  date: string;
+};
+
+type Tab = 'achievements' | 'manage';
 
 export default function AdminAnalytics() {
   const { volunteerName, membershipStatus, volunteerID } = useLocalSearchParams();
   const { profile, loading } = useAuth();
+  const router = useRouter();
 
+  const [tab, setTab] = React.useState<Tab>('achievements');
   const [feedback, setFeedback] = React.useState<any[]>([]);
   const [loadingFeedback, setLoadingFeedback] = React.useState(true);
-
-  const [completedCards, setCompletedCards] = React.useState<cardProps[]>([]);
+  const [completedItems, setCompletedItems] = React.useState<CompletedItem[]>([]);
   const [loadingCompleted, setLoadingCompleted] = React.useState(true);
+  const [ecoCount, setEcoCount] = React.useState(0);
 
   React.useEffect(() => {
+    if (!volunteerID) return;
+    const id = Array.isArray(volunteerID) ? volunteerID[0] : volunteerID;
+
     const fetchFeedback = async () => {
-      if (!volunteerID) return;
-
       setLoadingFeedback(true);
-
-      const id = Array.isArray(volunteerID) ? volunteerID[0] : volunteerID;
-
       const { data, error } = await supabase
         .from('feedback')
         .select('*')
         .eq('user_id', id)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.log('Error fetching feedback:', error);
-        setLoadingFeedback(false);
-        return;
-      }
+      if (error) { setLoadingFeedback(false); return; }
 
-      const formattedData = [];
+      const formatted: any[] = [];
       for (const item of data) {
-        let eventName = "";
+        let eventName = '';
         if (item.event_id) {
-          const {data: events} = await supabase
-            .from('events')
-            .select('title')
-            .eq('id', item.event_id)
-            .single();
-          if (events) {
-            eventName = events?.title;
-          }
+          const { data: ev } = await supabase
+            .from('events').select('title').eq('id', item.event_id).single();
+          if (ev) eventName = ev.title;
+        } else if (item.inperson_ecoaction_id) {
+          const { data: ip } = await supabase
+            .from('inperson_ecoactions').select('title').eq('id', item.inperson_ecoaction_id).single();
+          if (ip) eventName = ip.title;
+        } else if (item.online_ecoaction_id) {
+          const { data: ol } = await supabase
+            .from('online_ecoactions').select('title').eq('id', item.online_ecoaction_id).single();
+          if (ol) eventName = ol.title;
         }
-        else if (item.inperson_ecoaction_id) {
-          const {data: inperson} = await supabase
-            .from('inperson_ecoactions')
-            .select('title')
-            .eq('id', item.inperson_ecoaction_id)
-            .single();
-          if (inperson) {
-            eventName = inperson?.title;
-          }
-        }
-        else if (item.online_ecoaction_id) {
-          const {data: online} = await supabase
-            .from('online_ecoactions')
-            .select('title')
-            .eq('id', item.online_ecoaction_id)
-            .single();
-
-          if (online) {
-            eventName = online?.title;
-          }
-        }
-        const object = {
+        formatted.push({
           event_name: eventName,
           user_name: volunteerName || 'Volunteer Name',
           feedback_content: item.content,
           date: new Date(item.created_at),
           is_specific: true,
           membership: membershipStatus,
-          user_id: volunteerID
-        }
-        formattedData.push(object)
+          user_id: volunteerID,
+        });
       }
-
-      setFeedback(formattedData);
+      setFeedback(formatted);
       setLoadingFeedback(false);
     };
 
+    // ── Fetch interactions ────────────────────────────────────────────────
     const fetchInteractions = async () => {
-      if (!volunteerID) return;
       setLoadingCompleted(true);
 
-      const id = Array.isArray(volunteerID) ? volunteerID[0] : volunteerID;
-      const [inPersonRes, onlineRes] = await Promise.all([
-        supabase.from('interactions_eco_inperson').select('*, inperson_ecoactions(*').eq('user_id', id),
-        supabase.from('interactions_eco_online').select('*, online_ecoactions(*').eq('user_id', id),
-        supabase.from('interactions_events').select('*, events(*').eq('user_id', id),
+      const [inPersonRes, onlineRes, eventsRes] = await Promise.all([
+        supabase
+          .from('interactions_eco_inperson')
+          .select('*, inperson_ecoactions(*)')
+          .eq('user_id', id)
+          .eq('completed', true),
+        supabase
+          .from('interactions_eco_online')
+          .select('*, online_ecoactions(*)')
+          .eq('user_id', id)
+          .eq('completed', true),
+        supabase
+          .from('interactions_events')
+          .select('*, events(*)')
+          .eq('user_id', id)
+          .eq('completed', true),
       ]);
 
-      const inPerson: CardProps[] = (inPersonRes.data || []).map((interaction) => ({
-        cardType: "in_person",
-        cardInfo: interaction.inperson_ecoactions,
-        liked: interaction.liked,
-        signed_up : interaction.signed_up,
-        completed: interaction.completed,
-        clicked: interaction.clicked,
-        feedback: interaction.feedback,
+      const inPersonItems: CompletedItem[] = (inPersonRes.data || []).map((r: any) => ({
+        id: `ip-${r.id}`,
+        title: r.inperson_ecoactions?.title ?? 'Eco-Action',
+        type: 'eco-action',
+        date: r.completed_timestamp ?? r.signed_up_timestamp ?? '',
       }));
 
-      const online: CardProps[] = (onlineRes.data || []).map((interaction) => ({
-        cardType: "online",
-        cardInfo: interaction.online_ecoactions,
-        liked: interaction.liked,
-        signed_up : interaction.signed_up,
-        completed: interaction.completed,
-        clicked: interaction.clicked,
-        feedback: interaction.feedback,
+      const onlineItems: CompletedItem[] = (onlineRes.data || []).map((r: any) => ({
+        id: `ol-${r.id}`,
+        title: r.online_ecoactions?.title ?? 'Eco-Action',
+        type: 'eco-action',
+        date: r.completed_timestamp ?? r.signed_up_timestamp ?? '',
       }));
 
-      const events: CardProps[] = (eventsRes.data || []).map((interaction) => ({
-        cardType: "event",
-        cardInfo: interaction,
-        liked: interaction.liked,
-        signed_up : interaction.signed_up,
-        completed: interaction.completed,
-        clicked: interaction.clicked,
-        feedback: interaction.feedback,
+      const eventItems: CompletedItem[] = (eventsRes.data || []).map((r: any) => ({
+        id: `ev-${r.id}`,
+        title: r.events?.title ?? 'Event',
+        type: 'event',
+        date: r.completed_timestamp ?? r.signed_up_timestamp ?? '',
       }));
 
-      setCompletedCards([...inPerson, ...online, ...events]);
+      // eco count = in-person + online only (matches profile.tsx completedCount logic)
+      setEcoCount(inPersonItems.length + onlineItems.length);
+
+      const all = [...inPersonItems, ...onlineItems, ...eventItems].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+      setCompletedItems(all);
       setLoadingCompleted(false);
     };
 
     fetchFeedback();
-  }, [volunteerName, membershipStatus, volunteerID]);
+    fetchInteractions();
+  }, [volunteerID]);
 
-  const completedCount = completedCards.filter(card => card.completed).length;
-  const lastUnlocked = [...achievements].reverse().find(ach => completedCount >= ach.threshold);
-  const nextAchievement = achievements.find(ach => completedCount < ach.threshold);
-  const prevThreshold = lastUnlocked ? (achievements[achievements.indexOf(lastUnlocked) - 1]?.threshold ?? 0)
+  const lastUnlocked = [...ACHIEVEMENTS].reverse().find(a => ecoCount >= a.threshold);
+  const nextAchievement = ACHIEVEMENTS.find(a => ecoCount < a.threshold);
+  const prevThreshold = lastUnlocked
+    ? (ACHIEVEMENTS[ACHIEVEMENTS.indexOf(lastUnlocked) - 1]?.threshold ?? 0)
     : 0;
-  const progress = nextAchievement ? (completedCount - prevThreshold) / (nextAchievement.threshold - prevThreshold) : 1;
-  const remaining = nextAchievement ? nextAchievement.threshold - completedCount : 0;
+  const progress = nextAchievement
+    ? (ecoCount - prevThreshold) / (nextAchievement.threshold - prevThreshold)
+    : 1;
+  const remaining = nextAchievement ? nextAchievement.threshold - ecoCount : 0;
 
-  if (loading) {
-    return <ActivityIndicator size="large" color="#000000" />
-  }
-  if (!profile) {
-    return <Redirect href="/" />
-  }
-  if (!profile.is_admin) {
-    return <Redirect href="/(tabs)/volunteer" />
-  }
+  if (loading) return <ActivityIndicator size="large" color="#000" />;
+  if (!profile) return <Redirect href="/" />;
+  if (!profile.is_admin) return <Redirect href="/(tabs)/volunteer" />;
+
+  const name = Array.isArray(volunteerName) ? volunteerName[0] : volunteerName ?? 'Volunteer Name';
+  const membership = Array.isArray(membershipStatus) ? membershipStatus[0] : membershipStatus ?? '';
+
+  const formatDate = (iso: string) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    return `On ${d.getMonth() + 1}/${d.getDate()}/${String(d.getFullYear()).slice(-2)}`;
+  };
 
   return (
-    <ScrollView 
-      style={styles.container} 
-      contentContainerStyle={{ justifyContent: "center", alignItems: 'center' }}
-      keyboardDismissMode="on-drag"
-    >
-      <View style={styles.profileContainer}>
-        <View style={styles.profileCircle} />
-        {/* default if no actual volunteer name */} 
-        <Text style={styles.profileName}>{volunteerName || 'Volunteer Name'}</Text>
-        <Text style={styles.membershipText}>{membershipStatus}</Text>
+    <ScrollView style={styles.container}>
+
+      <Pressable style={styles.backRow} onPress={() => router.push('/(tabs)/VolunteerView')}>
+        <Ionicons name="chevron-back" size={16} color="#172A36" />
+        <Text style={styles.backText}>All Users</Text>
+      </Pressable>
+
+      <View style={styles.avatarSection}>
+        <View style={styles.avatar} />
+        <Text style={styles.name}>{name}</Text>
+        <Text style={styles.memberSince}>{membership}</Text>
       </View>
-      
+
       <View style={styles.statsCard}>
         <View style={styles.statsRow}>
           <Ionicons name="leaf" size={32} color="#618E20" />
           <View style={{ marginLeft: 8 }}>
-            <Text style={styles.ecoCount}>{completedCount}</Text>
+            <Text style={styles.ecoCount}>{ecoCount}</Text>
             <Text style={styles.ecoLabel}>Eco-Actions</Text>
           </View>
           {nextAchievement && (
@@ -189,443 +197,293 @@ export default function AdminAnalytics() {
           )}
         </View>
         <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { flex: progress }]} />
-          <View style={{ flex: 1 - progress }} />
+          <View style={[styles.progressFill, { flex: Math.max(progress, 0.01) }]} />
+          <View style={{ flex: Math.max(1 - progress, 0) }} />
         </View>
       </View>
 
-      <View style={styles.row}>
-        
-        <View style={[styles.button, styles.actionsButton]}>
-          <View style={styles.iconsRow}>
-            <Leaf size={24} color="#FFFFFF" />
-            <Text style={styles.buttonText}>23</Text>
-          </View>
-          <Text style={styles.buttonSubtext}>Eco-Actions</Text>
-        </View>
-      </View>
-      
-      <View style={styles.bottomButton}>
-        <View style={styles.buttonContent}>
-          <View style={styles.detailsContainer}>
-            <Text style={styles.detailsText}>View Eco-Action Details</Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.sectionContainer}>
-        <Text style={styles.sectionHeader}>Volunteer History</Text>
-        <View style={styles.graphWrapper}>
-          <LineChart 
-            data={{
-              labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-              datasets: [
-                {
-                  data: [1, 3, 2, 3, 6, 4, 5],
-                  strokeWidth: 2,
-                  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                }
-              ]
-            }}
-            width={358}
-            height={250}
-            withDots={true} 
-            withShadow={false} 
-            withInnerLines={false} 
-            withOuterLines={false} 
-            withVerticalLabels={false} 
-            withHorizontalLabels={false}
-            chartConfig={{
-              backgroundColor: "#E0E0E0",
-              backgroundGradientFrom: "#E0E0E0",
-              backgroundGradientTo: "#E0E0E0",
-              color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-              labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-              style: {
-                borderRadius: 16
-              },
-              propsForDots: {
-                r: "3",
-                strokeWidth: "2",
-                stroke: "#000000",
-                fill: "#000000",
-              }
-            }}
-            style={{
-              borderRadius: 16,
-            }}
-          />
-          <View style={styles.yAxis} />
-          <View style={styles.xAxis} />
-          <Text style={styles.yAxisTitle}>Eco-Actions</Text>
-          <Text style={styles.xAxisTitle}>Year</Text>
-        </View>
+      <View style={styles.tabBar}>
+        <Pressable
+          style={[styles.tabBtn, tab === 'achievements' && styles.tabBtnActive]}
+          onPress={() => setTab('achievements')}
+        >
+          <Text style={[styles.tabText, tab === 'achievements' && styles.tabTextActive]}>
+            User Achievements
+          </Text>
+        </Pressable>
+        <Pressable
+          style={[styles.tabBtn, tab === 'manage' && styles.tabBtnActive]}
+          onPress={() => setTab('manage')}
+        >
+          <Text style={[styles.tabText, tab === 'manage' && styles.tabTextActive]}>
+            Manage this user
+          </Text>
+        </Pressable>
       </View>
 
-      <View style={styles.sectionContainer}>
-        <Text style={styles.sectionHeader}>Recent Activity</Text>
-        <View style={styles.activityWrapper}>
-          <Text style={styles.activityHeader}>This week</Text>
-
-          <View style={styles.activityRow}>
-            <View style={styles.activityIconsWrapper}>
-              <View style={styles.activityIconsRow}>
-                <Leaf size={12} color="#000000" />
-                <Text style={styles.activityText}>Eco-Action</Text>
-              </View>
-            </View>
-            
-            <View style={styles.activityMiddle}>
-              <Text style={styles.activityText}>Signed up for...</Text>
-            </View>
-
-            <ChevronRight size={12} color="#000000" />
+      {tab === 'achievements' && (
+        <>
+          <Text style={styles.sectionHeader}>Achievements</Text>
+          <View style={styles.achievementsCard}>
+            <FlatList
+              data={ACHIEVEMENTS}
+              numColumns={4}
+              scrollEnabled={false}
+              keyExtractor={(item) => item.label}
+              renderItem={({ item }) => {
+                const unlocked = ecoCount >= item.threshold;
+                return (
+                  <View style={styles.achievementCell}>
+                    <View style={[
+                      styles.achievementCircle,
+                      unlocked && styles.achievementCircleUnlocked,
+                    ]}>
+                      <Ionicons
+                        name={unlocked ? 'trophy' : 'lock-closed'}
+                        size={28}
+                        color={unlocked ? '#618E20' : '#8BAFC4'}
+                      />
+                    </View>
+                    <Text style={[
+                      styles.achievementLabel,
+                      unlocked && styles.achievementLabelUnlocked,
+                    ]}>
+                      {unlocked ? item.label : '???'}
+                    </Text>
+                  </View>
+                );
+              }}
+            />
           </View>
 
-          <Divider style={{ alignSelf: 'stretch', marginVertical: 12, backgroundColor: '#000000' }} />
-
-          <View style={styles.activityRow}>
-            <View style={styles.activityIconsWrapper}>
-              <View style={styles.activityIconsRow}>
-                <Calendar size={12} color="#000000" />
-                <Text style={styles.activityText}>Event</Text>
-              </View>
-            </View>
-
-            <View style={styles.activityMiddle}>
-              <Text style={styles.activityText}>Attended...</Text>
-            </View>
-
-            <ChevronRight size={12} color="#000000" />
+          <Text style={styles.sectionHeader}>Events + Eco-actions completed</Text>
+          <View style={styles.completedCard}>
+            {loadingCompleted ? (
+              <ActivityIndicator color="#618E20" />
+            ) : completedItems.length === 0 ? (
+              <Text style={styles.emptyText}>No completed items yet</Text>
+            ) : (
+              completedItems.map((item, index) => (
+                <View key={item.id}>
+                  <View style={styles.completedRow}>
+                    <Text style={styles.completedTitle}>
+                      {item.type === 'event' ? 'For Event ' : 'Eco-Action '}
+                      <Text style={{ fontWeight: '600' }}>{item.title}</Text>
+                    </Text>
+                    <Text style={styles.completedDate}>{formatDate(item.date)}</Text>
+                  </View>
+                  {index < completedItems.length - 1 && <View style={styles.divider} />}
+                </View>
+              ))
+            )}
           </View>
 
-          <Divider style={{ alignSelf: 'stretch', marginVertical: 12, backgroundColor: '#000000' }} />
+          <Text style={[styles.sectionHeader, { marginTop: 8 }]}>Event feedback sent</Text>
+          {loadingFeedback ? (
+            <ActivityIndicator color="#618E20" style={{ marginTop: 12 }} />
+          ) : feedback.length > 0 ? (
+            <AdminFeedbackList data={feedback} />
+          ) : (
+            <Text style={styles.emptyText}>No feedback yet</Text>
+          )}
+        </>
+      )}
 
-          <View style={styles.activityRow}>
-            <View style={styles.activityIconsWrapper}>
-              <View style={styles.activityIconsRow}>
-                <Leaf size={12} color="#000000" />
-                <Text style={styles.activityText}>Eco-Action</Text>
-              </View>
-            </View>
-
-            <View style={styles.activityMiddle}>
-              <Text style={styles.activityText}>Signed up for...</Text>
-            </View>
-
-            <ChevronRight size={12} color="#000000" />
-          </View>
+      {tab === 'manage' && (
+        <View style={styles.manageContainer}>
+          <Text style={styles.emptyText}>Admin management options coming soon.</Text>
         </View>
-      </View>
+      )}
 
-      <View style={styles.notesContainer}>
-        <View style={styles.notesHeader}>
-          <Text style={styles.notesText}>Notes</Text>
-          <Pencil size={16} color="#000000" />
-        </View>
-
-        <TextInput
-          style={styles.addNotes}
-          multiline
-          textAlignVertical="top"
-        />
-      </View>
-
-      <View style={styles.sectionContainer}>
-        <Text style={styles.sectionHeader}>Events feedback sent</Text>
-        {loadingFeedback ? (
-          <ActivityIndicator size="large" color="#000000" />
-        ) : feedback.length > 0 ? (
-          <AdminFeedbackList data={feedback} />
-        ) : (
-          <Text style={styles.activityText}>No feedback yet</Text>
-        )}
-      </View>
     </ScrollView>
   );
 }
 
-const styles = {
+const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    backgroundColor: '#EAF2F6',
+    padding: 20,
   },
-  profileContainer: {
-    width: 138,
-    height: 141,
-    marginTop: 10,
-    alignItems: 'center',
-    gap: 10,
-  },
-  profileCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#D9D9D9',
-    marginBottom: 10,
-  },
-  profileName: {
-    fontFamily: 'Inter',
-    fontWeight: '700',
-    fontSize: 16,
-    lineHeight: 19,
-    letterSpacing: 0,
-    textAlign: 'center',
-    color: '#000000',
-  },
-  membershipText: {
-    fontFamily: 'Inter',
-    fontWeight: '500',
-    fontSize: 12,
-    lineHeight: 14,
-    letterSpacing: 0,
-    color: '#666666',
-    textAlign: 'center',
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 32,
-    width: '100%',
-    paddingHorizontal: 16,
-  },
-  button: {
-    borderRadius: 16,
-    paddingVertical: 20,
-    paddingHorizontal: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  hoursButton: {
-    width: 138,
-    height: 135,
-    backgroundColor: '#0282D3',
-    marginRight: 20,
-  },
-  iconsRow: {
+
+  // back
+  backRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    marginBottom: 16,
+    gap: 2,
   },
-  actionsButton: {
-    width: 138,
-    height: 135,
-    backgroundColor: '#79B128',
-  },
-  buttonText: {
-    fontFamily: 'Inter',
-    fontWeight: '500',
-    fontSize: 32,
-    lineHeight: 36,
-    letterSpacing: 0,
-    color: '#FFFFFF',
-  },
-  buttonSubtext: {
-    fontFamily: 'Inter',
-    fontWeight: '500',
+  backText: {
     fontSize: 14,
-    lineHeight: 17,
-    letterSpacing: 0,
-    color: '#FFFFFF',
-    textAlign: 'center',
-    opacity: 0.9,
+    color: '#172A36',
   },
-  bottomButton: {
-    width: 358,
-    height: 48,
-    marginTop: 32,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    justifyContent: 'center',
+
+  avatarSection: {
     alignItems: 'center',
+    marginBottom: 24,
   },
-  buttonContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-  },
-  statusContainer: {
-    width: 125,
-    height: 25,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#000000',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 3,
-    paddingHorizontal: 10,
-  },
-  statusText: {
-    fontFamily: 'Inter',
-    fontWeight: '500',
-    fontSize: 12,
-    color: '#000000',
-  },
-  detailsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  detailsText: {
-    fontFamily: 'Inter',
-    fontWeight: '500',
-    fontSize: 14,
-    lineHeight: 17,
-    color: '#000000',
-  },
-  sectionContainer: {
-    width: 358,
-    marginTop: 24,
-    alignItems: 'flex-start',
-  },
-  sectionHeader: {
-    fontFamily: 'Inter',
-    fontWeight: '400',
-    fontSize: 19,
-  },
-  graphWrapper: {
-    width: 358,
-    marginTop: 24,
-    alignItems: 'center',
-  },
-  yAxis: {
-    position: 'absolute',
-    left: 36,
-    top: 16,
-    bottom: 32,
-    width: 2,
-    backgroundColor: '#000',
-  },
-  xAxis: {
-    position: 'absolute',
-    left: 36,
-    right: 16,
-    bottom: 32,
-    height: 2,
-    backgroundColor: '#000',
-  },
-  yAxisTitle: {
-    position: 'absolute',
-    top: '50%',
-    left: '-3%',
-    transform: [
-      { translateY: -10 },
-      { rotate: '-90deg' },
-    ],
-    fontFamily: 'Inter',
-    fontWeight: '500',
-    fontSize: 10,
-    color: '#000',
-  },
-  xAxisTitle: {
-    position: 'absolute',
-    top: '90%',
-    fontFamily: 'Inter',
-    fontWeight: '500',
-    fontSize: 10,
-  },
-  activityWrapper: {
-    width: 358,
-    marginTop: 24,
-    padding: 16,
-    alignItems: 'flex-start',
-    borderRadius: 16,
-    backgroundColor: '#E0E0E0',
-  },
-  activityHeader: {
-    fontFamily: 'Inter',
-    fontWeight: '400',
-    fontSize: 14,
-    color: '#000000',
+  avatar: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: '#ccc',
     marginBottom: 12,
   },
-  activityRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%', 
-    marginVertical: 6,
+  name: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#618E20',
   },
-  activityIconsWrapper: {
-    width: 100,
+  memberSince: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 4,
   },
-  activityIconsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    borderRadius: 10,
-    justifyContent: 'center',
-    paddingVertical: 3,
-    paddingHorizontal: 10,
-    backgroundColor: '#FFFFFF'
-  },
-  activityMiddle: {
-    flex: 1,
-    marginLeft: 20,
-    justifyContent: 'center',
-  },
-  activityText: {
-    fontFamily: 'Inter',
-    fontWeight: '400',
-    fontSize: 13,
-    color: '#000000',
-  },
-  notesContainer: {
-    width: 358,
-    margin: 24,
-    alignItems: 'flex-start',
+
+  statsCard: {
+    backgroundColor: '#fff',
     borderRadius: 16,
-    backgroundColor: '#E0E0E0',
+    padding: 16,
+    marginBottom: 20,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  ecoCount: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#172A36',
+  },
+  ecoLabel: {
+    fontSize: 13,
+    color: '#666',
+  },
+  rewardPill: {
+    marginLeft: 'auto',
+    backgroundColor: '#DDE8F5',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  rewardPillText: {
+    fontSize: 13,
+    color: '#3A6EA5',
+  },
+  progressTrack: {
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#D9E8F0',
+    flexDirection: 'row',
+    overflow: 'hidden',
+  },
+  progressFill: {
+    backgroundColor: '#618E20',
+    borderRadius: 5,
+  },
+
+  // tab bar
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginBottom: 20,
+    padding: 4,
+    gap: 4,
+  },
+  tabBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  tabBtnActive: {
+    backgroundColor: '#618E20',
+  },
+  tabText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#666',
+  },
+  tabTextActive: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+
+  sectionHeader: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#172A36',
+    marginBottom: 12,
+  },
+
+  achievementsCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 20,
+  },
+  achievementCell: {
+    flex: 1,
+    alignItems: 'center',
+    marginVertical: 12,
+  },
+  achievementCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 2,
+    borderColor: '#8BAFC4',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  achievementCircleUnlocked: {
+    borderColor: '#618E20',
+  },
+  achievementLabel: {
+    fontSize: 12,
+    color: '#8BAFC4',
+    textAlign: 'center',
+  },
+  achievementLabelUnlocked: {
+    color: '#618E20',
+    fontWeight: '600',
+  },
+
+  // completed items list
+  completedCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+  },
+  completedRow: {
+    paddingVertical: 10,
+  },
+  completedTitle: {
+    fontSize: 14,
+    color: '#172A36',
+  },
+  completedDate: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: 2,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#E8E8E8',
+  },
+
+  emptyText: {
+    fontSize: 13,
+    color: '#888',
+  },
+
+  manageContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
     padding: 16,
   },
-  notesHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  notesText: {
-    fontFamily: 'Inter',
-    fontWeight: '400',
-    fontSize: 19,
-  },
-  addNotes: {
-    width: '100%',
-    height: 150,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 8,
-    marginTop: 10,
-    padding: 10,
-  },
-    statsCard: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 20 },
-  statsRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  ecoCount: { fontSize: 28, fontWeight: 'bold', color: '#172A36' },
-  ecoLabel: { fontSize: 13, color: '#666' },
-  rewardPill: {
-    marginLeft: 'auto', backgroundColor: '#DDE8F5',
-    borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6,
-  },
-  rewardPillText: { fontSize: 13, color: '#3A6EA5' },
-  progressTrack: {
-    height: 10, borderRadius: 5, backgroundColor: '#D9E8F0',
-    flexDirection: 'row', overflow: 'hidden',
-  },
-  progressFill: { backgroundColor: '#618E20', borderRadius: 5 },
-  sectionHeader: { fontSize: 22, fontWeight: 'bold', color: '#172A36', marginBottom: 12 },
-  achievementsCard: { backgroundColor: '#fff', borderRadius: 16, padding: 12, marginBottom: 20 },
-  achievementCell: { flex: 1, alignItems: 'center', marginVertical: 12 },
-  achievementCircle: {
-    width: 64, height: 64, borderRadius: 32, borderWidth: 2,
-    borderColor: '#8BAFC4', justifyContent: 'center', alignItems: 'center', marginBottom: 6,
-  },
-  achievementCircleUnlocked: { borderColor: '#618E20' },
-  achievementLabel: { fontSize: 12, color: '#8BAFC4', textAlign: 'center' },
-  achievementLabelUnlocked: { color: '#618E20', fontWeight: '600' },
-} as const;
+});
