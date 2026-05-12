@@ -10,9 +10,10 @@ import { InPersonCardDataProps } from "@/components/InPersonCard";
 import { OnlineCardDataProps } from "@/components/OnlineCard";
 import { EventCardDataProps } from "@/components/EventCard";
 import {DeleteToast} from "@/components/DeleteToast"
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import * as Location from 'expo-location';
 import { getVisibleEcoActions } from "@/app/utils/cards";
+
 
 export type CardProps = InPersonCardDataProps | OnlineCardDataProps | EventCardDataProps;
 
@@ -48,6 +49,7 @@ export default function Volunteer() {
   const [maxDistance, setMaxDistance] = useState<number | null>(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [toast, setToast] = useState<{ message: string; description: string } | null>(null);
+  const [tab, setTab] = useState<"active" | "hidden">("active");
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -135,6 +137,13 @@ export default function Volunteer() {
     setItems(fullData);
   }, [user?.id]);
 
+  useFocusEffect(
+    useCallback(() => {
+    setLoading(true);
+
+    fetchData().finally(() => setLoading(false));
+    }, [fetchData]));
+
   useEffect(() => {
     const getLocation = async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -147,9 +156,7 @@ export default function Volunteer() {
     };
 
     getLocation();
-    setLoading(true)
-    fetchData().finally(() => setLoading(false));
-  }, [fetchData]);
+  }, []);
 
   const visibleItems = useMemo(() => {
     return getVisibleEcoActions(items);
@@ -158,8 +165,11 @@ export default function Volunteer() {
   const filteredItems = useMemo(() => {
     return visibleItems
       .filter((item) => {
-        const isNotHidden = 
-          isAdmin || !item.cardInfo.hidden // if hidden is false, displaying card should be true and vice versa
+        const matchesTab =
+          tab === "hidden"
+          ? item.cardInfo.hidden === true
+          : item.cardInfo.hidden === false;
+          
         const matchesSearch =
           item.cardInfo.title
             ?.toLowerCase()
@@ -185,13 +195,13 @@ export default function Volunteer() {
           return end ? end >= now : true;
         })();
 
-        return isNotHidden && matchesSearch && matchesType && matchesDistance && matchesDate;
+        return matchesTab && matchesSearch && matchesType && matchesDistance && matchesDate;
       })
       .map(item => ({
         ...item,
         ...getInteractionState(item.cardInfo.id, item.cardType)
       }));
-  }, [visibleItems, search, filterTypes, maxDistance, userLocation, getInteractionState, isAdmin]);
+  }, [tab, visibleItems, search, filterTypes, maxDistance, userLocation, getInteractionState, isAdmin]);
 
   const handleFullDelete = useCallback(async (id: string, cardType: string) => 
   {
@@ -258,7 +268,26 @@ export default function Volunteer() {
           maxDistance={maxDistance}
           setMaxDistance={setMaxDistance}
         />
-        
+
+        {isAdmin && <View style={styles.tabContainer}>
+          <Pressable
+            onPress={() => setTab("active")}
+            style={[styles.tab, tab === "active" && styles.tabActive]}
+          >
+            <Text style={[styles.tabText, tab === "active" && styles.tabTextActive]}>
+              Active
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => setTab("hidden")}
+            style={[styles.tab, tab === "hidden" && styles.tabActive]}
+          >
+            <Text style={[styles.tabText, tab === "hidden" && styles.tabTextActive]}>
+              Hidden
+            </Text>
+          </Pressable>
+        </View>}
         
         { loading && <ActivityIndicator size="large" color="#0000ff" />}
         { !loading && filteredItems.map((card) => ( 
@@ -358,5 +387,38 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '600',
     fontSize: 16,
+  },
+
+  tabContainer: {
+    flexDirection: "row",
+    padding: 4,
+    gap: 16,
+    alignSelf: "flex-start"
+  },
+
+  tab: {
+    paddingVertical: 17,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    borderRadius: 16,
+    borderColor: "#57811D",
+    borderWidth: 1,
+    backgroundColor: "white",
+  },
+
+  tabActive: {
+    backgroundColor: "#57811D",
+  },
+
+  tabText: {
+    color: "#57811D",
+    fontWeight: "400",
+    fontSize: 16,
+  },
+
+  tabTextActive: {
+    color: "#F2F7F5",
+    fontWeight: "400",
+    fontSize: 16
   },
 });
