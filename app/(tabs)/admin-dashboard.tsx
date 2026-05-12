@@ -11,6 +11,7 @@ import DateTimePicker, {DateTimePickerEvent} from "@react-native-community/datet
 // all completion timestamps from interactions_eco_inperson
 // all completion timestamps from interactions_events
 // total number of clicks (rows) from interaction_news
+// total number of subscriptions (rows) from newsletter_subscription_clicks
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -56,7 +57,7 @@ export default function AdminDashboard() {
     onlineEcoActions: [] as Date[],
     inPersonEcoActions: [] as Date[],
     events: [] as Date[],
-    // add newsletter subscriptions later
+    subscriptions: [] as Date[],
   });
 
   const [loading, setLoading] = useState(true);
@@ -70,6 +71,7 @@ export default function AdminDashboard() {
       inPersonRes,
       eventsRes,
       newsRes,
+      subscriptionsRes,
     ] = await Promise.all([
       supabase
         .from("users")
@@ -90,6 +92,10 @@ export default function AdminDashboard() {
       supabase
         .from("interaction_news")
         .select("created_at"),
+
+      supabase
+        .from("newsletter_subscription_clicks")
+        .select("opened_at"),
     ]);
 
     if (
@@ -97,7 +103,8 @@ export default function AdminDashboard() {
       onlineRes.error ||
       inPersonRes.error ||
       eventsRes.error ||
-      newsRes.error
+      newsRes.error ||
+      subscriptionsRes.error
     ) {
       console.error("Dashboard fetch error:", {
         usersRes,
@@ -105,6 +112,7 @@ export default function AdminDashboard() {
         inPersonRes,
         eventsRes,
         newsRes,
+        subscriptionsRes,
       });
       setLoading(false);
       return null;
@@ -130,6 +138,10 @@ export default function AdminDashboard() {
       events: (eventsRes.data ?? []).map(
         (d) => new Date(d.completed_timestamp)
       ),
+
+      subscriptions: (subscriptionsRes.data ?? []).map(
+        (d) => new Date(d.opened_at)
+      )
     };
 
     setLoading(false);
@@ -170,6 +182,7 @@ export default function AdminDashboard() {
       onlineEcoActions: filter(dashboardTimestamps.onlineEcoActions),
       inPersonEcoActions: filter(dashboardTimestamps.inPersonEcoActions),
       events: filter(dashboardTimestamps.events),
+      subscriptions: filter(dashboardTimestamps.subscriptions)
     };
   }, [dashboardTimestamps, startDate, endDate]);
 
@@ -336,7 +349,7 @@ export default function AdminDashboard() {
 
             <View style={styles.numberContainer}>
               <Text style={styles.numberText}>
-                64 {/* Placeholder newsletter subscription count */}
+                {filtered.subscriptions.length}
               </Text>
             </View>
 
