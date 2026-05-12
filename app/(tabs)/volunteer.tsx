@@ -201,7 +201,7 @@ export default function Volunteer() {
         ...item,
         ...getInteractionState(item.cardInfo.id, item.cardType)
       }));
-  }, [tab, visibleItems, search, filterTypes, maxDistance, userLocation, getInteractionState, isAdmin]);
+  }, [tab, visibleItems, search, filterTypes, maxDistance, userLocation, getInteractionState]);
 
   const handleFullDelete = useCallback(async (id: string, cardType: string) => 
   {
