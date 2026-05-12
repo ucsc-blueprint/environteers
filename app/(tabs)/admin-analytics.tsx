@@ -1,12 +1,20 @@
 import React from 'react';
-import { View, ScrollView, Text, TextInput, ActivityIndicator } from 'react-native';
+import { View, ScrollView, Text, TextInput, ActivityIndicator, StyleSheet, FlatList} from 'react-native';
 import { Leaf, Calendar, ChevronRight, Pencil } from 'lucide-react-native';
 import { LineChart } from 'react-native-chart-kit';
-import { Divider } from 'react-native-paper';
+import { CardProps, Divider } from 'react-native-paper';
 import { Redirect, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { AdminFeedbackList } from '@/components/AdminFeedbackList';
 import { supabase } from '@/constants/supabase';
+import {cardProps} from '@context/InteractionsContext';
+import { Ionicons } from '@expo/vector-icons';
+
+const achievements = [
+  { threshold: 5, label: "Novice", description: "complete first five eco-actions" }
+  { threshold: 10, label: "medium", description: "complete ten eco-actions" },
+  { threshold: 20, label: "pro", description: "complete twenty eco-actions" },
+];
 
 export default function AdminAnalytics() {
   const { volunteerName, membershipStatus, volunteerID } = useLocalSearchParams();
@@ -14,6 +22,9 @@ export default function AdminAnalytics() {
 
   const [feedback, setFeedback] = React.useState<any[]>([]);
   const [loadingFeedback, setLoadingFeedback] = React.useState(true);
+
+  const [completedCards, setCompletedCards] = React.useState<cardProps[]>([]);
+  const [loadingCompleted, setLoadingCompleted] = React.useState(true);
 
   React.useEffect(() => {
     const fetchFeedback = async () => {
@@ -85,8 +96,61 @@ export default function AdminAnalytics() {
       setLoadingFeedback(false);
     };
 
+    const fetchInteractions = async () => {
+      if (!volunteerID) return;
+      setLoadingCompleted(true);
+
+      const id = Array.isArray(volunteerID) ? volunteerID[0] : volunteerID;
+      const [inPersonRes, onlineRes] = await Promise.all([
+        supabase.from('interactions_eco_inperson').select('*, inperson_ecoactions(*').eq('user_id', id),
+        supabase.from('interactions_eco_online').select('*, online_ecoactions(*').eq('user_id', id),
+        supabase.from('interactions_events').select('*, events(*').eq('user_id', id),
+      ]);
+
+      const inPerson: CardProps[] = (inPersonRes.data || []).map((interaction) => ({
+        cardType: "in_person",
+        cardInfo: interaction.inperson_ecoactions,
+        liked: interaction.liked,
+        signed_up : interaction.signed_up,
+        completed: interaction.completed,
+        clicked: interaction.clicked,
+        feedback: interaction.feedback,
+      }));
+
+      const online: CardProps[] = (onlineRes.data || []).map((interaction) => ({
+        cardType: "online",
+        cardInfo: interaction.online_ecoactions,
+        liked: interaction.liked,
+        signed_up : interaction.signed_up,
+        completed: interaction.completed,
+        clicked: interaction.clicked,
+        feedback: interaction.feedback,
+      }));
+
+      const events: CardProps[] = (eventsRes.data || []).map((interaction) => ({
+        cardType: "event",
+        cardInfo: interaction,
+        liked: interaction.liked,
+        signed_up : interaction.signed_up,
+        completed: interaction.completed,
+        clicked: interaction.clicked,
+        feedback: interaction.feedback,
+      }));
+
+      setCompletedCards([...inPerson, ...online, ...events]);
+      setLoadingCompleted(false);
+    };
+
     fetchFeedback();
   }, [volunteerName, membershipStatus, volunteerID]);
+
+  const completedCount = completedCards.filter(card => card.completed).length;
+  const lastUnlocked = [...achievements].reverse().find(ach => completedCount >= ach.threshold);
+  const nextAchievement = achievements.find(ach => completedCount < ach.threshold);
+  const prevThreshold = lastUnlocked ? (achievements[achievements.indexOf(lastUnlocked) - 1]?.threshold ?? 0)
+    : 0;
+  const progress = nextAchievement ? (completedCount - prevThreshold) / (nextAchievement.threshold - prevThreshold) : 1;
+  const remaining = nextAchievement ? nextAchievement.threshold - completedCount : 0;
 
   if (loading) {
     return <ActivityIndicator size="large" color="#000000" />
@@ -111,6 +175,25 @@ export default function AdminAnalytics() {
         <Text style={styles.membershipText}>{membershipStatus}</Text>
       </View>
       
+      <View style={styles.statsCard}>
+        <View style={styles.statsRow}>
+          <Ionicons name="leaf" size={32} color="#618E20" />
+          <View style={{ marginLeft: 8 }}>
+            <Text style={styles.ecoCount}>{completedCount}</Text>
+            <Text style={styles.ecoLabel}>Eco-Actions</Text>
+          </View>
+          {nextAchievement && (
+            <View style={styles.rewardPill}>
+              <Text style={styles.rewardPillText}>{remaining} until next reward!</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.progressTrack}>
+          <View style={[styles.progressFill, { flex: progress }]} />
+          <View style={{ flex: 1 - progress }} />
+        </View>
+      </View>
+
       <View style={styles.row}>
         
         <View style={[styles.button, styles.actionsButton]}>
@@ -521,4 +604,28 @@ const styles = {
     marginTop: 10,
     padding: 10,
   },
+    statsCard: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 20 },
+  statsRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  ecoCount: { fontSize: 28, fontWeight: 'bold', color: '#172A36' },
+  ecoLabel: { fontSize: 13, color: '#666' },
+  rewardPill: {
+    marginLeft: 'auto', backgroundColor: '#DDE8F5',
+    borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6,
+  },
+  rewardPillText: { fontSize: 13, color: '#3A6EA5' },
+  progressTrack: {
+    height: 10, borderRadius: 5, backgroundColor: '#D9E8F0',
+    flexDirection: 'row', overflow: 'hidden',
+  },
+  progressFill: { backgroundColor: '#618E20', borderRadius: 5 },
+  sectionHeader: { fontSize: 22, fontWeight: 'bold', color: '#172A36', marginBottom: 12 },
+  achievementsCard: { backgroundColor: '#fff', borderRadius: 16, padding: 12, marginBottom: 20 },
+  achievementCell: { flex: 1, alignItems: 'center', marginVertical: 12 },
+  achievementCircle: {
+    width: 64, height: 64, borderRadius: 32, borderWidth: 2,
+    borderColor: '#8BAFC4', justifyContent: 'center', alignItems: 'center', marginBottom: 6,
+  },
+  achievementCircleUnlocked: { borderColor: '#618E20' },
+  achievementLabel: { fontSize: 12, color: '#8BAFC4', textAlign: 'center' },
+  achievementLabelUnlocked: { color: '#618E20', fontWeight: '600' },
 } as const;
