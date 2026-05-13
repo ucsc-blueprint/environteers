@@ -8,21 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/context/AuthContext';
 import { AdminFeedbackList } from '@/components/AdminFeedbackList';
 import { supabase } from '@/constants/supabase';
-
-const ACHIEVEMENTS = [
-  { threshold: 5,  label: 'Novice',    description: 'Complete your first five eco-actions.' },
-  { threshold: 10, label: 'Mid-level', description: 'Complete 10 eco-actions.' },
-  { threshold: 15, label: 'Eco-Taker', description: 'Complete 15 eco-actions.' },
-  { threshold: 20, label: 'Pro',       description: 'Complete 20 eco-actions.' },
-  { threshold: 25, label: 'Gold',      description: 'Complete 25 eco-actions.' },
-  { threshold: 30, label: 'Adept',     description: 'Complete 30 eco-actions.' },
-  { threshold: 35, label: 'Expert',    description: 'Complete 35 eco-actions.' },
-  { threshold: 40, label: 'Master',    description: 'Complete 40 eco-actions.' },
-  { threshold: 45, label: 'Elite',     description: 'Complete 45 eco-actions.' },
-  { threshold: 50, label: 'Legend',    description: 'Complete 50 eco-actions.' },
-  { threshold: 55, label: 'Champion',  description: 'Complete 55 eco-actions.' },
-  { threshold: 60, label: 'Icon',      description: 'Complete 60 eco-actions.' },
-];
+import { ACHIEVEMENTS } from '@/constants/achievements';
 
 type CompletedItem = {
   id: string;
@@ -48,34 +34,42 @@ export default function AdminAnalytics() {
   React.useEffect(() => {
     if (!volunteerID) return;
     const id = Array.isArray(volunteerID) ? volunteerID[0] : volunteerID;
-
     const fetchFeedback = async () => {
       setLoadingFeedback(true);
+
       const { data, error } = await supabase
         .from('feedback')
         .select('*')
         .eq('user_id', id)
         .order('created_at', { ascending: false });
 
-      if (error) { setLoadingFeedback(false); return; }
+      if (error || !data) { setLoadingFeedback(false); return; }
+      const eventIds = data.filter(i => i.event_id).map(i => i.event_id);
+      const inPersonIds = data.filter(i => i.inperson_ecoaction_id).map(i => i.inperson_ecoaction_id);
+      const onlineIds = data.filter(i => i.online_ecoaction_id).map(i => i.online_ecoaction_id);
+      const [eventsRes, inPersonRes, onlineRes] = await Promise.all([
+        eventIds.length > 0
+          ? supabase.from('events').select('id, title').in('id', eventIds)
+          : Promise.resolve({ data: [] }),
+        inPersonIds.length > 0
+          ? supabase.from('inperson_ecoactions').select('id, title').in('id', inPersonIds)
+          : Promise.resolve({ data: [] }),
+        onlineIds.length > 0
+          ? supabase.from('online_ecoactions').select('id, title').in('id', onlineIds)
+          : Promise.resolve({ data: [] }),
+      ]);
 
-      const formatted: any[] = [];
-      for (const item of data) {
+      const eventMap = Object.fromEntries((eventsRes.data ?? []).map((r: any) => [r.id, r.title]));
+      const inPersonMap = Object.fromEntries((inPersonRes.data ?? []).map((r: any) => [r.id, r.title]));
+      const onlineMap = Object.fromEntries((onlineRes.data ?? []).map((r: any) => [r.id, r.title]));
+
+      const formatted = data.map(item => {
         let eventName = '';
-        if (item.event_id) {
-          const { data: ev } = await supabase
-            .from('events').select('title').eq('id', item.event_id).single();
-          if (ev) eventName = ev.title;
-        } else if (item.inperson_ecoaction_id) {
-          const { data: ip } = await supabase
-            .from('inperson_ecoactions').select('title').eq('id', item.inperson_ecoaction_id).single();
-          if (ip) eventName = ip.title;
-        } else if (item.online_ecoaction_id) {
-          const { data: ol } = await supabase
-            .from('online_ecoactions').select('title').eq('id', item.online_ecoaction_id).single();
-          if (ol) eventName = ol.title;
-        }
-        formatted.push({
+        if (item.event_id) eventName = eventMap[item.event_id] ?? '';
+        else if (item.inperson_ecoaction_id) eventName = inPersonMap[item.inperson_ecoaction_id] ?? '';
+        else if (item.online_ecoaction_id) eventName = onlineMap[item.online_ecoaction_id] ?? '';
+
+        return {
           event_name: eventName,
           user_name: volunteerName || 'Volunteer Name',
           feedback_content: item.content,
@@ -83,13 +77,13 @@ export default function AdminAnalytics() {
           is_specific: true,
           membership: membershipStatus,
           user_id: volunteerID,
-        });
-      }
+        };
+      });
+
       setFeedback(formatted);
       setLoadingFeedback(false);
     };
 
-    // ── Fetch interactions ────────────────────────────────────────────────
     const fetchInteractions = async () => {
       setLoadingCompleted(true);
 
@@ -122,7 +116,7 @@ export default function AdminAnalytics() {
         id: `ol-${r.id}`,
         title: r.online_ecoactions?.title ?? 'Eco-Action',
         type: 'eco-action',
-        date: r.completed_timestamp ?? r.signed_up_timestamp ?? '',
+        date: r.completed_timestamp ?? '',
       }));
 
       const eventItems: CompletedItem[] = (eventsRes.data || []).map((r: any) => ({
@@ -132,7 +126,6 @@ export default function AdminAnalytics() {
         date: r.completed_timestamp ?? r.signed_up_timestamp ?? '',
       }));
 
-      // eco count = in-person + online only (matches profile.tsx completedCount logic)
       setEcoCount(inPersonItems.length + onlineItems.length);
 
       const all = [...inPersonItems, ...onlineItems, ...eventItems].sort(
@@ -144,7 +137,7 @@ export default function AdminAnalytics() {
 
     fetchFeedback();
     fetchInteractions();
-  }, [volunteerID]);
+  }, [volunteerID, volunteerName, membershipStatus]);
 
   const lastUnlocked = [...ACHIEVEMENTS].reverse().find(a => ecoCount >= a.threshold);
   const nextAchievement = ACHIEVEMENTS.find(a => ecoCount < a.threshold);
@@ -156,7 +149,9 @@ export default function AdminAnalytics() {
     : 1;
   const remaining = nextAchievement ? nextAchievement.threshold - ecoCount : 0;
 
-  if (loading) return <ActivityIndicator size="large" color="#000" />;
+  if (loading || loadingCompleted || loadingFeedback) {
+    return <ActivityIndicator size="large" color="#000" />;
+  }
   if (!profile) return <Redirect href="/" />;
   if (!profile.is_admin) return <Redirect href="/(tabs)/volunteer" />;
 
@@ -258,9 +253,7 @@ export default function AdminAnalytics() {
 
           <Text style={styles.sectionHeader}>Events + Eco-actions completed</Text>
           <View style={styles.completedCard}>
-            {loadingCompleted ? (
-              <ActivityIndicator color="#618E20" />
-            ) : completedItems.length === 0 ? (
+            {completedItems.length === 0 ? (
               <Text style={styles.emptyText}>No completed items yet</Text>
             ) : (
               completedItems.map((item, index) => (
@@ -277,21 +270,17 @@ export default function AdminAnalytics() {
               ))
             )}
           </View>
-
-          <Text style={[styles.sectionHeader, { marginTop: 8 }]}>Event feedback sent</Text>
-          {loadingFeedback ? (
-            <ActivityIndicator color="#618E20" style={{ marginTop: 12 }} />
-          ) : feedback.length > 0 ? (
-            <AdminFeedbackList data={feedback} />
-          ) : (
-            <Text style={styles.emptyText}>No feedback yet</Text>
-          )}
         </>
       )}
 
       {tab === 'manage' && (
-        <View style={styles.manageContainer}>
-          <Text style={styles.emptyText}>Admin management options coming soon.</Text>
+        <View>
+          <Text style={styles.sectionHeader}>Event feedback sent</Text>
+          {feedback.length > 0 ? (
+            <AdminFeedbackList data={feedback} />
+          ) : (
+            <Text style={styles.emptyText}>No feedback yet</Text>
+          )}
         </View>
       )}
 
@@ -305,8 +294,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#EAF2F6',
     padding: 20,
   },
-
-  // back
   backRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -317,7 +304,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#172A36',
   },
-
   avatarSection: {
     alignItems: 'center',
     marginBottom: 24,
@@ -339,7 +325,6 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 4,
   },
-
   statsCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
@@ -382,8 +367,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#618E20',
     borderRadius: 5,
   },
-
-  // tab bar
   tabBar: {
     flexDirection: 'row',
     backgroundColor: '#fff',
@@ -410,14 +393,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '700',
   },
-
   sectionHeader: {
     fontSize: 22,
     fontWeight: 'bold',
     color: '#172A36',
     marginBottom: 12,
   },
-
   achievementsCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
@@ -451,8 +432,6 @@ const styles = StyleSheet.create({
     color: '#618E20',
     fontWeight: '600',
   },
-
-  // completed items list
   completedCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
@@ -475,15 +454,8 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#E8E8E8',
   },
-
   emptyText: {
     fontSize: 13,
     color: '#888',
-  },
-
-  manageContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
   },
 });
