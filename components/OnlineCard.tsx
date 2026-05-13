@@ -38,6 +38,7 @@ export type OnlineCardDataProps = {
 
 type OnlineCardProps = OnlineCardDataProps & {
   expanded?: boolean;
+  showFeedback?: boolean,
   onToggle?: () => void;
   highlight?: boolean;
   onDelete?: () => void;
@@ -47,6 +48,7 @@ type OnlineCardProps = OnlineCardDataProps & {
 export const OnlineCard = ({
   cardInfo, 
   liked, 
+  showFeedback = false,
   completed,
   clicked,
   feedback,
@@ -264,17 +266,41 @@ export const OnlineCard = ({
                 </View>    
               </View>
           ): (
+          // <View style={CardStyles.iconsColumn}>
+          //   <View style={CardStyles.iconBackgrounds}>
+          //   <MaterialCommunityIcons
+          //       name={liked ? "cards-heart" : "cards-heart-outline"}
+          //       size={25}
+          //       color={'#0282D3'}
+          //       onPress={handleLike}
+          //       disabled={!user?.id}
+          //     />
+          //   </View>
+          //   <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} onPress={handleShare}/></View>
+          // </View>
+
           <View style={CardStyles.iconsColumn}>
             <View style={CardStyles.iconBackgrounds}>
-            <MaterialCommunityIcons
-                name={liked ? "cards-heart" : "cards-heart-outline"}
-                size={25}
-                color={'#0282D3'}
-                onPress={handleLike}
-                disabled={!user?.id}
-              />
+              {showFeedback ? (
+                <MaterialCommunityIcons
+                  name="message-alert-outline"
+                  size={25}
+                  color={'#0282D3'}
+                  onPress={() => setFeedbackVisible(true)}
+                />
+              ) : (
+                <MaterialCommunityIcons
+                  name={liked ? "cards-heart" : "cards-heart-outline"}
+                  size={25}
+                  color={'#0282D3'}
+                  onPress={handleLike}   
+                  disabled={!user?.id}
+                />
+              )}
             </View>
-            <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} onPress={handleShare}/></View>
+            <View style={CardStyles.iconBackgrounds}>
+              <MaterialIcons name="ios-share" size={25} color={'#0282D3'} onPress={handleShare}/>
+            </View>
           </View>
           )}
         </View>

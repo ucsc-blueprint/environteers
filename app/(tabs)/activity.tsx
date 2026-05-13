@@ -13,10 +13,12 @@ import { CardProps, useInteractions } from "@/context/InteractionsContext";
 import { SlidersHorizontal, ChevronRight, ChevronDown } from "lucide-react-native";
 import * as Location from "expo-location";
 import { EcoFeedFilterDropdown } from "@/components/EcoFeedFilterDropdown";
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Activity() {
   const { cards, loading } = useInteractions();
-
+  const [feedbackVisible, setFeedbackVisible] = useState(false);
+  const [selectedFeedbackCard, setSelectedFeedbackCard] = useState<CardProps | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<
     "signups" | "favorites"
   >("signups");
@@ -96,6 +98,12 @@ export default function Activity() {
     }
 
     return null;
+  };
+
+  // feedback handler
+  const openFeedback = (card: CardProps) => {
+    setSelectedFeedbackCard(card);
+    setFeedbackVisible(true);
   };
 
   // Apply filters
@@ -183,7 +191,8 @@ export default function Activity() {
     cardsToRender: CardProps[],
     isOpen: boolean,
     setIsOpen: (value: boolean) => void,
-    highlight = false
+    highlight = false,
+    showFeedback = false
   ) => {
     return (
       <View style={styles.sectionContainer}>
@@ -220,6 +229,7 @@ export default function Activity() {
                   key={`${card.cardType}-${card.cardInfo.id}`}
                   card={card}
                   highlight={highlight}
+                  showFeedback={showFeedback}
                 />
               ))
             )}
@@ -230,7 +240,7 @@ export default function Activity() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
       >
@@ -363,14 +373,16 @@ export default function Activity() {
                 "Completed",
                 completedCards,
                 completedOpen,
-                setCompletedOpen
+                setCompletedOpen,
+                false,
+                true
               )}
             </>
           ))}
 
-        <LogoutButton />
+        {/* <LogoutButton /> */}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -489,3 +501,4 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 });
+

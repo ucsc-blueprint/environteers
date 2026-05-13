@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import {
   View,
@@ -11,6 +9,7 @@ import {
 
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { LogoutButton } from '@/components/LogoutButton';
 
 export default function SettingsHub() {
   const router = useRouter();
@@ -78,6 +77,7 @@ export default function SettingsHub() {
           </View>
         </Pressable>
       </View>
+      < LogoutButton />
     </ScrollView>
   );
 }
