@@ -139,7 +139,7 @@ export default function Activity() {
   });
 
   // Card groups
-  const likedCards = filteredCards.filter((c) => c.liked === true);
+  const likedCards = filteredCards.filter((c) => c.liked === true && (c.cardInfo.hidden === false));
 
   const completedCards = filteredCards.filter(
     (c) => c.completed === true
