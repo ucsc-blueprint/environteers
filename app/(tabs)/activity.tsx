@@ -7,7 +7,6 @@ import {
   Pressable,
 } from "react-native";
 import { useState, useEffect } from "react";
-import { LogoutButton } from "@/components/LogoutButton";
 import { EcoFeed } from "@/components/EcoFeed";
 import { CardProps, useInteractions } from "@/context/InteractionsContext";
 import { SlidersHorizontal, ChevronRight, ChevronDown } from "lucide-react-native";
@@ -17,8 +16,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Activity() {
   const { cards, loading } = useInteractions();
-  const [feedbackVisible, setFeedbackVisible] = useState(false);
-  const [selectedFeedbackCard, setSelectedFeedbackCard] = useState<CardProps | null>(null);
+  // const [feedbackVisible, setFeedbackVisible] = useState(false);
+  // const [selectedFeedbackCard, setSelectedFeedbackCard] = useState<CardProps | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<
     "signups" | "favorites"
   >("signups");
@@ -101,10 +100,10 @@ export default function Activity() {
   };
 
   // feedback handler
-  const openFeedback = (card: CardProps) => {
-    setSelectedFeedbackCard(card);
-    setFeedbackVisible(true);
-  };
+  // const openFeedback = (card: CardProps) => {
+  //   setSelectedFeedbackCard(card);
+  //   setFeedbackVisible(true);
+  // };
 
   // Apply filters
   const filteredCards = cards.filter((card) => {
