@@ -224,11 +224,23 @@ export const OnlineCard = ({
           <View style={CardStyles.imageColumn}>
             { cardInfo.cover_photo && (
               <View style={{ position: 'relative' }}>
-                {renderCoverPhoto(cardInfo.cover_photo)}
+                {renderCoverPhoto(cardInfo.cover_photo, completed ? 0.4 : 1)}
+                {/* Admin stat tag */}
                 {isAdmin && statCount !== undefined && (
                   <View style={CardStyles.statTag}>
                     <MaterialIcons name="check" size={14} color="#11C484" />
                     <Text style={CardStyles.statTagText}>{statCount} Done</Text>
+                  </View>
+                )}
+                {/* User status tag */}
+                {!isAdmin && completed && (
+                  <View style={CardStyles.userTag}>
+                    <MaterialCommunityIcons
+                      name={"check-circle"}
+                      size={14}
+                      color="#11C484"
+                    />
+                    <Text style={CardStyles.userTagText}>Completed</Text>
                   </View>
                 )}
               </View>

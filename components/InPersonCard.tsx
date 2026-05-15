@@ -310,11 +310,23 @@ export const InPersonCard = ({
           <View style={CardStyles.imageColumn}>
             { cardInfo.cover_photo && (
               <View style={{ position: 'relative' }}>
-                {renderCoverPhoto(cardInfo.cover_photo)}
+                {renderCoverPhoto(cardInfo.cover_photo, signed_up || completed ? 0.5 : 1)}
+                {/* Admin stat tag */}
                 {isAdmin && statCount !== undefined && (
                   <View style={CardStyles.statTag}>
                     <MaterialIcons name="mail-outline" size={14} color="#11C484" />
                     <Text style={CardStyles.statTagText}>{statCount} RSVPs</Text>
+                  </View>
+                )}
+                {/* User status tag */}
+                {!isAdmin && (completed || signed_up) && (
+                  <View style={CardStyles.userTag}>
+                    <MaterialCommunityIcons
+                      name={"check-circle"}
+                      size={14}
+                      color="#11C484"
+                    />
+                    <Text style={CardStyles.userTagText}>{completed ? "Completed" : "Signed Up"}</Text>
                   </View>
                 )}
               </View>
