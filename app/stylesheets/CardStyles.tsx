@@ -106,6 +106,26 @@ export const CardStyles = StyleSheet.create({
     width: 110,
   },
 
+statTag: {
+  position: 'absolute',
+  top: 6,
+  left: 7,
+  backgroundColor: '#E0FAE2',
+  borderRadius: 5,
+  borderWidth: 1,
+  borderColor: '#11C484',
+  paddingHorizontal: 10,
+  paddingVertical: 4,
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 4,
+},
+statTagText: {
+  color: '#11C484',
+  fontSize: 14,
+  fontWeight: '600',
+},
+
   contentColumn: {
     minWidth: 0,
     flexDirection: 'column',

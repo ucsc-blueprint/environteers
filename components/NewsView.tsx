@@ -175,7 +175,6 @@ const deleteNewsletter = async (newsletter_id: string) => {
 
   return (
     <View style={{ flex: 1 }}>
-      <Ionicons name="menu-outline" size={30} style={{ marginTop: 8, marginLeft: 8 }} />
       {isAdmin ? (
         <>
           <Text style={{ marginTop: 8, marginBottom: 4, marginLeft: 12, fontWeight: "bold", fontSize: 30 }}>Manage Newsletters</Text>

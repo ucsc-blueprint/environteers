@@ -33,6 +33,7 @@ export type EventCardDataProps = {
   completed: boolean | null,
   clicked: boolean,
   feedback: boolean | null,
+  statCount?: number,
 }
 
 type EventCardProps = EventCardDataProps & {
@@ -59,6 +60,7 @@ export const EventCard = ({
   highlight,
   onDelete,
   onHide,
+  statCount,
 }: EventCardProps) => {
   const { user, profile } = useAuth();
   const isAdmin = profile?.is_admin === true;
@@ -272,7 +274,17 @@ export const EventCard = ({
       <Pressable onPress={toggleExpanded}>
         <View style={CardStyles.cardInfo}>
           <View style={CardStyles.imageColumn}>
-            { cardInfo.cover_photo && renderCoverPhoto(cardInfo.cover_photo) } 
+            { cardInfo.cover_photo && (
+              <View style={{ position: 'relative' }}>
+                {renderCoverPhoto(cardInfo.cover_photo)}
+                {isAdmin && statCount !== undefined && (
+                  <View style={CardStyles.statTag}>
+                    <MaterialIcons name="mail-outline" size={14} color="#11C484" />
+                    <Text style={CardStyles.statTagText}>{statCount} RSVPs</Text>
+                  </View>
+                )}
+              </View>
+            )}
           </View>
           <View style={CardStyles.contentColumn}>
             <Text>{cardInfo.title}</Text>
@@ -289,12 +301,6 @@ export const EventCard = ({
                 <Text>{formatEventDate(cardInfo.start_date, cardInfo.end_date)}</Text>
               </View>
             }
-
-            {isAdmin && (
-            <View style={[CardStyles.formatRow, CardStyles.rsvpContainer]}>
-              <Text style = {[CardStyles.rsvp]}>24 current RSVPs</Text>
-            </View>
-            )}
 
             { cardInfo.location &&
               <View style={CardStyles.formatRow}>

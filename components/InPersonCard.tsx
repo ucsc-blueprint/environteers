@@ -35,6 +35,7 @@ export type InPersonCardDataProps = {
   completed: boolean | null,
   clicked: boolean,
   feedback: boolean | null,
+  statCount?: number,
   onDelete?: () => void;
   onHide?: () => void; 
 }
@@ -61,6 +62,7 @@ export const InPersonCard = ({
   highlight,
   onHide,
   onDelete,
+  statCount,
 }: InPersonCardProps) => {
   const { updateLike, updateSignUp, updateCompleted, updateClicked, updateFeedback } = useInteractions();
   const { user, profile } = useAuth();
@@ -306,7 +308,17 @@ export const InPersonCard = ({
         <View style={CardStyles.cardInfo}>
           {/* Cover Photo */}
           <View style={CardStyles.imageColumn}>
-            { cardInfo.cover_photo && renderCoverPhoto(cardInfo.cover_photo) }
+            { cardInfo.cover_photo && (
+              <View style={{ position: 'relative' }}>
+                {renderCoverPhoto(cardInfo.cover_photo)}
+                {isAdmin && statCount !== undefined && (
+                  <View style={CardStyles.statTag}>
+                    <MaterialIcons name="mail-outline" size={14} color="#11C484" />
+                    <Text style={CardStyles.statTagText}>{statCount} RSVPs</Text>
+                  </View>
+                )}
+              </View>
+            )}
           </View>
           {/* Main Content */}
           <View style={CardStyles.contentColumn}>
@@ -324,12 +336,6 @@ export const InPersonCard = ({
                 <Text>{formatEventDate(cardInfo.start_date, cardInfo.end_date)}</Text>
               </View>
             }
-
-            {isAdmin && (
-            <View style={[CardStyles.formatRow, CardStyles.rsvpContainer]}>
-              <Text style = {[CardStyles.rsvp]}>24 current RSVPs</Text>
-            </View>
-            )}
 
             { cardInfo.location &&
               <View style={CardStyles.formatRow}>
