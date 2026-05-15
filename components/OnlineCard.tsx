@@ -1,5 +1,5 @@
 import { useAuth } from "@/context/AuthContext";
-import { View, Text, Pressable, Linking, Share } from 'react-native';
+import { View, Text, Pressable, Linking, Share, useWindowDimensions } from 'react-native';
 import { useState } from "react";
 import { 
   mdiListBoxOutline,
@@ -14,6 +14,7 @@ import { ActivityFeedback } from "@/components/ActivityFeedback";
 import { supabase } from "@/constants/supabase";
 import { router } from "expo-router";
 import { DeleteActionModal } from "./DeleteActionModal";
+import RenderHtml from 'react-native-render-html';
 
 export type OnlineCardData = {
   id: string,
@@ -63,6 +64,8 @@ export const OnlineCard = ({
 
   const { updateLike, updateCompleted, updateClicked, updateFeedback } = useInteractions();
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+
+  const { width } = useWindowDimensions()
 
   const toggleExpanded = () => {
     setExpanded(prev => !prev);
@@ -300,7 +303,29 @@ export const OnlineCard = ({
         {/* Expanded Content */}
         { expanded && 
           <View style={CardStyles.signUpContainer}>
-            <Text style={{ marginTop: 20 }}>{cardInfo.summary}</Text>
+            { cardInfo.summary && (
+              <RenderHtml
+                contentWidth={width}
+                source={{ html: cardInfo.summary }}
+                baseStyle={{ marginTop: 20 }}
+                tagsStyles={{
+                  b: { fontWeight: 'bold' },
+                  strong: { fontWeight: 'bold' },
+                  i: { fontStyle: 'italic' },
+                  em: { fontStyle: 'italic' },
+                  u: { textDecorationLine: 'underline' },
+                  ul: { marginBottom: 8 },
+                  ol: { marginBottom: 8 },
+                  li: { marginBottom: 4 },
+                  a: { color: '#0282D3', textDecorationLine: 'underline' },
+                }}
+                renderersProps={{
+                  a: {
+                    onPress: (_, href) => Linking.openURL(href),
+                  },
+                }}
+              />
+            )}
             {/* Verify If User Signed-up */}
             {  /* signUpClick && !completed && */
             shouldShowPrompt &&

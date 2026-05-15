@@ -1,5 +1,5 @@
 import { useAuth } from "@/context/AuthContext";
-import { View, Image, Text, Pressable, Linking, Alert, Share } from 'react-native';
+import { View, Image, Text, Pressable, Linking, Alert, Share, useWindowDimensions } from 'react-native';
 import { useState } from "react";
 import { mdiOpenInNew } from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
@@ -12,6 +12,7 @@ import { ActivityFeedback } from "@/components/ActivityFeedback";
 import Toast from 'react-native-toast-message';
 import { router } from "expo-router";
 import { DeleteActionModal } from "./DeleteActionModal";
+import RenderHtml from 'react-native-render-html';
 
 export type InPersonCardData = {
   id: string,
@@ -78,6 +79,8 @@ export const InPersonCard = ({
       setInternalExpanded(prev => !prev);
     }
   };
+
+  const { width } = useWindowDimensions()
 
   const isPastEvent =
   cardInfo.end_date
@@ -402,7 +405,29 @@ export const InPersonCard = ({
         {/* Expanded Content */}
         { expanded && 
           <View style={CardStyles.signUpContainer}>
-            { cardInfo.summary && <Text style={{ marginTop: 20 }}>{cardInfo.summary}</Text>}
+            { cardInfo.summary && (
+              <RenderHtml
+                contentWidth={width}
+                source={{ html: cardInfo.summary }}
+                baseStyle={{ marginTop: 20 }}
+                tagsStyles={{
+                  b: { fontWeight: 'bold' },
+                  strong: { fontWeight: 'bold' },
+                  i: { fontStyle: 'italic' },
+                  em: { fontStyle: 'italic' },
+                  u: { textDecorationLine: 'underline' },
+                  ul: { marginBottom: 8 },
+                  ol: { marginBottom: 8 },
+                  li: { marginBottom: 4 },
+                  a: { color: '#0282D3', textDecorationLine: 'underline' },
+                }}
+                renderersProps={{
+                  a: {
+                    onPress: (_, href) => Linking.openURL(href),
+                  },
+                }}
+              />
+            )}
             {/* Verify If User Signed-up */}
             { /* { signUpClick && !signUpStatus && */ }
             { shouldShowPrompt &&
