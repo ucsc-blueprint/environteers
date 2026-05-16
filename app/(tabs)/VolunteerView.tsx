@@ -4,6 +4,7 @@ import AdminFeedbackView from '@/components/AdminFeedbackView'
 import React from "react";
 import { useAuth } from '@/context/AuthContext';
 import { Redirect } from 'expo-router';
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function VolunteerView() {
   const [tab, setTab] = React.useState<"volunteers" | "feedback">("volunteers");
@@ -21,7 +22,7 @@ export default function VolunteerView() {
   if (!profile.is_admin) return <Redirect href="/(tabs)/volunteer" />;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.tabBar}>
         <Pressable 
           onPress={() => setTab("volunteers")}
@@ -45,7 +46,7 @@ export default function VolunteerView() {
       <View style={styles.content}>
         {tab === "volunteers" ? <AdminVolunteersView /> : <AdminFeedbackView />}
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 

@@ -47,11 +47,13 @@ type InPersonCardProps = InPersonCardDataProps & {
   feedbackVisible: boolean;
   setFeedbackVisible: (val: boolean) => void;
   highlight?: boolean;
+  showFeedback?: boolean,
 };
 
 export const InPersonCard = ({
   cardInfo, 
   liked,
+  showFeedback,
   signed_up,
   completed,
   clicked,
@@ -164,6 +166,7 @@ export const InPersonCard = ({
   //     toggleExpanded(); 
   //   }
   // };
+
   const handleCompletion = async (response: boolean) => {
     if (!user?.id) return;
   
@@ -175,24 +178,12 @@ export const InPersonCard = ({
       response
     );
   
-    if (response) {
-      setFeedbackVisible(true);
-    } else {
-      updateCompleted(
-        {
-          cardType: "in_person",
-          cardInfo,
-          liked,
-          signed_up,
-          completed: response,
-          clicked,
-          feedback,
-        },
-        response
-      );
+    updateCompleted(
+      { cardType: "in_person", cardInfo, liked, signed_up, completed: response, clicked, feedback },
+      response
+    );
   
-      toggleExpanded();
-    }
+    toggleExpanded();
   };
 
   const handleFeedbackSubmit = async (feedbackText: string) => {
@@ -388,18 +379,43 @@ export const InPersonCard = ({
               </View>    
             </View>
           ): (
+          // <View style={CardStyles.iconsColumn}>
+          //   <View style={CardStyles.iconBackgrounds}>
+          //   <MaterialCommunityIcons
+          //       name={liked ? "cards-heart" : "cards-heart-outline"}
+          //       size={25}
+          //       color={'#0282D3'}
+          //       onPress={() => handleLikes(cardInfo)}
+          //       disabled={!user?.id}
+          //     />
+          //   </View>
+          //   <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} onPress={handleShare}/></View>
+          // </View>
+
           <View style={CardStyles.iconsColumn}>
             <View style={CardStyles.iconBackgrounds}>
-            <MaterialCommunityIcons
-                name={liked ? "cards-heart" : "cards-heart-outline"}
-                size={25}
-                color={'#0282D3'}
-                onPress={() => handleLikes(cardInfo)}
-                disabled={!user?.id}
-              />
+              {showFeedback ? (
+                <MaterialCommunityIcons
+                  name="message-alert-outline"
+                  size={25}
+                  color={'#0282D3'}
+                  onPress={() => setFeedbackVisible(true)}
+                />
+              ) : (
+                <MaterialCommunityIcons
+                  name={liked ? "cards-heart" : "cards-heart-outline"}
+                  size={25}
+                  color={'#0282D3'}
+                  onPress={() => handleLikes(cardInfo)}
+                  disabled={!user?.id}
+                />
+              )}
             </View>
-            <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} onPress={handleShare}/></View>
+            <View style={CardStyles.iconBackgrounds}>
+              <MaterialIcons name="ios-share" size={25} color={'#0282D3'} onPress={handleShare}/>
+            </View>
           </View>
+
           )}
         </View>
         {/* Expanded Content */}
@@ -477,11 +493,6 @@ export const InPersonCard = ({
             {/* Sign Up Button */}
             { cardInfo.sign_up_link &&
               <View style={CardStyles.signUpButtonContainer}>
-                { completed && !feedback ? (
-                  <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => setFeedbackVisible(true)}>
-                    <Text style={CardStyles.signUpText}>Provide Feedback</Text>
-                  </Pressable>
-                ) : (
                   <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => openSignUpLink(cardInfo.sign_up_link!)}> 
                     { signed_up ? 
                       <Text style={CardStyles.signUpText}>Revisit Link</Text> : 
@@ -489,7 +500,6 @@ export const InPersonCard = ({
                     }
                     {renderIcon(15, mdiOpenInNew, 'white')}
                   </Pressable>
-                )}
               </View>
             }
           </View>

@@ -82,9 +82,6 @@ export const AdminVolunteersView = () => {
 
   return (
     <View style = {styles.container}>
-      <Pressable onPress = {() => {console.log("Icon pressed")}}>
-        <Ionicons name="menu-outline" marginTop = {16} marginLeft = {8} size={36} color="black" />
-      </Pressable>
       <View style={styles.container}>
 
         <TextInput
