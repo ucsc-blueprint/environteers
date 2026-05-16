@@ -337,11 +337,6 @@ export const OnlineCard = ({
             {/* Action Button */}
             { cardInfo.email_link &&
               <View style={CardStyles.signUpButtonContainer}>
-                { completed && !feedback ? (
-                  <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => setFeedbackVisible(true)}>
-                    <Text style={CardStyles.signUpText}>Provide Feedback</Text>
-                  </Pressable>
-                ) : (
                   <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={openSignUpLink}>       
                     { completed ? 
                       <Text style={CardStyles.signUpText}>Eco action completed </Text> : 
@@ -349,7 +344,6 @@ export const OnlineCard = ({
                     }
                     {renderIcon(15, mdiOpenInNew, 'white')}
                   </Pressable>
-                )}
               </View>
             }
           </View>

@@ -450,11 +450,6 @@ export const InPersonCard = ({
             {/* Sign Up Button */}
             { cardInfo.sign_up_link &&
               <View style={CardStyles.signUpButtonContainer}>
-                { completed && !feedback ? (
-                  <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => setFeedbackVisible(true)}>
-                    <Text style={CardStyles.signUpText}>Provide Feedback</Text>
-                  </Pressable>
-                ) : (
                   <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => openSignUpLink(cardInfo.sign_up_link!)}> 
                     { signed_up ? 
                       <Text style={CardStyles.signUpText}>Revisit Link</Text> : 
@@ -462,7 +457,6 @@ export const InPersonCard = ({
                     }
                     {renderIcon(15, mdiOpenInNew, 'white')}
                   </Pressable>
-                )}
               </View>
             }
           </View>
