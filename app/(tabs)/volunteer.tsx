@@ -84,15 +84,21 @@ export default function Volunteer() {
     const [inPersonRes, onlineRes, eventRes, inPersonSignups, onlineCompletions, eventSignups] = await Promise.all([
       supabase
         .from("inperson_ecoactions")
-        .select(`*, location_latitude, location_longitude`),
+        .select(`*, location_latitude, location_longitude`)
+        .order('start_date')
+        .order('created_at'),
 
       supabase
         .from("online_ecoactions")
-        .select(`*`),
+        .select(`*`)
+        .order('end_date')
+        .order('created_at'),
 
       supabase
         .from("events")
-        .select(`*, location_latitude, location_longitude`),
+        .select(`*, location_latitude, location_longitude`)
+        .order('start_date')
+        .order('created_at'),
 
       isAdmin
         ? supabase
