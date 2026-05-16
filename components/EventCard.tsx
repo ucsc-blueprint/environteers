@@ -41,6 +41,7 @@ type EventCardProps = EventCardDataProps & {
   feedbackVisible: boolean;
   setFeedbackVisible: (val: boolean) => void;
   highlight?: boolean;
+  showFeedback?: boolean;
   onDelete?: () => void;
   onHide?: () => void; 
 };
@@ -48,6 +49,7 @@ type EventCardProps = EventCardDataProps & {
 export const EventCard = ({
   cardInfo, 
   liked, 
+  showFeedback,
   signed_up,
   completed,
   clicked,
@@ -331,17 +333,41 @@ export const EventCard = ({
                 </View>    
               </View>
           ): (
+          // <View style={CardStyles.iconsColumn}>
+          //   <View style={CardStyles.iconBackgrounds}>
+          //   <MaterialCommunityIcons
+          //       name={liked ? "cards-heart" : "cards-heart-outline"}
+          //       size={25}
+          //       color={'#0282D3'}
+          //       onPress={handleLikes}
+          //       disabled={!user?.id}
+          //     />
+          //   </View>
+          //   <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} onPress={handleShare}/></View>
+          // </View>
+
           <View style={CardStyles.iconsColumn}>
             <View style={CardStyles.iconBackgrounds}>
-            <MaterialCommunityIcons
-                name={liked ? "cards-heart" : "cards-heart-outline"}
-                size={25}
-                color={'#0282D3'}
-                onPress={handleLikes}
-                disabled={!user?.id}
-              />
+              {showFeedback ? (
+                <MaterialCommunityIcons
+                  name="message-alert-outline"
+                  size={25}
+                  color={'#0282D3'}
+                  onPress={() => setFeedbackVisible(true)}
+                />
+              ) : (
+                <MaterialCommunityIcons
+                  name={liked ? "cards-heart" : "cards-heart-outline"}
+                  size={25}
+                  color={'#0282D3'}
+                  onPress={handleLikes}   
+                  disabled={!user?.id}
+                />
+              )}
             </View>
-            <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} onPress={handleShare}/></View>
+            <View style={CardStyles.iconBackgrounds}>
+              <MaterialIcons name="ios-share" size={25} color={'#0282D3'} onPress={handleShare}/>
+            </View>
           </View>
           )}
         </View>
@@ -405,19 +431,13 @@ export const EventCard = ({
               {/* Sign Up Button */}
               { cardInfo.sign_up_link &&
                 <View style={CardStyles.signUpButtonContainer}>
-                  { completed && !feedback ? (
-                    <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => setFeedbackVisible(true)}>
-                      <Text style={CardStyles.signUpText}>Provide Feedback</Text>
-                    </Pressable>
-                  ) : (
-                    <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => openSignUpLink(cardInfo.sign_up_link!)}> 
-                      { signed_up ? 
-                        <Text style={CardStyles.signUpText}>Revisit Link</Text> : 
-                        <Text style={CardStyles.signUpText}>Take Action</Text> 
-                      }
-                      {renderIcon(15, mdiOpenInNew, 'white')}
-                    </Pressable>
-                  )}
+                  <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => openSignUpLink(cardInfo.sign_up_link!)}> 
+                    { signed_up ? 
+                      <Text style={CardStyles.signUpText}>Revisit Link</Text> : 
+                      <Text style={CardStyles.signUpText}>Take Action</Text> 
+                    }
+                    {renderIcon(15, mdiOpenInNew, 'white')}
+                  </Pressable>
                 </View>
               }
             </View>
@@ -426,3 +446,5 @@ export const EventCard = ({
     </View>
   );
 }
+
+

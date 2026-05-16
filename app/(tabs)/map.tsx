@@ -232,7 +232,7 @@ export default function Map() {
 
       const events: EventCardDataProps[] =
         event
-          ?.filter((e) => !isPastItem(e))
+          ?.filter((e) => !isPastItem(e) && !e.hidden)
           .map((e) => ({
             cardType: "event",
             cardInfo: {
@@ -245,7 +245,7 @@ export default function Map() {
               google_calendar_link: e.google_calendar_link ?? undefined,
               description: e.description ?? undefined,
               sign_up_link: e.sign_up_link ?? undefined,
-              hidden: false,
+              hidden: e.hidden ?? false,
             },
             liked: false,
             signed_up: null,
@@ -277,7 +277,7 @@ export default function Map() {
 
       const inPersonEcoItems: InPersonCardDataProps[] =
         (ecoInPerson ?? [])
-          .filter((e) => !isPastItem(e))
+          .filter((e) => !isPastItem(e) && !e.hidden)
           .map((e) => ({
             cardType: "in_person",
             cardInfo: {
@@ -291,7 +291,7 @@ export default function Map() {
               sign_up_link: e.sign_up_link,
               summary: e.summary ?? undefined,
               google_calendar_link: e.google_calendar_link ?? undefined,
-              hidden: false,
+              hidden: e.hidden ?? false,
             },
             liked: false,
             signed_up: null,

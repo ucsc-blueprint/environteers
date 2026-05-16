@@ -506,7 +506,7 @@ const styles = {
     backgroundColor: '#fff',
     marginTop: 20,
     borderRadius: 16,
-    paddingTop: 20,
+    paddingTop: 40,
     paddingLeft: 20,
     paddingRight: 20
   },

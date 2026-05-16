@@ -13,6 +13,7 @@ import {DeleteToast} from "@/components/DeleteToast"
 import { router, useFocusEffect } from "expo-router";
 import * as Location from 'expo-location';
 import { getVisibleEcoActions } from "@/app/utils/cards";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 
 export type CardProps = InPersonCardDataProps | OnlineCardDataProps | EventCardDataProps;
@@ -236,103 +237,105 @@ export default function Volunteer() {
   }, [fetchData]);
 
   return (
-    <LinearGradient
-        colors={['white','#EDF3F7', '#EAF2F6']}
-        locations={[0.8, 0.9, 1]}
-        start={{ x: 0, y: 0}}
-        end={{ x: 0, y: 0.5 }}
-        style={styles.gradient}
-      >
-      {toast && 
-      (
-        <DeleteToast
-          visible={!!toast}
-          message={toast.message}
-          description={toast.description}
-          onClose={() => setToast(null)}
-        />
-      )}
-      <ScrollView 
-        contentContainerStyle={{ padding: 16, gap: 16}}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'white'}} edges={['top']}>
+      <LinearGradient
+          colors={['white','#EDF3F7', '#EAF2F6']}
+          locations={[0.8, 0.9, 1]}
+          start={{ x: 0, y: 0}}
+          end={{ x: 0, y: 0.5 }}
+          style={styles.gradient}
+        >
+        {toast && 
+        (
+          <DeleteToast
+            visible={!!toast}
+            message={toast.message}
+            description={toast.description}
+            onClose={() => setToast(null)}
+          />
+        )}
+        <ScrollView 
+          contentContainerStyle={{ padding: 16, gap: 16}}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
 
-        <Header 
-          resultsCount={filteredItems.length}
-          search={search}
-          setSearch={setSearch}
-          filterTypes={filterTypes}
-          setFilterTypes={setFilterTypes}
-          maxDistance={maxDistance}
-          setMaxDistance={setMaxDistance}
-        />
-
-        {isAdmin && <View style={styles.tabContainer}>
-          <Pressable
-            onPress={() => setTab("active")}
-            style={[styles.tab, tab === "active" && styles.tabActive]}
-          >
-            <Text style={[styles.tabText, tab === "active" && styles.tabTextActive]}>
-              Active
-            </Text>
-          </Pressable>
-
-          <Pressable
-            onPress={() => setTab("hidden")}
-            style={[styles.tab, tab === "hidden" && styles.tabActive]}
-          >
-            <Text style={[styles.tabText, tab === "hidden" && styles.tabTextActive]}>
-              Hidden
-            </Text>
-          </Pressable>
-        </View>}
-        
-        { loading && <ActivityIndicator size="large" color="#0000ff" />}
-        { !loading && filteredItems.map((card) => ( 
-          <EcoFeed 
-            key={`${card.cardType}-${card.cardInfo.id}`}
-            card={card}
-            onDelete = {() => handleFullDelete(card.cardInfo.id, card.cardType)}
-            onHide = {() => handleHide(card.cardInfo.id, card.cardType)}
+          <Header 
+            resultsCount={filteredItems.length}
+            search={search}
+            setSearch={setSearch}
+            filterTypes={filterTypes}
+            setFilterTypes={setFilterTypes}
+            maxDistance={maxDistance}
+            setMaxDistance={setMaxDistance}
           />
 
-        ))}
-      </ScrollView>
-      {isAdmin ? (
-        <>
-          <Pressable
-            style={styles.addButton}
-            onPress={() => setShowAddMenu(true)}>
-            <Text style={styles.addButtonText}>+ Add</Text>
-          </Pressable>
+          {isAdmin && <View style={styles.tabContainer}>
+            <Pressable
+              onPress={() => setTab("active")}
+              style={[styles.tab, tab === "active" && styles.tabActive]}
+            >
+              <Text style={[styles.tabText, tab === "active" && styles.tabTextActive]}>
+                Active
+              </Text>
+            </Pressable>
 
-          <Modal visible={showAddMenu} transparent animationType="fade" onRequestClose={() => setShowAddMenu(false)}>
-            <Pressable style={styles.backdrop} onPress={() => setShowAddMenu(false)}>
-              <Pressable style={styles.popup} onPress={() => { }}>
-                <Text style={styles.popupTitle}>Add something new</Text>
-                <Pressable style={styles.popupButton} onPress={() => goToAddForm("event")}>
-                  <Text>Add Event</Text>
-                </Pressable>
-                <Pressable style={styles.popupButton} onPress={() => goToAddForm("in-person")}>
-                  <Text>Add In-Person Eco-Action</Text>
-                </Pressable>
-                <Pressable style={styles.popupButton} onPress={() => goToAddForm("online")}>
-                  <Text>Add Online Eco-Action</Text>
+            <Pressable
+              onPress={() => setTab("hidden")}
+              style={[styles.tab, tab === "hidden" && styles.tabActive]}
+            >
+              <Text style={[styles.tabText, tab === "hidden" && styles.tabTextActive]}>
+                Hidden
+              </Text>
+            </Pressable>
+          </View>}
+          
+          { loading && <ActivityIndicator size="large" color="#0000ff" />}
+          { !loading && filteredItems.map((card) => ( 
+            <EcoFeed 
+              key={`${card.cardType}-${card.cardInfo.id}`}
+              card={card}
+              onDelete = {() => handleFullDelete(card.cardInfo.id, card.cardType)}
+              onHide = {() => handleHide(card.cardInfo.id, card.cardType)}
+            />
+
+          ))}
+        </ScrollView>
+        {isAdmin ? (
+          <>
+            <Pressable
+              style={styles.addButton}
+              onPress={() => setShowAddMenu(true)}>
+              <Text style={styles.addButtonText}>+ Add</Text>
+            </Pressable>
+
+            <Modal visible={showAddMenu} transparent animationType="fade" onRequestClose={() => setShowAddMenu(false)}>
+              <Pressable style={styles.backdrop} onPress={() => setShowAddMenu(false)}>
+                <Pressable style={styles.popup} onPress={() => { }}>
+                  <Text style={styles.popupTitle}>Add something new</Text>
+                  <Pressable style={styles.popupButton} onPress={() => goToAddForm("event")}>
+                    <Text>Add Event</Text>
+                  </Pressable>
+                  <Pressable style={styles.popupButton} onPress={() => goToAddForm("in-person")}>
+                    <Text>Add In-Person Eco-Action</Text>
+                  </Pressable>
+                  <Pressable style={styles.popupButton} onPress={() => goToAddForm("online")}>
+                    <Text>Add Online Eco-Action</Text>
+                  </Pressable>
                 </Pressable>
               </Pressable>
+            </Modal>
+          </>
+        ) : (
+          <View style={styles.mapBackground}>
+            <Pressable onPress={() => router.push('/(tabs)/map')}>
+              <MaterialCommunityIcons name="map" size={30} color={'#0282D3'} />
             </Pressable>
-          </Modal>
-        </>
-      ) : (
-        <View style={styles.mapBackground}>
-          <Pressable onPress={() => router.push('/(tabs)/map')}>
-            <MaterialCommunityIcons name="map" size={30} color={'#0282D3'} />
-          </Pressable>
-        </View>
-      )}
-    </LinearGradient>
+          </View>
+        )}
+      </LinearGradient>
+    </SafeAreaView>
   );
 }
 

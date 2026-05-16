@@ -3,7 +3,8 @@ import { StyleSheet } from "react-native";
 export const CardStyles = StyleSheet.create({
   feedHeader: {
     flexDirection: 'column',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    backgroundColor: '#ffffff',
   },
 
   userText: {

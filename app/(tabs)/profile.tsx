@@ -11,6 +11,7 @@ import { Redirect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ConfettiCannon from "react-native-confetti-cannon";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ACHIEVEMENTS } from '@/constants/achievements';
 
@@ -61,114 +62,117 @@ export default function Profile() {
   if (!profile) return <Redirect href="/" />;
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Achievement popup modal */}
-      <Modal visible={showModal} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <View style={styles.modalHeader}>
-              <Ionicons name="trophy" size={24} color="#618E20" />
-              <Text style={styles.modalTitle}>Volunteering: {newAchievement?.label}</Text>
-              <Pressable onPress={() => setShowModal(false)}>
-                <Ionicons name="close" size={22} color="#333" />
-              </Pressable>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <ScrollView style={styles.container}>
+        {/* Achievement popup modal */}
+        <Modal visible={showModal} transparent animationType="fade">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalCard}>
+              <View style={styles.modalHeader}>
+                <Ionicons name="trophy" size={24} color="#618E20" />
+                <Text style={styles.modalTitle}>Volunteering: {newAchievement?.label}</Text>
+                <Pressable onPress={() => setShowModal(false)}>
+                  <Ionicons name="close" size={22} color="#333" />
+                </Pressable>
+              </View>
+              <View style={styles.modalDivider} />
+              <Text style={styles.modalDescription}>{newAchievement?.description}</Text>
+              <View style={styles.modalDivider} />
+              <View style={styles.modalFooter}>
+                <Pressable
+                  style={styles.congratsButton}
+                  onPress={() => confettiRef.current?.start()}
+                >
+                  <Text style={styles.congratsText}>Congrats!</Text>
+                </Pressable>
+              </View>
             </View>
-            <View style={styles.modalDivider} />
-            <Text style={styles.modalDescription}>{newAchievement?.description}</Text>
-            <View style={styles.modalDivider} />
-            <View style={styles.modalFooter}>
-              <Pressable
-                style={styles.congratsButton}
-                onPress={() => confettiRef.current?.start()}
-              >
-                <Text style={styles.congratsText}>Congrats!</Text>
-              </Pressable>
-            </View>
+            <ConfettiCannon
+              ref={confettiRef}
+              count={80}
+              origin={{ x: 200, y: 0 }}
+              autoStart={false}
+              fadeOut
+              onAnimationEnd={() => setShowModal(false)}
+            />
           </View>
-          <ConfettiCannon
-            ref={confettiRef}
-            count={80}
-            origin={{ x: 200, y: 0 }}
-            autoStart={false}
-            fadeOut
-            onAnimationEnd={() => setShowModal(false)}
+        </Modal>
+
+        {/* Settings button */}
+        <Pressable
+          style={styles.settingsIcon}
+          onPress={() => router.push('/SettingsHub')}
+        >
+          <Ionicons name="settings-outline" size={24} color="#333" />
+        </Pressable>
+        {/* <Pressable style={styles.settingsIcon} onPress={() => router.push('/profilesettings')}>
+          <Ionicons name="settings-outline" size={24} color="#333" />
+        </Pressable> */}
+
+
+        {/* Avatar + name */}
+        <View style={styles.avatarSection}>
+          <Image style={styles.avatar} source={require('../../assets/images/PFP.png')} />
+          <Text style={styles.name}>{profile.first_name} {profile.last_name}</Text>
+          <Text style={styles.memberSince}>{formatMembership(profile.created_at)}</Text>
+        </View>
+
+        {/* Stats card */}
+        <View style={styles.statsCard}>
+          <View style={styles.statsRow}>
+            <Ionicons name="leaf" size={32} color="#618E20" />
+            <View style={{ marginLeft: 8 }}>
+              <Text style={styles.ecoCount}>{completedCount}</Text>
+              <Text style={styles.ecoLabel}>Eco-Actions</Text>
+            </View>
+            {nextAchievement && (
+              <View style={styles.rewardPill}>
+                <Text style={styles.rewardPillText}>{remaining} until next reward!</Text>
+              </View>
+            )}
+          </View>
+          <View style={styles.progressTrack}>
+            <View style={[styles.progressFill, { flex: progress }]} />
+            <View style={{ flex: 1 - progress }} />
+          </View>
+        </View>
+
+        {/* Achievements */}
+        <Text style={styles.sectionHeader}>Achievements</Text>
+        <View style={styles.achievementsCard}>
+          <FlatList
+            data={ACHIEVEMENTS}
+            numColumns={4}
+            scrollEnabled={false}
+            keyExtractor={(item) => item.label}
+            renderItem={({ item }) => {
+              const unlocked = completedCount >= item.threshold;
+              return (
+                <View style={styles.achievementCell}>
+                  <View style={[styles.achievementCircle, unlocked && styles.achievementCircleUnlocked]}>
+                    <Ionicons
+                      name={unlocked ? "trophy" : "lock-closed"}
+                      size={28}
+                      color={unlocked ? "#618E20" : "#8BAFC4"}
+                    />
+                  </View>
+                  <Text style={[styles.achievementLabel, unlocked && styles.achievementLabelUnlocked]}>
+                    {unlocked ? item.label : "???"}
+                  </Text>
+                </View>
+              );
+            }}
           />
         </View>
-      </Modal>
 
-      {/* Settings button */}
-      <Pressable
-        style={styles.settingsIcon}
-        onPress={() => router.push('/SettingsHub')}
-      >
-        <Ionicons name="settings-outline" size={24} color="#333" />
-      </Pressable>
-      {/* <Pressable style={styles.settingsIcon} onPress={() => router.push('/profilesettings')}>
-        <Ionicons name="settings-outline" size={24} color="#333" />
-      </Pressable> */}
-
-
-      {/* Avatar + name */}
-      <View style={styles.avatarSection}>
-        <Image style={styles.avatar} source={require('../../assets/images/PFP.png')} />
-        <Text style={styles.name}>{profile.first_name} {profile.last_name}</Text>
-        <Text style={styles.memberSince}>{formatMembership(profile.created_at)}</Text>
-      </View>
-
-      {/* Stats card */}
-      <View style={styles.statsCard}>
-        <View style={styles.statsRow}>
-          <Ionicons name="leaf" size={32} color="#618E20" />
-          <View style={{ marginLeft: 8 }}>
-            <Text style={styles.ecoCount}>{completedCount}</Text>
-            <Text style={styles.ecoLabel}>Eco-Actions</Text>
-          </View>
-          {nextAchievement && (
-            <View style={styles.rewardPill}>
-              <Text style={styles.rewardPillText}>{remaining} until next reward!</Text>
-            </View>
-          )}
-        </View>
-        <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { flex: progress }]} />
-          <View style={{ flex: 1 - progress }} />
-        </View>
-      </View>
-
-      {/* Achievements */}
-      <Text style={styles.sectionHeader}>Achievements</Text>
-      <View style={styles.achievementsCard}>
-        <FlatList
-          data={ACHIEVEMENTS}
-          numColumns={4}
-          scrollEnabled={false}
-          keyExtractor={(item) => item.label}
-          renderItem={({ item }) => {
-            const unlocked = completedCount >= item.threshold;
-            return (
-              <View style={styles.achievementCell}>
-                <View style={[styles.achievementCircle, unlocked && styles.achievementCircleUnlocked]}>
-                  <Ionicons
-                    name={unlocked ? "trophy" : "lock-closed"}
-                    size={28}
-                    color={unlocked ? "#618E20" : "#8BAFC4"}
-                  />
-                </View>
-                <Text style={[styles.achievementLabel, unlocked && styles.achievementLabelUnlocked]}>
-                  {unlocked ? item.label : "???"}
-                </Text>
-              </View>
-            );
-          }}
-        />
-      </View>
-
-      <LogoutButton />
-    </ScrollView>
+        <LogoutButton />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: '#EAF2F6'},
   container: { flex: 1, backgroundColor: '#EAF2F6', padding: 20 },
   settingsIcon: { alignSelf: 'flex-end', marginTop: 10, marginBottom: 10 },
   avatarSection: { alignItems: 'center', marginBottom: 24 },

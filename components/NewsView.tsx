@@ -10,6 +10,7 @@ import Toast from 'react-native-toast-message';
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
 import { useAuth } from "@/context/AuthContext";
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const includesText = (str: string, search: string) =>
   str.toLowerCase().includes(search.toLowerCase());
@@ -174,7 +175,7 @@ const deleteNewsletter = async (newsletter_id: string) => {
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }} edges={['top']}>
       <Ionicons name="menu-outline" size={30} style={{ marginTop: 8, marginLeft: 8 }} />
       {isAdmin ? (
         <>
@@ -303,7 +304,7 @@ const deleteNewsletter = async (newsletter_id: string) => {
           />
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 

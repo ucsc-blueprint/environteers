@@ -15,6 +15,6 @@ export default function Newsletter(){
   }
 
   return (
-    <NewsView isAdmin={profile.is_admin}/>
+      <NewsView isAdmin={profile.is_admin} />
   )
 }

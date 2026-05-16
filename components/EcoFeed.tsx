@@ -26,6 +26,7 @@ type HeaderProps = {
 
 type ExpandableProps = {
   isSelected?: boolean,
+  showFeedback?: boolean;
   setSelectedId?: React.Dispatch<React.SetStateAction<string | null>>; 
   highlight?: boolean;
   onDelete?: () => void;
@@ -117,6 +118,7 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
         <InPersonCard 
           {...card} 
           highlight={props.highlight}
+          showFeedback={props.showFeedback === true}   
           onDelete={props.onDelete}
           onHide={props.onHide}
           liked={card.liked} 
@@ -133,6 +135,7 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
         <OnlineCard 
           {...card} 
           highlight={props.highlight}
+          showFeedback={props.showFeedback === true}   
           onDelete={props.onDelete}
           onHide={props.onHide}
           liked={card.liked} 
@@ -145,6 +148,7 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
         <EventCard 
           {...card} 
           highlight={props.highlight}
+          showFeedback={props.showFeedback === true}   
           onDelete={props.onDelete}
           onHide={props.onHide}
           liked={card.liked} 
