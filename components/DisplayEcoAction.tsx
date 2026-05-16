@@ -109,7 +109,7 @@ export const DisplayEcoAction = ({
       return (<ActivityIndicator animating={true} color="#86AE42" size="large" style={{flex: 1, justifyContent: "center", alignItems: "center"}}/>);
     }   
     return (
-      <SafeAreaView style={{ flex: 1 }} edges = {['bottom']}>
+      <SafeAreaView style={{ flex: 1 }} edges = {['top']}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
