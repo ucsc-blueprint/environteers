@@ -75,7 +75,7 @@ export default function Profile() {
   if (!profile) return <Redirect href="/" />;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView style={styles.container}>
         {/* Achievement popup modal */}
         <Modal visible={showModal} transparent animationType="fade">

@@ -237,7 +237,7 @@ export default function Volunteer() {
   }, [fetchData]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: 'white'}}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'white'}} edges={['top']}>
       <LinearGradient
           colors={['white','#EDF3F7', '#EAF2F6']}
           locations={[0.8, 0.9, 1]}
