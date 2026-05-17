@@ -166,7 +166,7 @@ const deleteNewsletter = async (newsletter_id: string) => {
 
   if (activeUrl) {
     return (
-      <View style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <Pressable
           onPress={() => setActiveUrl(null)}
           style={{ padding: 12, backgroundColor: "#eee" }}
@@ -178,7 +178,7 @@ const deleteNewsletter = async (newsletter_id: string) => {
           style={{ flex: 1 }}
           startInLoadingState={true}
         />
-      </View>
+      </SafeAreaView>
     );
   }
 
