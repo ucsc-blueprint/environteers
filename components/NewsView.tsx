@@ -64,12 +64,14 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
   const SIGNUP_URL = 'https://mailchi.mp/114704938e0e/weekly-email-update-signup';
 
   const fetchNewsletters = async () => {
+    setRefreshing(true);
     const { data, error } = await supabase
       .from('news')
       .select('*, read_count:interaction_news(count)');
 
     if (error) {
       console.error(error);
+      setRefreshing(false);
       return;
     }
 
@@ -79,6 +81,7 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
     }));
 
     setNewsLetters(mapped);
+    setRefreshing(false);
   };
 
   const handleOpenDeleteModal = (newsletter: newsLetterItem) => {

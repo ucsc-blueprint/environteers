@@ -6,7 +6,6 @@ import { InPersonCard } from "@/components/InPersonCard";
 import { OnlineCard } from "@/components/OnlineCard";
 import { EventCard } from "@/components/EventCard";
 import { CardProps } from "@/app/(tabs)/volunteer";
-import { renderIcon } from "@/app/utils/cards";
 import { SlidersHorizontal } from 'lucide-react-native';
 import { EcoFeedFilterDropdown } from '@/components/EcoFeedFilterDropdown';
 

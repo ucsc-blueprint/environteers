@@ -179,7 +179,7 @@ export default function Volunteer() {
 
     const fullData = [...inPersonCardData, ...onlineCardData, ...eventCardData]
     setItems(fullData);
-  }, [user?.id]);
+  }, [user?.id, isAdmin]);
 
   useFocusEffect(
     useCallback(() => {
