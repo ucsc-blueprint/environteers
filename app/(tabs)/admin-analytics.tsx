@@ -9,6 +9,7 @@ import { useAuth } from '@/context/AuthContext';
 import { AdminFeedbackList } from '@/components/AdminFeedbackList';
 import { supabase } from '@/constants/supabase';
 import { ACHIEVEMENTS } from '@/constants/achievements';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type CompletedItem = {
   id: string;
@@ -165,6 +166,7 @@ export default function AdminAnalytics() {
   };
 
   return (
+    <SafeAreaView style={{ flex: 1 }} edges={['top']}>
     <ScrollView style={styles.container}>
 
       <Pressable style={styles.backRow} onPress={() => router.push('/(tabs)/VolunteerView')}>
@@ -285,6 +287,7 @@ export default function AdminAnalytics() {
       )}
 
     </ScrollView>
+    </SafeAreaView>
   );
 }
 

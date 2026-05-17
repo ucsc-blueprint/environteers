@@ -82,23 +82,63 @@ export default function Volunteer() {
   const fetchData = useCallback(async () => {
     if (!user?.id) return;
 
-    const [inPersonRes, onlineRes, eventRes] = await Promise.all([
+    const [inPersonRes, onlineRes, eventRes, inPersonSignups, onlineCompletions, eventSignups] = await Promise.all([
       supabase
         .from("inperson_ecoactions")
-        .select(`*, location_latitude, location_longitude`),
+        .select(`*, location_latitude, location_longitude`)
+        .order('start_date')
+        .order('created_at'),
 
       supabase
         .from("online_ecoactions")
-        .select(`*`),
+        .select(`*`)
+        .order('end_date')
+        .order('created_at'),
 
       supabase
         .from("events")
         .select(`*, location_latitude, location_longitude`)
+        .order('start_date')
+        .order('created_at'),
+
+      isAdmin
+        ? supabase
+          .from("interactions_eco_inperson")
+          .select("action_id")
+          .eq("signed_up", true)
+        : Promise.resolve({ data: [] }),
+
+      isAdmin
+        ? supabase
+          .from("interactions_eco_online")
+          .select("action_id")
+          .eq("completed", true)
+        : Promise.resolve({ data: [] }),
+
+      isAdmin
+        ? supabase
+          .from("interactions_events")
+          .select("action_id")
+          .eq("signed_up", true)
+        : Promise.resolve({ data: [] }),
     ]);
 
     if (inPersonRes.error) console.error(inPersonRes.error);
     if (onlineRes.error) console.error(onlineRes.error);
     if (eventRes.error) console.error(eventRes.error);
+
+    const inPersonSignupMap: Record<string, number> = {};
+    for (const row of inPersonSignups.data ?? []) {
+      inPersonSignupMap[row.action_id] = (inPersonSignupMap[row.action_id] ?? 0) + 1;
+    }
+    const onlineCompletionMap: Record<string, number> = {};
+    for (const row of onlineCompletions.data ?? []) {
+      onlineCompletionMap[row.action_id] = (onlineCompletionMap[row.action_id] ?? 0) + 1;
+    }
+    const eventSignupMap: Record<string, number> = {};
+    for (const row of eventSignups.data ?? []) {
+      eventSignupMap[row.action_id] = (eventSignupMap[row.action_id] ?? 0) + 1;
+    }
 
     const inPersonData = inPersonRes.data ?? [];
     const onlineData = onlineRes.data ?? [];
@@ -112,6 +152,7 @@ export default function Volunteer() {
       completed: null,
       clicked: false,
       feedback: false,
+      statCount: inPersonSignupMap[card.id] ?? 0,
     }));
 
     const onlineCardData: CardProps[] = (onlineData ?? []).map(card => ({
@@ -122,6 +163,7 @@ export default function Volunteer() {
       completed: null,
       clicked: false,
       feedback: false,
+      statCount: onlineCompletionMap[card.id] ?? 0,
     })); 
   
     const eventCardData: CardProps[] = (eventData ?? []).map(event => ({
@@ -131,12 +173,13 @@ export default function Volunteer() {
       signed_up: null,
       completed: null,
       clicked: false,
-      feedback: false, 
+      feedback: false,
+      statCount: eventSignupMap[event.id] ?? 0,
     }));
 
     const fullData = [...inPersonCardData, ...onlineCardData, ...eventCardData]
     setItems(fullData);
-  }, [user?.id]);
+  }, [user?.id, isAdmin]);
 
   useFocusEffect(
     useCallback(() => {

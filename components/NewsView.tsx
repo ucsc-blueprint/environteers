@@ -52,6 +52,7 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
   const [searchText, setSearchText] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
   const [filterDateLength, setFilterDateLength] = useState<'week' | '2weeks' | 'month' | 'all'>('all');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [refreshing, setRefreshing] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [selectedNewsletter, setSelectedNewsletter] = useState<newsLetterItem | null>(null);
@@ -63,12 +64,14 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
   const SIGNUP_URL = 'https://mailchi.mp/114704938e0e/weekly-email-update-signup';
 
   const fetchNewsletters = async () => {
+    setRefreshing(true);
     const { data, error } = await supabase
       .from('news')
       .select('*, read_count:interaction_news(count)');
 
     if (error) {
       console.error(error);
+      setRefreshing(false);
       return;
     }
 
@@ -78,6 +81,7 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
     }));
 
     setNewsLetters(mapped);
+    setRefreshing(false);
   };
 
   const handleOpenDeleteModal = (newsletter: newsLetterItem) => {
@@ -152,13 +156,20 @@ const deleteNewsletter = async (newsletter_id: string) => {
     }, [])
   );
 
-  const filteredNewsletters = newsLetters.filter((n) =>
-    (includesText(`Environteers Weekly Update: ${n.edition_number}th Edition`, searchText)) && (includesDate(n.date, filterDateLength))
-  );
+  const filteredNewsletters = newsLetters
+    .filter((n) =>
+      includesText(`Environteers Weekly Update: ${n.edition_number}th Edition`, searchText) &&
+      includesDate(n.date, filterDateLength)
+    )
+    .sort((a, b) =>
+      sortOrder === "newest"
+        ? new Date(b.date).getTime() - new Date(a.date).getTime()
+        : new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
 
   if (activeUrl) {
     return (
-      <View style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <Pressable
           onPress={() => setActiveUrl(null)}
           style={{ padding: 12, backgroundColor: "#eee" }}
@@ -170,13 +181,12 @@ const deleteNewsletter = async (newsletter_id: string) => {
           style={{ flex: 1 }}
           startInLoadingState={true}
         />
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }} edges={['top']}>
-      <Ionicons name="menu-outline" size={30} style={{ marginTop: 8, marginLeft: 8 }} />
       {isAdmin ? (
         <>
           <Text style={{ marginTop: 8, marginBottom: 4, marginLeft: 12, fontWeight: "bold", fontSize: 30 }}>Manage Newsletters</Text>
@@ -194,8 +204,8 @@ const deleteNewsletter = async (newsletter_id: string) => {
         onChangeText={setSearchText}
       />
 
-      <View style={{ flexDirection: 'row', marginLeft: 12 }}>
-        <Ionicons style={{ marginTop: 14, marginRight: 4, marginLeft: 4 }} name="filter-outline" size={24} />
+      <View style={{ flexDirection: 'row', marginLeft: 12, marginRight: 12, alignItems: 'center', gap: 8 }}>
+        <Ionicons name="filter-outline" size={24} />
         <DropDownPicker
           open={filterOpen}
           setOpen={setFilterOpen}
@@ -209,7 +219,17 @@ const deleteNewsletter = async (newsletter_id: string) => {
           ]}
           style={styles.filter}
           dropDownContainerStyle={styles.dropDownContainerStyle}
+          containerStyle={{ width: 200 }}
         />
+        <Pressable
+          onPress={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')}
+          style={styles.sortButton}
+        >
+          <Ionicons
+            name={sortOrder === 'newest' ? 'arrow-down' : 'arrow-up'}
+            size={16}
+          />
+        </Pressable>
       </View>
 
       <FlatList
@@ -320,17 +340,26 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   dropDownContainerStyle: {
-    width: "50%",
     borderRadius: 24,
     borderWidth: 1,
     borderColor: "#151414",
   },
   filter: {
-    width: "50%",
     borderRadius: 24,
     borderWidth: 1,
     borderColor: "#151414",
     backgroundColor: "transparent",
+  },
+  sortButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginLeft: 8,
+    height: 50,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 24,
+    borderWidth: 1,
   },
   addNewsletterButton: {
     position: 'absolute',

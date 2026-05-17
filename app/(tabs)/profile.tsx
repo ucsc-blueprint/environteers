@@ -24,7 +24,7 @@ export default function Profile() {
   const [showModal, setShowModal] = useState(false);
   const confettiRef = useRef<ConfettiCannon>(null);
 
-  const completedCount = (cards ?? []).filter(i => i.completed).length;
+  const completedCount = (cards ?? []).filter(i => i.completed && (i.cardType === 'in_person' || i.cardType === 'online')).length;
 
   const lastUnlocked = [...ACHIEVEMENTS].reverse().find(a => completedCount >= a.threshold);
   const nextAchievement = ACHIEVEMENTS.find(a => completedCount < a.threshold);

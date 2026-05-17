@@ -1,5 +1,5 @@
 import { useAuth } from "@/context/AuthContext";
-import { View, Text, Pressable, Linking, Share } from 'react-native';
+import { View, Text, Pressable, Linking, Share, useWindowDimensions } from 'react-native';
 import { useState } from "react";
 import { 
   mdiListBoxOutline,
@@ -14,6 +14,7 @@ import { ActivityFeedback } from "@/components/ActivityFeedback";
 import { supabase } from "@/constants/supabase";
 import { router } from "expo-router";
 import { DeleteActionModal } from "./DeleteActionModal";
+import RenderHtml from 'react-native-render-html';
 
 export type OnlineCardData = {
   id: string,
@@ -34,6 +35,7 @@ export type OnlineCardDataProps = {
   completed: boolean | null,
   clicked: boolean,
   feedback: boolean | null,
+  statCount?: number,
 }
 
 type OnlineCardProps = OnlineCardDataProps & {
@@ -55,6 +57,7 @@ export const OnlineCard = ({
   highlight,
   onHide,
   onDelete,
+  statCount,
 }: OnlineCardProps) => {
   const [expanded, setExpanded] = useState(false);
   const [feedbackVisible, setFeedbackVisible] = useState(false);
@@ -63,6 +66,8 @@ export const OnlineCard = ({
 
   const { updateLike, updateCompleted, updateClicked, updateFeedback } = useInteractions();
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+
+  const { width } = useWindowDimensions()
 
   const toggleExpanded = () => {
     setExpanded(prev => !prev);
@@ -222,17 +227,34 @@ export const OnlineCard = ({
         <View style={CardStyles.cardInfo}>
           {/* Cover Photo */}
           <View style={CardStyles.imageColumn}>
-            { cardInfo.cover_photo && renderCoverPhoto(cardInfo.cover_photo) }
+            { cardInfo.cover_photo && (
+              <View style={{ position: 'relative' }}>
+                {renderCoverPhoto(cardInfo.cover_photo, completed ? 0.4 : 1)}
+                {/* Admin stat tag */}
+                {isAdmin && statCount !== undefined && (
+                  <View style={CardStyles.statTag}>
+                    <MaterialIcons name="check" size={14} color="#11C484" />
+                    <Text style={CardStyles.statTagText}>{statCount} Done</Text>
+                  </View>
+                )}
+                {/* User status tag */}
+                {!isAdmin && completed && (
+                  <View style={CardStyles.userTag}>
+                    <MaterialCommunityIcons
+                      name={"check-circle"}
+                      size={14}
+                      color="#11C484"
+                    />
+                    <Text style={CardStyles.userTagText}>Completed</Text>
+                  </View>
+                )}
+              </View>
+            )}
           </View>
           {/* Main Content */}
           <View style={CardStyles.contentColumn}>
             <Text>{cardInfo.title}</Text>
             {/* {endDate && <Text>{endDate}</Text>} */}
-            {isAdmin && (
-            <View style={[CardStyles.formatRow, CardStyles.rsvpContainer]}>
-              <Text style = {[CardStyles.rsvp]}>24 current RSVPs</Text>
-            </View>
-            )}            
             <View style={CardStyles.formatRow}>
               {renderIcon(24, mdiListBoxOutline, 'black')}
               {cardInfo.campaign_type && <Text>{cardInfo.campaign_type}</Text>}
@@ -307,7 +329,29 @@ export const OnlineCard = ({
         {/* Expanded Content */}
         { expanded && 
           <View style={CardStyles.signUpContainer}>
-            <Text style={{ marginTop: 20 }}>{cardInfo.summary}</Text>
+            { cardInfo.summary && (
+              <RenderHtml
+                contentWidth={width}
+                source={{ html: cardInfo.summary }}
+                baseStyle={{ marginTop: 20 }}
+                tagsStyles={{
+                  b: { fontWeight: 'bold' },
+                  strong: { fontWeight: 'bold' },
+                  i: { fontStyle: 'italic' },
+                  em: { fontStyle: 'italic' },
+                  u: { textDecorationLine: 'underline' },
+                  ul: { marginBottom: 8 },
+                  ol: { marginBottom: 8 },
+                  li: { marginBottom: 4 },
+                  a: { color: '#0282D3', textDecorationLine: 'underline' },
+                }}
+                renderersProps={{
+                  a: {
+                    onPress: (_, href) => Linking.openURL(href),
+                  },
+                }}
+              />
+            )}
             {/* Verify If User Signed-up */}
             {  /* signUpClick && !completed && */
             shouldShowPrompt &&

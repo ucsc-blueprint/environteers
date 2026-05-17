@@ -1,5 +1,5 @@
 import { useAuth } from "@/context/AuthContext";
-import { View, Image, Text, Pressable, Linking, Alert, Share } from 'react-native';
+import { View, Image, Text, Pressable, Linking, Alert, Share, useWindowDimensions } from 'react-native';
 import { useState } from "react";
 import { mdiOpenInNew } from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
@@ -12,6 +12,7 @@ import { ActivityFeedback } from "@/components/ActivityFeedback";
 import Toast from 'react-native-toast-message';
 import { router } from "expo-router";
 import { DeleteActionModal } from "./DeleteActionModal";
+import RenderHtml from 'react-native-render-html';
 
 export type InPersonCardData = {
   id: string,
@@ -35,6 +36,7 @@ export type InPersonCardDataProps = {
   completed: boolean | null,
   clicked: boolean,
   feedback: boolean | null,
+  statCount?: number,
   onDelete?: () => void;
   onHide?: () => void; 
 }
@@ -63,6 +65,7 @@ export const InPersonCard = ({
   highlight,
   onHide,
   onDelete,
+  statCount,
 }: InPersonCardProps) => {
   const { updateLike, updateSignUp, updateCompleted, updateClicked, updateFeedback } = useInteractions();
   const { user, profile } = useAuth();
@@ -78,6 +81,8 @@ export const InPersonCard = ({
       setInternalExpanded(prev => !prev);
     }
   };
+
+  const { width } = useWindowDimensions()
 
   const isPastEvent =
   cardInfo.end_date
@@ -297,7 +302,29 @@ export const InPersonCard = ({
         <View style={CardStyles.cardInfo}>
           {/* Cover Photo */}
           <View style={CardStyles.imageColumn}>
-            { cardInfo.cover_photo && renderCoverPhoto(cardInfo.cover_photo) }
+            { cardInfo.cover_photo && (
+              <View style={{ position: 'relative' }}>
+                {renderCoverPhoto(cardInfo.cover_photo, signed_up || completed ? 0.5 : 1)}
+                {/* Admin stat tag */}
+                {isAdmin && statCount !== undefined && (
+                  <View style={CardStyles.statTag}>
+                    <MaterialIcons name="mail-outline" size={14} color="#11C484" />
+                    <Text style={CardStyles.statTagText}>{statCount} RSVPs</Text>
+                  </View>
+                )}
+                {/* User status tag */}
+                {!isAdmin && (completed || signed_up) && (
+                  <View style={CardStyles.userTag}>
+                    <MaterialCommunityIcons
+                      name={"check-circle"}
+                      size={14}
+                      color="#11C484"
+                    />
+                    <Text style={CardStyles.userTagText}>{completed ? "Completed" : "Signed Up"}</Text>
+                  </View>
+                )}
+              </View>
+            )}
           </View>
           {/* Main Content */}
           <View style={CardStyles.contentColumn}>
@@ -315,12 +342,6 @@ export const InPersonCard = ({
                 <Text>{formatEventDate(cardInfo.start_date, cardInfo.end_date)}</Text>
               </View>
             }
-
-            {isAdmin && (
-            <View style={[CardStyles.formatRow, CardStyles.rsvpContainer]}>
-              <Text style = {[CardStyles.rsvp]}>24 current RSVPs</Text>
-            </View>
-            )}
 
             { cardInfo.location &&
               <View style={CardStyles.formatRow}>
@@ -400,7 +421,29 @@ export const InPersonCard = ({
         {/* Expanded Content */}
         { expanded && 
           <View style={CardStyles.signUpContainer}>
-            { cardInfo.summary && <Text style={{ marginTop: 20 }}>{cardInfo.summary}</Text>}
+            { cardInfo.summary && (
+              <RenderHtml
+                contentWidth={width}
+                source={{ html: cardInfo.summary }}
+                baseStyle={{ marginTop: 20 }}
+                tagsStyles={{
+                  b: { fontWeight: 'bold' },
+                  strong: { fontWeight: 'bold' },
+                  i: { fontStyle: 'italic' },
+                  em: { fontStyle: 'italic' },
+                  u: { textDecorationLine: 'underline' },
+                  ul: { marginBottom: 8 },
+                  ol: { marginBottom: 8 },
+                  li: { marginBottom: 4 },
+                  a: { color: '#0282D3', textDecorationLine: 'underline' },
+                }}
+                renderersProps={{
+                  a: {
+                    onPress: (_, href) => Linking.openURL(href),
+                  },
+                }}
+              />
+            )}
             {/* Verify If User Signed-up */}
             { /* { signUpClick && !signUpStatus && */ }
             { shouldShowPrompt &&
