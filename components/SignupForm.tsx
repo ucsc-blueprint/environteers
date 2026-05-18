@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
-import * as Linking from 'expo-linking'; //temporary for testing 
 export interface SignupFormProps {
   onSubmit: (
     firstName: string,

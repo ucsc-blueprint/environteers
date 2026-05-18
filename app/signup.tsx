@@ -6,7 +6,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import * as Linking from 'expo-linking';
 import React from 'react';
-
 export default function SignupScreen() {
   const router = useRouter();
   const {user, profile} = useAuth();
@@ -22,7 +21,6 @@ export default function SignupScreen() {
   async function onSubmit(firstName: string, lastName: string, email: string, password: string, isAdmin: boolean) {
 
     const redirectTo = Linking.createURL('confirm'); // link for going back into the app for the email verification button
-    console.log('Redirect URL:', redirectTo);
 
     const { data, error } = await supabase.auth.signUp({
       email,

@@ -3,7 +3,6 @@ import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/constants/supabase';
-
 export default function AuthConfirmScreen() {
   const router = useRouter();
   const url = Linking.useLinkingURL();
