@@ -36,10 +36,10 @@ export const formatEventDate = (start: Date, end: Date) => {
   return `${day} | ${startTime}–${endTime}`;
 }
 
-export const renderCoverPhoto = (coverPhoto: string) => {
+export const renderCoverPhoto = (coverPhoto: string, opacity: number = 1) => {
   return (
     <Image
-      style={{ width: 110, height: 130, borderRadius: 10 }}
+      style={{ width: 110, height: 130, borderRadius: 10, opacity }}
       source={{ uri: coverPhoto }}
     />
   );

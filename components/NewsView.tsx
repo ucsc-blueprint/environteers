@@ -1,4 +1,4 @@
-import { Text, TextInput, FlatList, Pressable, View, StyleSheet } from "react-native";
+import { Text, TextInput, FlatList, Pressable, View, StyleSheet, Modal, ActivityIndicator } from "react-native";
 import React, { useState, useCallback } from "react";
 import { NewsCard } from "@/components/NewsCard";
 import { DeleteNewsConfirmationModal } from "@/components/DeleteNewsConfirmationModal";
@@ -9,6 +9,8 @@ import { Ionicons } from "@expo/vector-icons";
 import Toast from 'react-native-toast-message';
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
+import { useAuth } from "@/context/AuthContext";
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const includesText = (str: string, search: string) =>
   str.toLowerCase().includes(search.toLowerCase());
@@ -36,6 +38,13 @@ export interface newsLetterItem {
   read_count?: number;
 }
 
+const logSubscriptionClick = async (userId: string) => {
+  const { error } = await supabase
+    .from('newsletter_subscription_clicks')
+    .upsert({ user_id: userId, opened_at: new Date().toISOString() }, { onConflict: 'user_id', ignoreDuplicates: true });
+  if (error) console.warn('[Supabase] subscription log failed:', error.message);
+};
+
 export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
   const router = useRouter();
   const [newsLetters, setNewsLetters] = useState<newsLetterItem[]>([]);
@@ -43,17 +52,26 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
   const [searchText, setSearchText] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
   const [filterDateLength, setFilterDateLength] = useState<'week' | '2weeks' | 'month' | 'all'>('all');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [refreshing, setRefreshing] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [selectedNewsletter, setSelectedNewsletter] = useState<newsLetterItem | null>(null);
+  // newsletter subscription stuff below
+  const [signupModalVisible, setSignupModalVisible] = useState(false);
+  const [signupLoading, setSignupLoading] = useState(true);
+  const { user } = useAuth();
+
+  const SIGNUP_URL = 'https://mailchi.mp/114704938e0e/weekly-email-update-signup';
 
   const fetchNewsletters = async () => {
+    setRefreshing(true);
     const { data, error } = await supabase
       .from('news')
       .select('*, read_count:interaction_news(count)');
 
     if (error) {
       console.error(error);
+      setRefreshing(false);
       return;
     }
 
@@ -63,6 +81,7 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
     }));
 
     setNewsLetters(mapped);
+    setRefreshing(false);
   };
 
   const handleOpenDeleteModal = (newsletter: newsLetterItem) => {
@@ -137,13 +156,20 @@ const deleteNewsletter = async (newsletter_id: string) => {
     }, [])
   );
 
-  const filteredNewsletters = newsLetters.filter((n) =>
-    (includesText(`Environteers Weekly Update: ${n.edition_number}th Edition`, searchText)) && (includesDate(n.date, filterDateLength))
-  );
+  const filteredNewsletters = newsLetters
+    .filter((n) =>
+      includesText(`Environteers Weekly Update: ${n.edition_number}th Edition`, searchText) &&
+      includesDate(n.date, filterDateLength)
+    )
+    .sort((a, b) =>
+      sortOrder === "newest"
+        ? new Date(b.date).getTime() - new Date(a.date).getTime()
+        : new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
 
   if (activeUrl) {
     return (
-      <View style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <Pressable
           onPress={() => setActiveUrl(null)}
           style={{ padding: 12, backgroundColor: "#eee" }}
@@ -155,13 +181,12 @@ const deleteNewsletter = async (newsletter_id: string) => {
           style={{ flex: 1 }}
           startInLoadingState={true}
         />
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={{ flex: 1 }}>
-      <Ionicons name="menu-outline" size={30} style={{ marginTop: 8, marginLeft: 8 }} />
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }} edges={['top']}>
       {isAdmin ? (
         <>
           <Text style={{ marginTop: 8, marginBottom: 4, marginLeft: 12, fontWeight: "bold", fontSize: 30 }}>Manage Newsletters</Text>
@@ -179,8 +204,8 @@ const deleteNewsletter = async (newsletter_id: string) => {
         onChangeText={setSearchText}
       />
 
-      <View style={{ flexDirection: 'row', marginLeft: 12 }}>
-        <Ionicons style={{ marginTop: 14, marginRight: 4, marginLeft: 4 }} name="filter-outline" size={24} />
+      <View style={{ flexDirection: 'row', marginLeft: 12, marginRight: 12, alignItems: 'center', gap: 8 }}>
+        <Ionicons name="filter-outline" size={24} />
         <DropDownPicker
           open={filterOpen}
           setOpen={setFilterOpen}
@@ -194,7 +219,17 @@ const deleteNewsletter = async (newsletter_id: string) => {
           ]}
           style={styles.filter}
           dropDownContainerStyle={styles.dropDownContainerStyle}
+          containerStyle={{ width: 200 }}
         />
+        <Pressable
+          onPress={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')}
+          style={styles.sortButton}
+        >
+          <Ionicons
+            name={sortOrder === 'newest' ? 'arrow-down' : 'arrow-up'}
+            size={16}
+          />
+        </Pressable>
       </View>
 
       <FlatList
@@ -224,8 +259,7 @@ const deleteNewsletter = async (newsletter_id: string) => {
           />
         )}
       />
-
-      {isAdmin && (
+{isAdmin && (
         <>
           <Pressable
             style={styles.addNewsletterButton}
@@ -247,7 +281,50 @@ const deleteNewsletter = async (newsletter_id: string) => {
           />
         </>
       )}
-    </View>
+
+      {!isAdmin && (
+        <Pressable
+          style={styles.subscribeFab}
+          onPress={() => {
+            if (!user) return;
+            logSubscriptionClick(user.id);
+            setSignupLoading(true);
+            setSignupModalVisible(true);
+          }}
+        >
+          <Ionicons name="mail" size={24} color="#fff" />
+        </Pressable>
+      )}
+
+      <Modal
+        visible={signupModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setSignupModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Subscribe to Newsletter</Text>
+            <Pressable onPress={() => setSignupModalVisible(false)} style={styles.modalCloseBtn}>
+              <Ionicons name="close" size={20} color="#555" />
+            </Pressable>
+          </View>
+          {signupLoading && (
+            <View style={styles.loadingOverlay}>
+              <ActivityIndicator size="large" color="#57801d" />
+            </View>
+          )}
+          <WebView
+            source={{ uri: SIGNUP_URL }}
+            style={{ flex: 1 }}
+            onLoadStart={() => setSignupLoading(true)}
+            onLoadEnd={() => setSignupLoading(false)}
+            javaScriptEnabled
+            domStorageEnabled
+          />
+        </View>
+      </Modal>
+    </SafeAreaView>
   );
 }
 
@@ -263,17 +340,26 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   dropDownContainerStyle: {
-    width: "50%",
     borderRadius: 24,
     borderWidth: 1,
     borderColor: "#151414",
   },
   filter: {
-    width: "50%",
     borderRadius: 24,
     borderWidth: 1,
     borderColor: "#151414",
     backgroundColor: "transparent",
+  },
+  sortButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginLeft: 8,
+    height: 50,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 24,
+    borderWidth: 1,
   },
   addNewsletterButton: {
     position: 'absolute',
@@ -291,5 +377,55 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '600',
     fontSize: 16,
-  }
+  },
+  subscribeFab: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#57801d',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#ddd',
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  modalCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    top: 57,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
 });

@@ -1,16 +1,11 @@
 import { useAuth } from "@/context/AuthContext";
 import { View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
 import React, { useState } from "react";
-import { 
-  mdiMenu,
-  mdiBell,
-} from '@mdi/js';
 import { CardStyles } from "@/app/stylesheets/CardStyles";
 import { InPersonCard } from "@/components/InPersonCard";
 import { OnlineCard } from "@/components/OnlineCard";
 import { EventCard } from "@/components/EventCard";
 import { CardProps } from "@/app/(tabs)/volunteer";
-import { renderIcon } from "@/app/utils/cards";
 import { SlidersHorizontal } from 'lucide-react-native';
 import { EcoFeedFilterDropdown } from '@/components/EcoFeedFilterDropdown';
 
@@ -26,6 +21,7 @@ type HeaderProps = {
 
 type ExpandableProps = {
   isSelected?: boolean,
+  showFeedback?: boolean;
   setSelectedId?: React.Dispatch<React.SetStateAction<string | null>>; 
   highlight?: boolean;
   onDelete?: () => void;
@@ -46,11 +42,6 @@ export const Header = ({
 
   return (
     <View style={CardStyles.feedHeader}>
-      {/* Navbar (Top)*/}
-      <View style={CardStyles.formatBetween}>
-        {renderIcon(24, mdiMenu, 'black')}
-        {renderIcon(24, mdiBell, 'black')}
-      </View>
       <Text style={CardStyles.userText}>Ready to take action 
         <Text style={ CardStyles.userName}> {profile?.first_name} {profile?.last_name}?</Text>
       </Text>
@@ -117,6 +108,7 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
         <InPersonCard 
           {...card} 
           highlight={props.highlight}
+          showFeedback={props.showFeedback === true}   
           onDelete={props.onDelete}
           onHide={props.onHide}
           liked={card.liked} 
@@ -126,6 +118,7 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
           feedbackVisible={feedbackVisible}
           setFeedbackVisible={setFeedbackVisible}
           {...(props.setSelectedId ? { expanded, onToggle: toggleExpanded } : {})}
+          statCount={card.statCount}
         />
       );
     case "online":
@@ -133,11 +126,13 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
         <OnlineCard 
           {...card} 
           highlight={props.highlight}
+          showFeedback={props.showFeedback === true}   
           onDelete={props.onDelete}
           onHide={props.onHide}
           liked={card.liked} 
           completed={card.completed} 
           clicked={card.clicked}
+          statCount={card.statCount}
         />
       );
     case "event":
@@ -145,6 +140,7 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
         <EventCard 
           {...card} 
           highlight={props.highlight}
+          showFeedback={props.showFeedback === true}   
           onDelete={props.onDelete}
           onHide={props.onHide}
           liked={card.liked} 
@@ -154,6 +150,7 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
           feedbackVisible={feedbackVisible}
           setFeedbackVisible={setFeedbackVisible}
           {...(props.setSelectedId ? { expanded, onToggle: toggleExpanded } : {})}
+          statCount={card.statCount}
         />
       );
     default:

@@ -85,7 +85,7 @@ const ProfileSettings = ({ onSubmit, initialFirstName = '', initialLastName = ''
       <View style={styles.backContainer}>
         <Pressable
           style={styles.backButton}
-          onPress={() => router.push('/profile')}
+          onPress={() => router.back()}
         >
           <ChevronLeft size={24} />
           <Text style={styles.title}>Manage Account</Text>

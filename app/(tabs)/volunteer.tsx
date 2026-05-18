@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator, Text, Modal } from "react-native";
+import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator, Text, Modal, RefreshControl } from "react-native";
 import { Header, EcoFeed } from "@/components/EcoFeed";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/constants/supabase";
@@ -10,9 +10,11 @@ import { InPersonCardDataProps } from "@/components/InPersonCard";
 import { OnlineCardDataProps } from "@/components/OnlineCard";
 import { EventCardDataProps } from "@/components/EventCard";
 import {DeleteToast} from "@/components/DeleteToast"
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import * as Location from 'expo-location';
 import { getVisibleEcoActions } from "@/app/utils/cards";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 
 export type CardProps = InPersonCardDataProps | OnlineCardDataProps | EventCardDataProps;
 
@@ -48,7 +50,9 @@ export default function Volunteer() {
   const [maxDistance, setMaxDistance] = useState<number | null>(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [toast, setToast] = useState<{ message: string; description: string } | null>(null);
+  const [tab, setTab] = useState<"active" | "hidden">("active");
 
+  const [refreshing, setRefreshing] = useState(false);
 
   const { cards: interactionCards } = useInteractions();
 
@@ -75,6 +79,115 @@ export default function Volunteer() {
 
   const isAdmin = profile?.is_admin === true;
 
+  const fetchData = useCallback(async () => {
+    if (!user?.id) return;
+
+    const [inPersonRes, onlineRes, eventRes, inPersonSignups, onlineCompletions, eventSignups] = await Promise.all([
+      supabase
+        .from("inperson_ecoactions")
+        .select(`*, location_latitude, location_longitude`)
+        .order('start_date')
+        .order('created_at'),
+
+      supabase
+        .from("online_ecoactions")
+        .select(`*`)
+        .order('end_date')
+        .order('created_at'),
+
+      supabase
+        .from("events")
+        .select(`*, location_latitude, location_longitude`)
+        .order('start_date')
+        .order('created_at'),
+
+      isAdmin
+        ? supabase
+          .from("interactions_eco_inperson")
+          .select("action_id")
+          .eq("signed_up", true)
+        : Promise.resolve({ data: [] }),
+
+      isAdmin
+        ? supabase
+          .from("interactions_eco_online")
+          .select("action_id")
+          .eq("completed", true)
+        : Promise.resolve({ data: [] }),
+
+      isAdmin
+        ? supabase
+          .from("interactions_events")
+          .select("action_id")
+          .eq("signed_up", true)
+        : Promise.resolve({ data: [] }),
+    ]);
+
+    if (inPersonRes.error) console.error(inPersonRes.error);
+    if (onlineRes.error) console.error(onlineRes.error);
+    if (eventRes.error) console.error(eventRes.error);
+
+    const inPersonSignupMap: Record<string, number> = {};
+    for (const row of inPersonSignups.data ?? []) {
+      inPersonSignupMap[row.action_id] = (inPersonSignupMap[row.action_id] ?? 0) + 1;
+    }
+    const onlineCompletionMap: Record<string, number> = {};
+    for (const row of onlineCompletions.data ?? []) {
+      onlineCompletionMap[row.action_id] = (onlineCompletionMap[row.action_id] ?? 0) + 1;
+    }
+    const eventSignupMap: Record<string, number> = {};
+    for (const row of eventSignups.data ?? []) {
+      eventSignupMap[row.action_id] = (eventSignupMap[row.action_id] ?? 0) + 1;
+    }
+
+    const inPersonData = inPersonRes.data ?? [];
+    const onlineData = onlineRes.data ?? [];
+    const eventData = eventRes.data ?? [];
+  
+    const inPersonCardData: CardProps[] = (inPersonData ?? []).map(card => ({
+      cardType: "in_person",
+      cardInfo: card,
+      liked: false,
+      signed_up: null,
+      completed: null,
+      clicked: false,
+      feedback: false,
+      statCount: inPersonSignupMap[card.id] ?? 0,
+    }));
+
+    const onlineCardData: CardProps[] = (onlineData ?? []).map(card => ({
+      cardType: "online",
+      cardInfo: card,
+      liked: false,
+      signed_up: null,
+      completed: null,
+      clicked: false,
+      feedback: false,
+      statCount: onlineCompletionMap[card.id] ?? 0,
+    })); 
+  
+    const eventCardData: CardProps[] = (eventData ?? []).map(event => ({
+      cardType: "event",
+      cardInfo: event,
+      liked: false,
+      signed_up: null,
+      completed: null,
+      clicked: false,
+      feedback: false,
+      statCount: eventSignupMap[event.id] ?? 0,
+    }));
+
+    const fullData = [...inPersonCardData, ...onlineCardData, ...eventCardData]
+    setItems(fullData);
+  }, [user?.id, isAdmin]);
+
+  useFocusEffect(
+    useCallback(() => {
+    setLoading(true);
+
+    fetchData().finally(() => setLoading(false));
+    }, [fetchData]));
+
   useEffect(() => {
     const getLocation = async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -86,74 +199,8 @@ export default function Volunteer() {
       });
     };
 
-    const fetchData = async () => {
-      setLoading(true);
-
-      if (!user?.id) {
-        setLoading(false);
-        return;
-      };
-
-      const [inPersonRes, onlineRes, eventRes] = await Promise.all([
-        supabase
-          .from("inperson_ecoactions")
-          .select(`*, location_latitude, location_longitude`),
-
-        supabase
-          .from("online_ecoactions")
-          .select(`*`),
-
-        supabase
-          .from("events")
-          .select(`*, location_latitude, location_longitude`)
-      ]);
-
-      if (inPersonRes.error) console.error(inPersonRes.error);
-      if (onlineRes.error) console.error(onlineRes.error);
-      if (eventRes.error) console.error(eventRes.error);
-
-      const inPersonData = inPersonRes.data ?? [];
-      const onlineData = onlineRes.data ?? [];
-      const eventData = eventRes.data ?? [];
-    
-      const inPersonCardData: CardProps[] = (inPersonData ?? []).map(card => ({
-        cardType: "in_person",
-        cardInfo: card,
-        liked: false,
-        signed_up: null,
-        completed: null,
-        clicked: false,
-        feedback: false,
-      }));
-
-      const onlineCardData: CardProps[] = (onlineData ?? []).map(card => ({
-        cardType: "online",
-        cardInfo: card,
-        liked: false,
-        signed_up: null,
-        completed: null,
-        clicked: false,
-        feedback: false,
-      })); 
-    
-      const eventCardData: CardProps[] = (eventData ?? []).map(event => ({
-        cardType: "event",
-        cardInfo: event,
-        liked: false,
-        signed_up: null,
-        completed: null,
-        clicked: false,
-        feedback: false, 
-      }));
-
-      const fullData = [...inPersonCardData, ...onlineCardData, ...eventCardData]
-      setItems(fullData);
-      setLoading(false);
-    };
-
     getLocation();
-    fetchData();
-  }, [user?.id]);
+  }, []);
 
   const visibleItems = useMemo(() => {
     return getVisibleEcoActions(items);
@@ -162,8 +209,11 @@ export default function Volunteer() {
   const filteredItems = useMemo(() => {
     return visibleItems
       .filter((item) => {
-        const isNotHidden = 
-          isAdmin || !item.cardInfo.hidden // if hidden is false, displaying card should be true and vice versa
+        const matchesTab =
+          tab === "hidden"
+          ? item.cardInfo.hidden === true
+          : item.cardInfo.hidden === false;
+          
         const matchesSearch =
           item.cardInfo.title
             ?.toLowerCase()
@@ -189,13 +239,13 @@ export default function Volunteer() {
           return end ? end >= now : true;
         })();
 
-        return isNotHidden && matchesSearch && matchesType && matchesDistance && matchesDate;
+        return matchesTab && matchesSearch && matchesType && matchesDistance && matchesDate;
       })
       .map(item => ({
         ...item,
         ...getInteractionState(item.cardInfo.id, item.cardType)
       }));
-  }, [visibleItems, search, filterTypes, maxDistance, userLocation, getInteractionState, isAdmin]);
+  }, [tab, visibleItems, search, filterTypes, maxDistance, userLocation, getInteractionState]);
 
   const handleFullDelete = useCallback(async (id: string, cardType: string) => 
   {
@@ -218,88 +268,117 @@ export default function Volunteer() {
     // update hidden flag
     setItems(prev => prev.map(item =>
       item.cardInfo.id === id && item.cardType === cardType
-        ? { ...item, cardInfo: { ...item.cardInfo, hidden: true } }
+        ? { ...item, cardInfo: { ...item.cardInfo, hidden: true } } as CardProps
         : item
     ));
     setToast({ message: "Event deleted", description: "Non-registered users can no longer see this event on their feed." });
   }, []);
   
-
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchData().finally(() => setRefreshing(false));
+  }, [fetchData]);
 
   return (
-    <LinearGradient
-        colors={['white','#EDF3F7', '#EAF2F6']}
-        locations={[0.8, 0.9, 1]}
-        start={{ x: 0, y: 0}}
-        end={{ x: 0, y: 0.5 }}
-        style={styles.gradient}
-      >
-      {toast && 
-      (
-        <DeleteToast
-          visible={!!toast}
-          message={toast.message}
-          description={toast.description}
-          onClose={() => setToast(null)}
-        />
-      )}
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 16}}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'white'}} edges={['top']}>
+      <LinearGradient
+          colors={['white','#EDF3F7', '#EAF2F6']}
+          locations={[0.8, 0.9, 1]}
+          start={{ x: 0, y: 0}}
+          end={{ x: 0, y: 0.5 }}
+          style={styles.gradient}
+        >
+        {toast && 
+        (
+          <DeleteToast
+            visible={!!toast}
+            message={toast.message}
+            description={toast.description}
+            onClose={() => setToast(null)}
+          />
+        )}
+        <ScrollView 
+          contentContainerStyle={{ padding: 16, gap: 16}}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
 
-        <Header 
-          resultsCount={filteredItems.length}
-          search={search}
-          setSearch={setSearch}
-          filterTypes={filterTypes}
-          setFilterTypes={setFilterTypes}
-          maxDistance={maxDistance}
-          setMaxDistance={setMaxDistance}
-        />
-        
-        
-        { loading && <ActivityIndicator size="large" color="#0000ff" />}
-        { !loading && filteredItems.map((card) => ( 
-          <EcoFeed 
-            key={`${card.cardType}-${card.cardInfo.id}`}
-            card={card}
-            onDelete = {() => handleFullDelete(card.cardInfo.id, card.cardType)}
-            onHide = {() => handleHide(card.cardInfo.id, card.cardType)}
+          <Header 
+            resultsCount={filteredItems.length}
+            search={search}
+            setSearch={setSearch}
+            filterTypes={filterTypes}
+            setFilterTypes={setFilterTypes}
+            maxDistance={maxDistance}
+            setMaxDistance={setMaxDistance}
           />
 
-        ))}
-      </ScrollView>
-      {isAdmin ? (
-        <>
-          <Pressable
-            style={styles.addButton}
-            onPress={() => setShowAddMenu(true)}>
-            <Text style={styles.addButtonText}>+ Add</Text>
-          </Pressable>
+          {isAdmin && <View style={styles.tabContainer}>
+            <Pressable
+              onPress={() => setTab("active")}
+              style={[styles.tab, tab === "active" && styles.tabActive]}
+            >
+              <Text style={[styles.tabText, tab === "active" && styles.tabTextActive]}>
+                Active
+              </Text>
+            </Pressable>
 
-          <Modal visible={showAddMenu} transparent animationType="fade" onRequestClose={() => setShowAddMenu(false)}>
-            <Pressable style={styles.backdrop} onPress={() => setShowAddMenu(false)}>
-              <Pressable style={styles.popup} onPress={() => { }}>
-                <Text style={styles.popupTitle}>Add something new</Text>
-                <Pressable style={styles.popupButton} onPress={() => goToAddForm("event")}>
-                  <Text>Add Event</Text>
-                </Pressable>
-                <Pressable style={styles.popupButton} onPress={() => goToAddForm("in-person")}>
-                  <Text>Add In-Person Eco-Action</Text>
-                </Pressable>
-                <Pressable style={styles.popupButton} onPress={() => goToAddForm("online")}>
-                  <Text>Add Online Eco-Action</Text>
+            <Pressable
+              onPress={() => setTab("hidden")}
+              style={[styles.tab, tab === "hidden" && styles.tabActive]}
+            >
+              <Text style={[styles.tabText, tab === "hidden" && styles.tabTextActive]}>
+                Hidden
+              </Text>
+            </Pressable>
+          </View>}
+          
+          { loading && <ActivityIndicator size="large" color="#0000ff" />}
+          { !loading && filteredItems.map((card) => ( 
+            <EcoFeed 
+              key={`${card.cardType}-${card.cardInfo.id}`}
+              card={card}
+              onDelete = {() => handleFullDelete(card.cardInfo.id, card.cardType)}
+              onHide = {() => handleHide(card.cardInfo.id, card.cardType)}
+            />
+
+          ))}
+        </ScrollView>
+        {isAdmin ? (
+          <>
+            <Pressable
+              style={styles.addButton}
+              onPress={() => setShowAddMenu(true)}>
+              <Text style={styles.addButtonText}>+ Add</Text>
+            </Pressable>
+
+            <Modal visible={showAddMenu} transparent animationType="fade" onRequestClose={() => setShowAddMenu(false)}>
+              <Pressable style={styles.backdrop} onPress={() => setShowAddMenu(false)}>
+                <Pressable style={styles.popup} onPress={() => { }}>
+                  <Text style={styles.popupTitle}>Add something new</Text>
+                  <Pressable style={styles.popupButton} onPress={() => goToAddForm("event")}>
+                    <Text>Add Event</Text>
+                  </Pressable>
+                  <Pressable style={styles.popupButton} onPress={() => goToAddForm("in-person")}>
+                    <Text>Add In-Person Eco-Action</Text>
+                  </Pressable>
+                  <Pressable style={styles.popupButton} onPress={() => goToAddForm("online")}>
+                    <Text>Add Online Eco-Action</Text>
+                  </Pressable>
                 </Pressable>
               </Pressable>
+            </Modal>
+          </>
+        ) : (
+          <View style={styles.mapBackground}>
+            <Pressable onPress={() => router.push('/(tabs)/map')}>
+              <MaterialCommunityIcons name="map" size={30} color={'#0282D3'} />
             </Pressable>
-          </Modal>
-        </>
-      ) : (
-        <View style={styles.mapBackground}>
-          <Pressable onPress={() => router.push('/(tabs)/map')}>
-            <MaterialCommunityIcons name="map" size={30} color={'#0282D3'} />
-          </Pressable>
-        </View>
-      )}
-    </LinearGradient>
+          </View>
+        )}
+      </LinearGradient>
+    </SafeAreaView>
   );
 }
 
@@ -354,5 +433,38 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '600',
     fontSize: 16,
+  },
+
+  tabContainer: {
+    flexDirection: "row",
+    padding: 4,
+    gap: 16,
+    alignSelf: "flex-start"
+  },
+
+  tab: {
+    paddingVertical: 17,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    borderRadius: 16,
+    borderColor: "#57811D",
+    borderWidth: 1,
+    backgroundColor: "white",
+  },
+
+  tabActive: {
+    backgroundColor: "#57811D",
+  },
+
+  tabText: {
+    color: "#57811D",
+    fontWeight: "400",
+    fontSize: 16,
+  },
+
+  tabTextActive: {
+    color: "#F2F7F5",
+    fontWeight: "400",
+    fontSize: 16
   },
 });

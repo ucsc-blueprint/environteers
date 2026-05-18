@@ -7,16 +7,17 @@ import {
   Pressable,
 } from "react-native";
 import { useState, useEffect } from "react";
-import { LogoutButton } from "@/components/LogoutButton";
 import { EcoFeed } from "@/components/EcoFeed";
 import { CardProps, useInteractions } from "@/context/InteractionsContext";
 import { SlidersHorizontal, ChevronRight, ChevronDown } from "lucide-react-native";
 import * as Location from "expo-location";
 import { EcoFeedFilterDropdown } from "@/components/EcoFeedFilterDropdown";
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Activity() {
   const { cards, loading } = useInteractions();
-
+  // const [feedbackVisible, setFeedbackVisible] = useState(false);
+  // const [selectedFeedbackCard, setSelectedFeedbackCard] = useState<CardProps | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<
     "signups" | "favorites"
   >("signups");
@@ -98,6 +99,12 @@ export default function Activity() {
     return null;
   };
 
+  // feedback handler
+  // const openFeedback = (card: CardProps) => {
+  //   setSelectedFeedbackCard(card);
+  //   setFeedbackVisible(true);
+  // };
+
   // Apply filters
   const filteredCards = cards.filter((card) => {
     const matchesType =
@@ -131,7 +138,7 @@ export default function Activity() {
   });
 
   // Card groups
-  const likedCards = filteredCards.filter((c) => c.liked === true);
+  const likedCards = filteredCards.filter((c) => c.liked === true && (c.cardInfo.hidden === false));
 
   const completedCards = filteredCards.filter(
     (c) => c.completed === true
@@ -183,7 +190,8 @@ export default function Activity() {
     cardsToRender: CardProps[],
     isOpen: boolean,
     setIsOpen: (value: boolean) => void,
-    highlight = false
+    highlight = false,
+    showFeedback = false
   ) => {
     return (
       <View style={styles.sectionContainer}>
@@ -212,7 +220,7 @@ export default function Activity() {
               <Text style={styles.emptyText}>
                 No activity yet...
                 {"\n"}
-                Go to the home page to discover your next opportunity!
+                Go to the Volunteer page to discover your next opportunity!
               </Text>
             ) : (
               cardsToRender.map((card) => (
@@ -220,6 +228,7 @@ export default function Activity() {
                   key={`${card.cardType}-${card.cardInfo.id}`}
                   card={card}
                   highlight={highlight}
+                  showFeedback={showFeedback}
                 />
               ))
             )}
@@ -230,7 +239,7 @@ export default function Activity() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
       >
@@ -363,14 +372,16 @@ export default function Activity() {
                 "Completed",
                 completedCards,
                 completedOpen,
-                setCompletedOpen
+                setCompletedOpen,
+                false,
+                true
               )}
             </>
           ))}
 
-        <LogoutButton />
+        {/* <LogoutButton /> */}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -489,3 +500,4 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 });
+
