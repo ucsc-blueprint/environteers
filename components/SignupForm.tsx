@@ -55,6 +55,7 @@ const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
     }
     onSubmit(firstName, lastName, email, password, isAdmin);
 
+    onSubmit(firstName, lastName, email, password, isAdmin);
   };
 
   return (

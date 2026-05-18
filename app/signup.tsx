@@ -19,7 +19,7 @@ export default function SignupScreen() {
   const { isAdmin: isAdminParam } = useLocalSearchParams();
 
   async function onSubmit(firstName: string, lastName: string, email: string, password: string, isAdmin: boolean) {
-
+    console.log('onSubmit fired');
     const redirectTo = Linking.createURL('confirm'); // link for going back into the app for the email verification button
 
     const { data, error } = await supabase.auth.signUp({
