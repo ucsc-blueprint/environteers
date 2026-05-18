@@ -54,6 +54,7 @@ const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
       setError('Please enter a valid email address!');
       return;
     }
+    onSubmit(firstName, lastName, email, password, isAdmin);
 
   };
 

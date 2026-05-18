@@ -17,7 +17,7 @@ export default function AuthConfirmScreen() {
     if (!hash) return;
 
     const params = Object.fromEntries(new URLSearchParams(hash));
-    const { access_token, refresh_token, type } = params;
+    const { access_token, refresh_token } = params;
 
     if (!access_token || !refresh_token) {
       setError('Invalid or expired verification link.');
