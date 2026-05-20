@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, Image, StyleSheet, TextInput, GestureResponderEvent } from 'react-native';
+import { View, Text, Pressable, StyleSheet, TextInput, GestureResponderEvent, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { supabase } from '@/constants/supabase';
+import { ProfileAvatar } from './ProfileAvatar';
 
 export interface ProfileSettingsProps {
   onSubmit: (
@@ -9,25 +12,30 @@ export interface ProfileSettingsProps {
     lastName: string,
     email: string,
     currentPassword: string,
-    password: string
+    password: string,
+    profilePictureUrl?: string
   ) => Promise<string | null>; //thanks to this, we can return an error message if the update fails, or null if it succeeds
   initialFirstName?: string;
   initialLastName?: string;
   initialEmail?: string;
+  initialProfilePictureUrl?: string;
+  userId?: string;
 }
 
-const ProfileSettings = ({ onSubmit, initialFirstName = '', initialLastName = '', initialEmail = '' }: ProfileSettingsProps) => {
+const ProfileSettings = ({ onSubmit, initialFirstName = '', initialLastName = '', initialEmail = '', initialProfilePictureUrl, userId }: ProfileSettingsProps) => {
   const router = useRouter();
   const [firstName, setFirstName] = useState(initialFirstName);
   const [lastName, setLastName] = useState(initialLastName);
   const [email, setEmail] = useState(initialEmail);
+  const [profilePictureUrl, setProfilePictureUrl] = useState(initialProfilePictureUrl);
 
   // Update initial name + email once they finish fetching
   useEffect(() => {
     setFirstName(initialFirstName);
     setLastName(initialLastName);
     setEmail(initialEmail);
-  }, [initialFirstName, initialLastName, initialEmail]);
+    setProfilePictureUrl(initialProfilePictureUrl);
+  }, [initialFirstName, initialLastName, initialEmail, initialProfilePictureUrl]);
 
   const [currentPassword, setCurrentPassword] = useState(''); 
   const [newPassword, setPassword] = useState('');
@@ -38,6 +46,7 @@ const ProfileSettings = ({ onSubmit, initialFirstName = '', initialLastName = ''
     firstName !== initialFirstName ||
     lastName !== initialLastName ||
     email !== initialEmail ||
+    profilePictureUrl !== initialProfilePictureUrl ||
     (currentPassword !== "" &&
     newPassword !== "" &&
     confirmPassword !== "");
@@ -47,6 +56,77 @@ const ProfileSettings = ({ onSubmit, initialFirstName = '', initialLastName = ''
   const [showConfirm, setShowConfirm] = useState(false);
 
   const [error, setError] = useState('');
+  const [uploading, setUploading] = useState(false);
+
+  const pickImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+      });
+
+      if (!result.canceled && result.assets && result.assets[0]) {
+        setUploading(true);
+        const imageUri = result.assets[0].uri;
+        
+        if (!userId) {
+          setError('User ID not found');
+          setUploading(false);
+          return;
+        }
+
+        // Upload to Supabase Storage
+        const fileName = `${userId}/${Date.now()}.jpg`;
+        const formData = new FormData();
+        formData.append('file', {
+          uri: imageUri,
+          type: 'image/jpeg',
+          name: fileName,
+        } as any);
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('profile-pictures')
+          .upload(fileName, formData as any, {
+            contentType: 'image/jpeg',
+            upsert: true,
+          });
+
+        if (uploadError) {
+          setError('Failed to upload image');
+          setUploading(false);
+          return;
+        }
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('profile-pictures')
+          .getPublicUrl(fileName);
+
+        setProfilePictureUrl(publicUrl);
+        setUploading(false);
+      }
+    } catch (err) {
+      setError('Failed to pick image');
+      setUploading(false);
+    }
+  };
+
+  const removeProfilePicture = () => {
+    Alert.alert(
+      'Remove Profile Photo',
+      'Are you sure you want to remove your profile photo?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: () => setProfilePictureUrl(undefined),
+        },
+      ]
+    );
+  };
 
   const handleSubmit = async (_event: GestureResponderEvent) => {
     setError("");
@@ -71,7 +151,8 @@ const ProfileSettings = ({ onSubmit, initialFirstName = '', initialLastName = ''
       lastName,
       email,
       currentPassword,
-      newPassword
+      newPassword,
+      profilePictureUrl
     );
 
     if (result) {
@@ -94,29 +175,37 @@ const ProfileSettings = ({ onSubmit, initialFirstName = '', initialLastName = ''
 
       <Text style={styles.header}>Profile</Text>
       <View style={styles.avatarRow}>
-        <Image
-          source={require('../assets/images/PFP.png')}
-          style={styles.avatar}
+        <ProfileAvatar
+          profilePictureUrl={profilePictureUrl}
+          firstName={firstName}
+          lastName={lastName}
+          size={80}
         />
         <View style={styles.photoButtons}>
           <Pressable
             style={({ pressed }) => [
               styles.changePhotoButton,
               pressed && styles.changePhotoButtonPressed,
+              uploading && styles.changePhotoButtonDisabled,
             ]}
-            onPress={() => {}} // Do nothing for now
+            onPress={pickImage}
+            disabled={uploading}
           >
-            <Text style={styles.changePhotoText}>Change Profile Photo</Text>
+            <Text style={styles.changePhotoText}>
+              {uploading ? 'Uploading...' : 'Change Profile Photo'}
+            </Text>
           </Pressable>
-          <Pressable
-            style={({ pressed }) => [
-              styles.removePhotoButton,
-              pressed && styles.removePhotoButtonPressed,
-            ]}
-            onPress={() => {}} // Do nothing for now
-          >
-            <Text style={styles.removePhotoText}>Remove Profile Photo</Text>
-          </Pressable>
+          {profilePictureUrl && (
+            <Pressable
+              style={({ pressed }) => [
+                styles.removePhotoButton,
+                pressed && styles.removePhotoButtonPressed,
+              ]}
+              onPress={removeProfilePicture}
+            >
+              <Text style={styles.removePhotoText}>Remove Profile Photo</Text>
+            </Pressable>
+          )}
         </View>
       </View>
 
@@ -321,11 +410,8 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
 
-    avatar: {
-        width: 80,
-        height: 80,
-        borderRadius: 9999,
-        backgroundColor: '#D9D9D9',
+    changePhotoButtonDisabled: {
+        opacity: 0.6,
     },
 
     photoButtons: {

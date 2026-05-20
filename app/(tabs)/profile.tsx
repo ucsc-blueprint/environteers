@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator, Text, View, ScrollView, StyleSheet,
-  Image, FlatList, Pressable, Modal
+  FlatList, Pressable, Modal
 } from "react-native";
 import { LogoutButton } from "@/components/LogoutButton";
 import { formatMembership } from "@/components/AdminVolunteersView";
+import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { useAuth } from '@/context/AuthContext';
 import { useInteractions } from '@/context/InteractionsContext';
 import { Redirect, useRouter } from 'expo-router';
@@ -110,7 +111,12 @@ export default function Profile() {
 
       {/* Avatar + name */}
       <View style={styles.avatarSection}>
-        <Image style={styles.avatar} source={require('../../assets/images/PFP.png')} />
+        <ProfileAvatar
+          profilePictureUrl={profile.profile_picture_url}
+          firstName={profile.first_name}
+          lastName={profile.last_name}
+          size={90}
+        />
         <Text style={styles.name}>{profile.first_name} {profile.last_name}</Text>
         <Text style={styles.memberSince}>{formatMembership(profile.created_at)}</Text>
       </View>
@@ -172,7 +178,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#EAF2F6', padding: 20 },
   settingsIcon: { alignSelf: 'flex-end', marginTop: 10, marginBottom: 10 },
   avatarSection: { alignItems: 'center', marginBottom: 24 },
-  avatar: { width: 90, height: 90, borderRadius: 45, backgroundColor: '#ccc', marginBottom: 12 },
   name: { fontSize: 22, fontWeight: 'bold', color: '#618E20' },
   memberSince: { fontSize: 14, color: '#666', marginTop: 4 },
   statsCard: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 20 },

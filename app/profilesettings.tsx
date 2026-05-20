@@ -13,7 +13,8 @@ export default function Settings() {
     lastName: string,
     email: string,
     currentPassword: string,
-    password: string
+    password: string,
+    profilePictureUrl?: string
   ): Promise<string | null> => {
     if (!user) return "User not logged in";
 
@@ -43,9 +44,9 @@ export default function Settings() {
       }
     }
 
-    // Update name
-    if (trimmedFirstName !== "" || trimmedLastName !== "") {
-      const updates = {};
+    // Update name and profile picture
+    if (trimmedFirstName !== "" || trimmedLastName !== "" || profilePictureUrl !== undefined) {
+      const updates: any = {};
 
       if (trimmedFirstName !== "" && trimmedFirstName !== profile?.first_name) {
         updates.first_name = trimmedFirstName;
@@ -53,6 +54,10 @@ export default function Settings() {
 
       if (trimmedLastName !== "" && trimmedLastName !== profile?.last_name) {
         updates.last_name = trimmedLastName;
+      }
+
+      if (profilePictureUrl !== profile?.profile_picture_url) {
+        updates.profile_picture_url = profilePictureUrl;
       }
 
       if (Object.keys(updates).length > 0) {
@@ -64,7 +69,7 @@ export default function Settings() {
         if (error) {
           Toast.show({
             type: 'error',
-            text1: 'Failed to update name',
+            text1: 'Failed to update profile',
           });
           return null;
         }
@@ -129,6 +134,8 @@ export default function Settings() {
         initialFirstName={profile?.first_name ?? ""}
         initialLastName={profile?.last_name ?? ""}
         initialEmail={user?.email ?? ""}
+        initialProfilePictureUrl={profile?.profile_picture_url}
+        userId={user?.id}
       />
     </SafeAreaView>
   );
