@@ -47,6 +47,24 @@ type OnlineCardProps = OnlineCardDataProps & {
   onHide?: () => void; 
 };
 
+const htmlTagsStyles = {
+  b: { fontWeight: 'bold' as const },
+  strong: { fontWeight: 'bold' as const },
+  i: { fontStyle: 'italic' as const },
+  em: { fontStyle: 'italic' as const },
+  u: { textDecorationLine: 'underline' as const },
+  ul: { marginBottom: 8 },
+  ol: { marginBottom: 8 },
+  li: { marginBottom: 4 },
+  a: { color: '#0282D3', textDecorationLine: 'underline' as const },
+};
+
+const htmlRenderersProps = {
+  a: {
+    onPress: (_: any, href: string) => Linking.openURL(href),
+  },
+};
+
 export const OnlineCard = ({
   cardInfo, 
   liked, 
@@ -334,22 +352,8 @@ export const OnlineCard = ({
                 contentWidth={width}
                 source={{ html: cardInfo.summary }}
                 baseStyle={{ marginTop: 20 }}
-                tagsStyles={{
-                  b: { fontWeight: 'bold' },
-                  strong: { fontWeight: 'bold' },
-                  i: { fontStyle: 'italic' },
-                  em: { fontStyle: 'italic' },
-                  u: { textDecorationLine: 'underline' },
-                  ul: { marginBottom: 8 },
-                  ol: { marginBottom: 8 },
-                  li: { marginBottom: 4 },
-                  a: { color: '#0282D3', textDecorationLine: 'underline' },
-                }}
-                renderersProps={{
-                  a: {
-                    onPress: (_, href) => Linking.openURL(href),
-                  },
-                }}
+                tagsStyles={htmlTagsStyles}
+                renderersProps={htmlRenderersProps}
               />
             )}
             {/* Verify If User Signed-up */}
