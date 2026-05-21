@@ -97,10 +97,10 @@ export default function Map() {
   const mapRef = useRef<MapView>(null);
   const bottomSheetRef = useRef<BottomSheet>(null);
   const flatListRef = useRef<any>(null);
-  const snapPoints = useMemo(() => ['15%', '50%', '90%'], []);
+  const snapPoints = useMemo(() => ['15%', '40%', '50%', '90%'], []);
 
   const handleMarkerPress = (id: string, type: string) => {
-    bottomSheetRef.current?.snapToIndex(2);
+    bottomSheetRef.current?.snapToIndex(3);
     const index = filteredItems.findIndex(
       item => item.cardInfo.id === id && item.cardType === type
     );
@@ -129,6 +129,8 @@ export default function Map() {
           longitude: marker.longitude,
         },
       });
+
+      bottomSheetRef.current?.snapToIndex(1);
     }
   };
 
