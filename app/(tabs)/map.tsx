@@ -94,12 +94,13 @@ export default function Map() {
 
   const { cards: interactionCards } = useInteractions();
 
+  const mapRef = useRef<MapView>(null);
   const bottomSheetRef = useRef<BottomSheet>(null);
   const flatListRef = useRef<any>(null);
-  const snapPoints = useMemo(() => ['15%', '50%', '90%'], []);
+  const snapPoints = useMemo(() => ['15%', '40%', '50%', '90%'], []);
 
   const handleMarkerPress = (id: string, type: string) => {
-    bottomSheetRef.current?.snapToIndex(2);
+    bottomSheetRef.current?.snapToIndex(3);
     const index = filteredItems.findIndex(
       item => item.cardInfo.id === id && item.cardType === type
     );
@@ -111,9 +112,27 @@ export default function Map() {
         animated: true,
         viewPosition: 0
       });
-      // timeout so it doesn't try to scroll before the bottom sheet expands
     }, 800);
   }
+
+  const handleCardPress = (id: string, type: string) => {
+    const marker = markers.find(
+      m => m.id === id && m.type === type
+    );
+
+    setSelectedId(`${id}-${type}`);
+
+    if (marker) {
+      mapRef.current?.animateCamera({
+        center: {
+          latitude: marker.latitude,
+          longitude: marker.longitude,
+        },
+      });
+
+      bottomSheetRef.current?.snapToIndex(1);
+    }
+  };
 
   async function geocodeAddress(address: string) {
     const res = await Location.geocodeAsync(address);
@@ -129,7 +148,6 @@ export default function Map() {
     };
   }
 
-  // Helper to get interaction state for a card
   const getInteractionState = useCallback((id: string, type: string) => {
     const match = interactionCards.find(
       c => c.cardInfo.id === id && c.cardType === type
@@ -142,7 +160,6 @@ export default function Map() {
     };
   }, [interactionCards]);
 
-  // Request user location
   useEffect(() => {
     const getLocation = async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -211,25 +228,6 @@ export default function Map() {
         };
       };
 
-      // const events: EventCardDataProps[] = event?.map((e) => ({
-      //   cardType: "event",
-      //   cardInfo: {
-      //     id: e.id,
-      //     title: e.title,
-      //     start_date: e.start_date ?? undefined,
-      //     end_date: e.end_date ?? undefined,
-      //     location: e.location ?? undefined,
-      //     cover_photo: e.cover_photo ?? undefined,
-      //     google_calendar_link: e.google_calendar_link ?? undefined,
-      //     description: e.description ?? undefined,
-      //     sign_up_link: e.sign_up_link ?? undefined,
-      //   },
-      //   liked: false,
-      //   signed_up: null,
-      //   completed: null,
-      //   clicked: false,
-      // })) ?? [];
-
       const events: EventCardDataProps[] =
         event
           ?.filter((e) => !isPastItem(e) && !e.hidden)
@@ -253,27 +251,6 @@ export default function Map() {
             clicked: false,
             feedback: null,
           })) ?? [];
-
-
-      // const inPersonEcoItems: InPersonCardDataProps[] = ecoInPerson?.map((e) => ({
-      //   cardType: "in_person",
-      //   cardInfo: {
-      //     id: e.id,
-      //     created_at: e.created_at,
-      //     cover_photo: e.cover_photo ?? undefined,
-      //     title: e.title,
-      //     location: e.location ?? undefined,
-      //     start_date: e.start_date,
-      //     end_date: e.end_date,
-      //     sign_up_link: e.sign_up_link,
-      //     summary: e.summary ?? undefined,
-      //     google_calendar_link: e.google_calendar_link ?? undefined,
-      //   },
-      //   liked: false,
-      //   signed_up: null,
-      //   completed: null,
-      //   clicked: false,
-      // })) ?? [];
 
       const inPersonEcoItems: InPersonCardDataProps[] =
         (ecoInPerson ?? [])
@@ -299,11 +276,6 @@ export default function Map() {
             clicked: false,
             feedback: null,
           }));
-
-      // const markerResults = await Promise.all([
-      //   ...((event || []).map((e) => processLocation(e, "event"))),
-      //   ...((ecoInPerson || []).map((e) => processLocation(e, "in_person"))),
-      // ])
 
       const markerResults = await Promise.all([
         ...((event || [])
@@ -373,6 +345,7 @@ export default function Map() {
       </Pressable>
 
       <MapView
+        ref={mapRef}
         style={styles.map}
         showsUserLocation
         initialRegion={userLocation ? {
@@ -381,13 +354,14 @@ export default function Map() {
           longitudeDelta: 0.0421,
         } : undefined}
       >
-      {filteredMarkers.map((marker) => (
+        {filteredMarkers.map((marker) => (
           <MapMarker
             key={`${marker.id}-${marker.type}`}
             coordinate={{latitude: marker.latitude, longitude: marker.longitude}}
             type={marker.type}
             onPress={() => handleMarkerPress(marker.id, marker.type)}
-            selected={selectedId === `${marker.id}-${marker.type}`}/>
+            selected={selectedId === `${marker.id}-${marker.type}`}
+          />
         ))}
       </MapView>
       
@@ -449,12 +423,26 @@ export default function Map() {
             </View>
           }
           renderItem={({ item }: { item: MapItem }) => (
-            <View style={[
-              { borderRadius: 12, borderWidth: 2, borderColor: 'transparent' },
-              `${item.cardInfo.id}-${item.cardType}` === selectedId && { borderColor: item.cardType === 'event' ? '#437CA1' : '#79B128' }
-            ]}>
-              { item && <EcoFeed card={item} isSelected={`${item.cardInfo.id}-${item.cardType}` === selectedId} setSelectedId={setSelectedId}/> }
-            </View>
+              <View style={[
+                {
+                  borderRadius: 12,
+                  borderWidth: 2,
+                  borderColor: 'transparent'
+                },
+                `${item.cardInfo.id}-${item.cardType}` === selectedId && {
+                  borderColor: item.cardType === 'event' ? '#437CA1' : '#79B128',
+                  borderRadius: 26
+                }
+              ]}>
+                { item && (
+                  <EcoFeed
+                    card={item}
+                    isSelected={`${item.cardInfo.id}-${item.cardType}` === selectedId}
+                    setSelectedId={setSelectedId}
+                    onPress={() => handleCardPress(item.cardInfo.id, item.cardType)}
+                  />
+                )}
+              </View>
           )}
           contentContainerStyle={{ paddingBottom: 100, gap: 16, padding: 16 }}
         />
