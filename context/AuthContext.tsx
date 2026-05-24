@@ -8,6 +8,7 @@ type UserProfile = {
   email: string
   is_admin: boolean
   created_at: string
+  banned_until: string | null
 }
 
 type AuthContextType = {
@@ -15,6 +16,7 @@ type AuthContextType = {
   user: Session['user'] | null
   profile: UserProfile | null
   loading: boolean
+  isBanned: boolean
   refreshProfile: () => Promise<void>
 }
 
@@ -23,6 +25,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   profile: null,
   loading: true,
+  isBanned: false,
   refreshProfile: async () => {},
 })
 
@@ -39,7 +42,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const { data } = await supabase
       .from('users')
-      .select('first_name, last_name, email, is_admin, created_at')
+      .select('first_name, last_name, email, is_admin, created_at, banned_until')
       .eq('user_id', session.user.id)
       .single();
 
@@ -70,6 +73,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
+  const isBanned = profile?.banned_until ? new Date(profile.banned_until) > new Date() : false;
+
   return (
     <AuthContext.Provider
       value={{
@@ -77,6 +82,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         user: session?.user ?? null,
         profile,
         loading,
+        isBanned,
         refreshProfile: fetchProfile,
       }}
     >

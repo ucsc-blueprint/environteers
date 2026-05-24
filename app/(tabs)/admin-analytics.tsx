@@ -333,7 +333,7 @@ export default function AdminAnalytics() {
               style={isBanned ? styles.banButtonDisabled : styles.banButton}
               onPress={() => { if (!isBanned) { setModalType('ban'); setModalVisible(true); } }}
             >
-              <Text style={isBanned ? styles.banButtonDisabledText :styles.banButtonText}>
+              <Text style={isBanned ? styles.banButtonDisabledText : styles.banButtonText}>
                 {isBanned ? `User temporarily banned` : `Ban user temporarily`}
               </Text>
             </Pressable>
