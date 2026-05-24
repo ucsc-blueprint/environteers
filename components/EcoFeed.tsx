@@ -26,6 +26,7 @@ type ExpandableProps = {
   highlight?: boolean;
   onDelete?: () => void;
   onHide? : () => void;
+  onPress? : () => void;
 };
 
 export const Header = ({ 
@@ -97,6 +98,7 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
     if (props.setSelectedId) {
       const key = `${card.cardInfo.id}-${card.cardType}`;
       props.setSelectedId(prev => (prev === key ? null : key));
+      props.onPress?.();
     }
    };
 
