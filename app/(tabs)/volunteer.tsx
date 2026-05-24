@@ -262,17 +262,27 @@ export default function Volunteer() {
   {
     const table = TABLE_MAP[cardType];
     if (!table) return;
-    const { error } = await supabase.from(table).update({ hidden: true }).eq("id", id);
+    const item = items.find(
+      item => item.cardInfo.id === id && item.cardType === cardType
+    );
+    if (!item) return;
+
+    const newHidden = !item.cardInfo.hidden;
+    const { error } = await supabase.from(table).update({ hidden: newHidden }).eq("id", id);
     if (error) { console.error(error); return; }
 
     // update hidden flag
     setItems(prev => prev.map(item =>
       item.cardInfo.id === id && item.cardType === cardType
-        ? { ...item, cardInfo: { ...item.cardInfo, hidden: true } } as CardProps
+        ? { ...item, cardInfo: { ...item.cardInfo, hidden: newHidden } } as CardProps
         : item
     ));
-    setToast({ message: "Event deleted", description: "Non-registered users can no longer see this event on their feed." });
-  }, []);
+    const unHideMessage = "Event unhidden";
+    const unHideDesc = "Non-registered users can now see this event on their feed.";
+    const hideMessage = "Event hidden";
+    const hideDesc = "Non-registered users can no longer see this event on their feed."
+    setToast({ message: newHidden === true ? hideMessage : unHideMessage, description: newHidden === true ? hideDesc : unHideDesc });
+  }, [items]);
   
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

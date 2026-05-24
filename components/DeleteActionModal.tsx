@@ -5,13 +5,12 @@ type Props = {
   visible: boolean;
   onClose: () => void;
   onFullDelete: () => void;
-  onHide: () => void;
   cardTitle?: string;
   cardType?: string;
 
 };
 
-export const DeleteActionModal = ({ visible, onClose, onFullDelete, onHide, cardTitle, cardType }: Props) => {
+export const DeleteActionModal = ({ visible, onClose, onFullDelete, cardTitle, cardType }: Props) => {
 
     const label = cardType === 'event' ? 'event' : 'eco-action';
 
@@ -23,7 +22,7 @@ export const DeleteActionModal = ({ visible, onClose, onFullDelete, onHide, card
           <View style={styles.header}>
             <View style={styles.headerLeft}>
               <MaterialIcons name="error-outline" size={22} color="#EA4335" />
-              <Text style={styles.title}>Deleting an {label}!</Text>
+              <Text style={styles.title}>Deleting an {label}</Text>
             </View>
             <Pressable onPress={onClose}>
               <MaterialIcons name="close" size={22} color="#333" />
@@ -33,15 +32,15 @@ export const DeleteActionModal = ({ visible, onClose, onFullDelete, onHide, card
         <Text style={styles.body}>
             {"You're about to delete "}
             <Text style={styles.eventName}>{cardTitle}</Text>
-            {". Would you like to: take down for those who have not yet signed up, or fully delete it?"}
+            {". This action cannot be undone."}
         </Text>
 
         <View style={styles.buttonRow}>
-            <Pressable onPress={onFullDelete} style={styles.deleteTextButton}>
-              <Text style={styles.deleteTextLabel}>Fully delete</Text>
+            <Pressable onPress={onClose}>
+              <Text style={styles.cancelTextLabel}>Cancel</Text>
             </Pressable>
-            <Pressable onPress={onHide} style={styles.hideButton}>
-              <Text style={styles.hideLabel}>Hide from users</Text>
+            <Pressable onPress={onFullDelete} style={styles.deleteTextButton}>
+              <Text style={styles.deleteTextLabel}>Delete</Text>
             </Pressable>
           </View>
 
@@ -79,8 +78,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 17,
-    fontWeight: '700',
-    color: '#EA4335',
+    fontWeight: '600',
+    color: '#FF4163',
   },
   body: {
     fontSize: 14,
@@ -98,23 +97,18 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   deleteTextButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 4,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    backgroundColor: "#E00000",
+    borderRadius: 12
   },
   deleteTextLabel: {
-    color: '#4CAF50',
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontWeight: '300',
     fontSize: 15,
   },
-  hideButton: {
-    backgroundColor: '#4CAF50',
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-  },
-  hideLabel: {
-    color: 'white',
-    fontWeight: '600',
-    fontSize: 15,
-  },
+  cancelTextLabel: {
+    color: "#E00000",
+    fontWeight: '300'
+  }
 });
