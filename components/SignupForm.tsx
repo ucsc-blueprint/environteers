@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
+import emailjs from '@emailjs/react-native';
 
 export interface SignupFormProps {
   onSubmit: (
@@ -33,7 +34,27 @@ const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = (_event: GestureResponderEvent) => {
+  const sendSignupEmail = async () => {
+    try {
+      await emailjs.send(
+        process.env.EXPO_PUBLIC_EMAILJS_SERVICE_ID!,
+        process.env.EXPO_PUBLIC_EMAILJS_TEMPLATE_ID!,
+        {
+          // specify where/who to send email
+          email: 'blaceves@ucsc.edu',
+        },
+        {
+          publicKey: process.env.EXPO_PUBLIC_EMAILJS_PUBLIC_KEY!,
+        }
+      );
+
+      console.log('Email sent successfully');
+    } catch (err) {
+      console.error('EmailJS Error:', err);
+    }
+  };
+
+  const handleSubmit = async (_event: GestureResponderEvent) => {
     setError('');
 
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
@@ -56,6 +77,13 @@ const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
       return;
     }
 
+    if (isAdmin) {
+      try {
+        // await sendSignupEmail();
+      } catch (err) {
+        console.log(err);
+      }
+    }
     onSubmit(firstName, lastName, email, password, isAdmin);
   };
 
