@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
-
 export interface SignupFormProps {
   onSubmit: (
     firstName: string,
@@ -34,7 +33,6 @@ const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
   const [error, setError] = useState('');
 
   const handleSubmit = (_event: GestureResponderEvent) => {
-    setError('');
 
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
       setError('Please fill out all fields.');
@@ -55,6 +53,7 @@ const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
       setError('Please enter a valid email address!');
       return;
     }
+    onSubmit(firstName, lastName, email, password, isAdmin);
 
     onSubmit(firstName, lastName, email, password, isAdmin);
   };
@@ -286,3 +285,4 @@ const styles = StyleSheet.create({
 });
 
 export default SignupForm;
+
