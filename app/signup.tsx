@@ -45,7 +45,7 @@ export default function SignupScreen() {
       first_name: firstName,
       last_name: lastName,
       email,
-      is_admin: isAdmin
+      pending_admin: isAdmin,
     })
     if (insertError) {
       Toast.show({
