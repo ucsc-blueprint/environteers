@@ -14,6 +14,7 @@ import { ActivityFeedback } from "@/components/ActivityFeedback";
 import { supabase } from "@/constants/supabase";
 import { router } from "expo-router";
 import { DeleteActionModal } from "./DeleteActionModal";
+import { AdminCardActionSelection } from "./AdminCardActionSelection";
 import RenderHtml from 'react-native-render-html';
 
 export type OnlineCardData = {
@@ -84,6 +85,7 @@ export const OnlineCard = ({
 
   const { updateLike, updateCompleted, updateClicked, updateFeedback } = useInteractions();
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [actionMenuVisible, setActionMenuVisible] = useState(false);
 
   const { width } = useWindowDimensions()
 
@@ -237,10 +239,17 @@ export const OnlineCard = ({
         visible={deleteModalVisible}
         onClose={() => setDeleteModalVisible(false)}
         onFullDelete={() => { setDeleteModalVisible(false); onDelete?.(); }}
-        onHide={() => { setDeleteModalVisible(false); onHide?.(); }}
         cardTitle= {cardInfo.title}
         cardType="online"
       />
+      <AdminCardActionSelection
+        visible={actionMenuVisible}
+        onClose={() => setActionMenuVisible(false)}
+        hidden={cardInfo.hidden}
+        onToggleHide={() => onHide?.()}
+        onDelete={() => setDeleteModalVisible(true)}
+      />
+
       <Pressable onPress={toggleExpanded}>
         <View style={CardStyles.cardInfo}>
           {/* Cover Photo */}
@@ -295,12 +304,13 @@ export const OnlineCard = ({
                 }}
               /> 
               </View>
-                <View style={CardStyles.deleteIconBackground}>
-                  <MaterialCommunityIcons name="trash-can-outline" size={25} color="#EA4335" 
+                <View style={CardStyles.iconBackgrounds}>
+                  <MaterialCommunityIcons name="dots-horizontal" size={25} color="#0282D3" 
                   onPress = {() => 
                   {
-                    console.log("delete press, id: ", cardInfo.id);
-                    setDeleteModalVisible(true);
+                    // console.log("delete press, id: ", cardInfo.id);
+                    // setDeleteModalVisible(true);
+                    setActionMenuVisible(true);
                   }}
                   />
                 </View>    
