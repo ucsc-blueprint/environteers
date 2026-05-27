@@ -10,7 +10,7 @@ import { buildGoogleCalendarUrl } from '@/components/AdminAddEcoAction';
 
 type Props = 
 {
-    isEdit: true,
+    isEdit?: true,
     typeOfAction: string;
     id: any; 
 };
