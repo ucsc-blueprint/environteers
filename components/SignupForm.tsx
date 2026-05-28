@@ -1,13 +1,6 @@
 // src/components/SignupForm.tsx
 import React, { useState } from 'react';
-import {
-  View,
-  TextInput,
-  Text,
-  Pressable,
-  GestureResponderEvent,
-  StyleSheet,
-} from 'react-native';
+import {View, TextInput, Text, Pressable, GestureResponderEvent, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
 export interface SignupFormProps {
@@ -53,7 +46,6 @@ const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
       setError('Please enter a valid email address!');
       return;
     }
-    onSubmit(firstName, lastName, email, password, isAdmin);
 
     onSubmit(firstName, lastName, email, password, isAdmin);
   };
