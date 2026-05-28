@@ -11,6 +11,7 @@ import { supabase } from "@/constants/supabase";
 import { useInteractions } from "@/context/InteractionsContext";
 import { ActivityFeedback } from "@/components/ActivityFeedback";
 import { DeleteActionModal } from "./DeleteActionModal";
+import { AdminCardActionSelection } from "./AdminCardActionSelection";
 import RenderHtml from 'react-native-render-html';
 
 export type EventCardData = {
@@ -48,6 +49,24 @@ type EventCardProps = EventCardDataProps & {
   onHide?: () => void; 
 };
 
+const htmlTagsStyles = {
+  b: { fontWeight: 'bold' as const },
+  strong: { fontWeight: 'bold' as const },
+  i: { fontStyle: 'italic' as const },
+  em: { fontStyle: 'italic' as const },
+  u: { textDecorationLine: 'underline' as const },
+  ul: { marginBottom: 8 },
+  ol: { marginBottom: 8 },
+  li: { marginBottom: 4 },
+  a: { color: '#0282D3', textDecorationLine: 'underline' as const },
+};
+
+const htmlRenderersProps = {
+  a: {
+    onPress: (_: any, href: string) => Linking.openURL(href),
+  },
+};
+
 export const EventCard = ({
   cardInfo, 
   liked, 
@@ -71,6 +90,8 @@ export const EventCard = ({
   const { updateLike, updateSignUp, updateCompleted, updateClicked, updateFeedback } = useInteractions();
 
   const [deleteModalVisible, setDeleteModalVisible] = useState(false); 
+
+  const [actionMenuVisible, setActionMenuVisible] = useState(false);
 
   const { width } = useWindowDimensions();
 
@@ -270,9 +291,15 @@ export const EventCard = ({
         visible={deleteModalVisible}
         onClose={() => setDeleteModalVisible(false)}
         onFullDelete={() => { setDeleteModalVisible(false); onDelete?.(); }}
-        onHide={() => { setDeleteModalVisible(false); onHide?.(); }}
         cardTitle = {cardInfo.title}
         cardType = "event"
+      />
+      <AdminCardActionSelection
+        visible={actionMenuVisible}
+        onClose={() => setActionMenuVisible(false)}
+        hidden={cardInfo.hidden}
+        onToggleHide={() => onHide?.()}
+        onDelete={() => setDeleteModalVisible(true)}
       />
 
     {/* // <View style={CardStyles.card}> */}
@@ -343,12 +370,13 @@ export const EventCard = ({
                 }}
               />
               </View>
-                <View style={CardStyles.deleteIconBackground}>
-                  <MaterialCommunityIcons name="trash-can-outline" size={25} color="#EA4335" 
+                <View style={CardStyles.iconBackgrounds}>
+                  <MaterialCommunityIcons name="dots-horizontal" size={25} color="#0282D3" 
                   onPress = {() => 
                   {
-                    console.log("delete press, id: ", cardInfo.id);
-                    setDeleteModalVisible(true);
+                    // console.log("delete press, id: ", cardInfo.id);
+                    // setDeleteModalVisible(true);
+                    setActionMenuVisible(true);
                   }}
                   />
                 </View>    
@@ -400,22 +428,8 @@ export const EventCard = ({
                   contentWidth={width}
                   source={{ html: cardInfo.description }}
                   baseStyle={{ marginTop: 20 }}
-                  tagsStyles={{
-                    b: { fontWeight: 'bold' },
-                    strong: { fontWeight: 'bold' },
-                    i: { fontStyle: 'italic' },
-                    em: { fontStyle: 'italic' },
-                    u: { textDecorationLine: 'underline' },
-                    ul: { marginBottom: 8 },
-                    ol: { marginBottom: 8 },
-                    li: { marginBottom: 4 },
-                    a: { color: '#0282D3', textDecorationLine: 'underline' },
-                  }}
-                  renderersProps={{
-                    a: {
-                      onPress: (_, href) => Linking.openURL(href),
-                    },
-                  }}
+                  tagsStyles={htmlTagsStyles}
+                  renderersProps={htmlRenderersProps}
                 />
               )}
               {/* Verify If User Signed-up */}
