@@ -203,6 +203,8 @@ export default function AdminAnalytics() {
         .from('users')
         .delete()
         .eq('user_id', id);
+
+      router.push('/(tabs)/VolunteerView');
     }
 
     setModalVisible(false);
