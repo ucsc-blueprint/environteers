@@ -11,6 +11,7 @@ import { supabase } from '@/constants/supabase';
 import { ACHIEVEMENTS } from '@/constants/achievements';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BanDeleteModal, ModalType } from "@/components/BanDeleteModal";
+import Toast from "react-native-toast-message";
 
 type CompletedItem = {
   id: string;
@@ -192,17 +193,35 @@ export default function AdminAnalytics() {
       const bannedUntil = new Date();
       bannedUntil.setDate(bannedUntil.getDate() + 14);
 
-      await supabase
+      const { error } = await supabase
         .from('users')
         .update({ banned_until: bannedUntil.toISOString() })
         .eq('user_id', id);
+
+      if (error) {
+        Toast.show({
+          type: 'error',
+          text1: 'Failed to ban user',
+          text2: error.message,
+        })
+        return;
+      }
     }
     
     if (type === 'delete') {
-      await supabase
+      const { error } = await supabase
         .from('users')
         .delete()
         .eq('user_id', id);
+
+      if (error) {
+        Toast.show({
+          type: 'error',
+          text1: 'Failed to delete user',
+          text2: error.message,
+        })
+        return;
+      }
 
       router.push('/(tabs)/VolunteerView');
     }
