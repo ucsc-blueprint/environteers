@@ -209,10 +209,9 @@ export default function AdminAnalytics() {
     }
     
     if (type === 'delete') {
-      const { error } = await supabase
-        .from('users')
-        .delete()
-        .eq('user_id', id);
+      const { error } = await supabase.functions.invoke('delete-user', {
+        body: { user_id: id },
+      })
 
       if (error) {
         Toast.show({
@@ -223,6 +222,12 @@ export default function AdminAnalytics() {
         return;
       }
 
+      Toast.show({
+        type: 'success',
+        text1: 'User deleted successfully',
+      });
+
+      
       router.push('/(tabs)/VolunteerView');
     }
 
