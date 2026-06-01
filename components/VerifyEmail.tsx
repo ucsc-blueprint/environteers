@@ -31,7 +31,7 @@ export default function VerifyEmail({ email }: VerifyEmailProps) {
             Alert.alert('Email sent', 'A new verification email has been sent to your inbox.');
         }
     } 
-    catch (e) 
+    catch 
     {
         Alert.alert('Error', 'Something went wrong. Please try again.');
     } 
