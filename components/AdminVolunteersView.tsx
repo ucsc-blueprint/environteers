@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {View, Text, TextInput, FlatList, Pressable, StyleSheet,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 
 import { supabase } from "@/constants/supabase";
 
@@ -42,35 +41,37 @@ export const AdminVolunteersView = () => {
   const [allVolunteers, setAllVolunteers] = useState<Volunteer[]>([]);
   const [searchText, setSearchText] = useState('');
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('user_id, first_name, last_name, created_at')
-          .eq("is_admin", false);
-        
-        if (error) {
-          console.error("Error fetching users:", error);
-          return;
+  useFocusEffect(
+    useCallback(() => {
+      const fetchUsers = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('users')
+            .select('user_id, first_name, last_name, created_at')
+            .eq("is_admin", false);
+
+          if (error) {
+            console.error("Error fetching users:", error);
+            return;
+          }
+
+          const users: Volunteer[] = (data ?? []).map(user => {
+            return {
+              id: user.user_id,
+              name: `${user.first_name} ${user.last_name}`,
+              membership: formatMembership(user.created_at)
+            };
+          });
+
+          setAllVolunteers(users);
+        } catch (error) {
+          console.error("Unexpected error:", error);
         }
+      };
 
-        const users: Volunteer[] = (data ?? []).map(user => {
-          return {
-            id: user.user_id,
-            name: `${user.first_name} ${user.last_name}`,
-            membership: formatMembership(user.created_at)
-          };
-        });
-
-        setAllVolunteers(users);
-      } catch (error) {
-        console.error("Unexpected error:", error);
-      }
-    };
-
-    fetchUsers();
-  }, [])
+      fetchUsers();
+    }, [])
+  );
 
   const volunteers = useMemo(() => {
     if (!searchText.trim()) return allVolunteers;

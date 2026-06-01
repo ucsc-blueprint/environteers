@@ -10,6 +10,8 @@ import { AdminFeedbackList } from '@/components/AdminFeedbackList';
 import { supabase } from '@/constants/supabase';
 import { ACHIEVEMENTS } from '@/constants/achievements';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BanDeleteModal, ModalType } from "@/components/BanDeleteModal";
+import Toast from "react-native-toast-message";
 
 type CompletedItem = {
   id: string;
@@ -31,10 +33,15 @@ export default function AdminAnalytics() {
   const [completedItems, setCompletedItems] = React.useState<CompletedItem[]>([]);
   const [loadingCompleted, setLoadingCompleted] = React.useState(true);
   const [ecoCount, setEcoCount] = React.useState(0);
+  const [bannedUntil, setBannedUntil] = React.useState<string | null>(null);
+
+  const [modalVisible, setModalVisible] = React.useState(false);
+  const [modalType, setModalType] = React.useState<ModalType | null>(null);
 
   React.useEffect(() => {
     if (!volunteerID) return;
     const id = Array.isArray(volunteerID) ? volunteerID[0] : volunteerID;
+
     const fetchFeedback = async () => {
       setLoadingFeedback(true);
 
@@ -136,8 +143,20 @@ export default function AdminAnalytics() {
       setLoadingCompleted(false);
     };
 
+    const fetchBannedUntil = async() => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('banned_until')
+        .eq('user_id', id)
+        .single();
+      
+      if (error) return;
+      setBannedUntil(data?.banned_until ?? null);
+    };
+
     fetchFeedback();
     fetchInteractions();
+    fetchBannedUntil();
   }, [volunteerID, volunteerName, membershipStatus]);
 
   const lastUnlocked = [...ACHIEVEMENTS].reverse().find(a => ecoCount >= a.threshold);
@@ -149,6 +168,8 @@ export default function AdminAnalytics() {
     ? (ecoCount - prevThreshold) / (nextAchievement.threshold - prevThreshold)
     : 1;
   const remaining = nextAchievement ? nextAchievement.threshold - ecoCount : 0;
+
+  const isBanned = bannedUntil && new Date(bannedUntil) > new Date();
 
   if (loading || loadingCompleted || loadingFeedback) {
     return <ActivityIndicator size="large" color="#000" />;
@@ -165,9 +186,65 @@ export default function AdminAnalytics() {
     return `On ${d.getMonth() + 1}/${d.getDate()}/${String(d.getFullYear()).slice(-2)}`;
   };
 
+  const onBanDeleteConfirm = async (type: ModalType) => {
+    const id = Array.isArray(volunteerID) ? volunteerID[0] : volunteerID;
+
+    if (type === 'ban') {
+      const bannedUntil = new Date();
+      bannedUntil.setDate(bannedUntil.getDate() + 14);
+
+      const { error } = await supabase
+        .from('users')
+        .update({ banned_until: bannedUntil.toISOString() })
+        .eq('user_id', id);
+
+      if (error) {
+        Toast.show({
+          type: 'error',
+          text1: 'Failed to ban user',
+          text2: error.message,
+        })
+        return;
+      }
+    }
+    
+    if (type === 'delete') {
+      const { error } = await supabase.functions.invoke('delete-user', {
+        body: { user_id: id },
+      })
+
+      if (error) {
+        Toast.show({
+          type: 'error',
+          text1: 'Failed to delete user',
+          text2: error.message,
+        })
+        return;
+      }
+
+      Toast.show({
+        type: 'success',
+        text1: 'User deleted successfully',
+      });
+
+      
+      router.push('/(tabs)/VolunteerView');
+    }
+
+    setModalVisible(false);
+  }
+
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
     <ScrollView style={styles.container}>
+
+      <BanDeleteModal 
+        visible={modalVisible}
+        type={modalType}
+        onCancel={() => setModalVisible(false)}
+        onConfirm={(type) => { onBanDeleteConfirm(type); setModalType(null);}}
+        volunteerName = {name}
+      />
 
       <Pressable style={styles.backRow} onPress={() => router.push('/(tabs)/VolunteerView')}>
         <Ionicons name="chevron-back" size={16} color="#172A36" />
@@ -277,6 +354,24 @@ export default function AdminAnalytics() {
 
       {tab === 'manage' && (
         <View>
+          <View style={styles.moderationButtons}>
+            <Pressable 
+              style={isBanned ? styles.banButtonDisabled : styles.banButton}
+              onPress={() => { if (!isBanned) { setModalType('ban'); setModalVisible(true); } }}
+            >
+              <Text style={isBanned ? styles.banButtonDisabledText : styles.banButtonText}>
+                {isBanned ? `User temporarily banned` : `Ban user temporarily`}
+              </Text>
+            </Pressable>
+
+            <Pressable 
+              style={styles.deleteButton}
+              onPress={() => { setModalType('delete'); setModalVisible(true); }}
+            >
+              <Text style={styles.deleteButtonText}>Delete user</Text>
+            </Pressable>
+          </View>
+
           <Text style={styles.sectionHeader}>Event feedback sent</Text>
           {feedback.length > 0 ? (
             <AdminFeedbackList data={feedback} />
@@ -460,5 +555,54 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 13,
     color: '#888',
+  },
+  moderationButtons: {
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  banButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E00000",
+    width: '100%',
+    height: 45,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  banButtonDisabled: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: "#E00000",
+    width: '100%',
+    height: 45,
+    borderRadius: 12,
+    marginBottom: 12,
+    opacity: 0.3,
+  },
+  banButtonText: {
+    color: "#E00000",
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  banButtonDisabledText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  deleteButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#E00000',
+    width: '100%',
+    height: 45,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  deleteButtonText: {
+    color: '#F2F7F5',
+    fontSize: 16,
+    fontWeight: '500',
   },
 });
