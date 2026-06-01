@@ -1,9 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { useFocusEffect } from 'expo-router';
 import {View, Text, TextInput, FlatList, Pressable, StyleSheet,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 
 import { supabase } from "@/constants/supabase";
 
