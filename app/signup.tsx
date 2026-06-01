@@ -58,6 +58,7 @@ export default function SignupScreen() {
       text1: 'check your email',
       text2: 'Click the verification link in your email to complete the signup process'
     })    
+    router.push({ pathname: '/verifyEmail', params: { email } });
   }
   return (
     <View style={{flex: 1}}>
