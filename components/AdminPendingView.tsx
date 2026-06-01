@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import {View, Text, FlatList, StyleSheet, Pressable,
-} from 'react-native';
+import {View, Text, FlatList, StyleSheet, Pressable } from 'react-native';
+import { send } from '@emailjs/react-native';
 import { supabase } from "@/constants/supabase";
 import { ChevronRight } from "lucide-react-native";
 import { AdminApprove } from "@/components/AdminApprove";
+import Toast from 'react-native-toast-message';
+
 
 type Admin = {
   id: string;
@@ -46,7 +48,40 @@ export const AdminPendingView = () => {
     fetchAdmins();
   }, [])
 
-  const handleApproval = () => {
+  const handleApproval = async () => {
+    if (selectedAdmin) {
+      try {
+        // Set is_admin to true for selected admin
+        const { error } = await supabase
+          .from("users")
+          .update({ is_admin: true })
+          .eq("user_id", selectedAdmin?.id);
+
+        if (error) {
+          Toast.show({
+            type: 'error',
+            text1: 'Failed to assign admin',
+          });
+        }
+        // Send email to user confirming admin approval
+        await send(
+          process.env.EXPO_PUBLIC_EMAILJS_SERVICE_ID!,
+          process.env.EXPO_PUBLIC_EMAILJS_TEMPLATE_ID_APPROVED!,
+          {
+            // user email
+            email: selectedAdmin.email,
+          },
+          {
+            publicKey: process.env.EXPO_PUBLIC_EMAILJS_PUBLIC_KEY!,
+          }
+        );
+      } catch (err) {
+        console.error('EmailJS Error:', err);
+      }
+    } else {
+      console.log('Select an admin before proceeding.');
+      return;
+    }
     setApproveVisible(false)
   }
 
