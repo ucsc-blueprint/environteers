@@ -65,14 +65,14 @@ export const AdminPendingView = () => {
         }
         // Send email to user confirming admin approval
         await send(
-          process.env.EXPO_PUBLIC_EMAILJS_SERVICE_ID!,
-          process.env.EXPO_PUBLIC_EMAILJS_TEMPLATE_ID_APPROVED!,
+          process.env.EMAILJS_SERVICE_ID!,
+          process.env.EMAILJS_TEMPLATE_ID_APPROVED!,
           {
-            from_email: process.env.EXPO_PUBLIC_EMAIL, // sender
+            from_email: process.env.ADMIN_EMAIL, // sender
             to_email: selectedAdmin.email // receiver
           },
           {
-            publicKey: process.env.EXPO_PUBLIC_EMAILJS_PUBLIC_KEY!,
+            publicKey: process.env.EMAILJS_PUBLIC_KEY!,
           }
         );
       } catch (err) {

@@ -37,14 +37,13 @@ const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
   const sendSignupEmail = async () => {
     try {
       await send(
-        process.env.EXPO_PUBLIC_EMAILJS_SERVICE_ID!,
-        process.env.EXPO_PUBLIC_EMAILJS_TEMPLATE_ID_SIGNUP!,
+        process.env.EMAILJS_SERVICE_ID!,
+        process.env.EMAILJS_TEMPLATE_ID_SIGNUP!,
         {
-          // specify email reciever
-          email: process.env.EXPO_PUBLIC_EMAIL,
+          email: process.env.ADMIN_EMAIL, // receiver
         },
         {
-          publicKey: process.env.EXPO_PUBLIC_EMAILJS_PUBLIC_KEY!,
+          publicKey: process.env.EMAILJS_PUBLIC_KEY!,
         }
       );
 
