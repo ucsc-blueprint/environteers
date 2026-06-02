@@ -68,8 +68,8 @@ export const AdminPendingView = () => {
           process.env.EXPO_PUBLIC_EMAILJS_SERVICE_ID!,
           process.env.EXPO_PUBLIC_EMAILJS_TEMPLATE_ID_APPROVED!,
           {
-            from_email: selectedAdmin.email, // sender
-            to_email: process.env.EXPO_PUBLIC_EMAIL, // receiver
+            from_email: process.env.EXPO_PUBLIC_EMAIL, // sender
+            to_email: selectedAdmin.email // receiver
           },
           {
             publicKey: process.env.EXPO_PUBLIC_EMAILJS_PUBLIC_KEY!,
