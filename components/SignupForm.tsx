@@ -41,7 +41,7 @@ const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
         process.env.EXPO_PUBLIC_EMAILJS_TEMPLATE_ID_SIGNUP!,
         {
           // specify email reciever
-          email: process.env.EXPO_PUBLIC_EMAILJS_SIGN_UP_EMAIL,
+          email: process.env.EXPO_PUBLIC_EMAIL,
         },
         {
           publicKey: process.env.EXPO_PUBLIC_EMAILJS_PUBLIC_KEY!,
