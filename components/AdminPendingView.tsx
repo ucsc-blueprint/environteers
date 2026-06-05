@@ -24,7 +24,8 @@ export const AdminPendingView = () => {
         const { data, error } = await supabase
           .from('users')
           .select('user_id, first_name, last_name, email')
-          .eq("is_admin", true);
+          .eq("is_admin", false)
+          .eq("pending_admin", true);
         
         if (error) {
           console.error("Error fetching admins:", error);
