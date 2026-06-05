@@ -3,8 +3,8 @@ import LoginForm from '@/components/LoginForm';
 import { useLocalSearchParams } from 'expo-router';
 import { supabase } from '@/constants/supabase';
 import Toast from 'react-native-toast-message';
-
 import React from 'react';
+
 export default function LoginScreen() {
   const { isAdmin : isAdminParam } = useLocalSearchParams();
 
@@ -45,9 +45,12 @@ export default function LoginScreen() {
       text1: 'You are now logged in',
     })
   }
+
   return (
     <View style={{flex: 1}}>
-      <LoginForm onSubmit={onSubmit} isAdmin={isAdminParam === 'true'} />
+      <LoginForm
+        onSubmit={onSubmit}
+        isAdmin={isAdminParam === 'true'} />
     </View>
   )
 }
