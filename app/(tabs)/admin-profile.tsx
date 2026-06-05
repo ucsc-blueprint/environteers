@@ -6,6 +6,7 @@ import { LogoutButton } from '@/components/LogoutButton';
 import { useAuth } from '@/context/AuthContext';
 import { Redirect } from 'expo-router';
 import { formatMembership } from '@/components/AdminVolunteersView'
+import { UserAvatar } from '@/components/UserAvatar';
 
 export default function AdminProfile() {
   const [tab, setTab] = useState<"pending" | "active">("pending");
@@ -17,7 +18,14 @@ export default function AdminProfile() {
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <Image style={styles.avatar} source={require('../../assets/images/PFP.png')} />
+        <View style={{ marginRight: 6 }}>
+          <UserAvatar
+            firstName={profile.first_name}
+            lastName={profile.last_name}
+            photoUrl={profile.profile_picture}
+            size={85}
+          />
+        </View>
         <View style={styles.names}>
           <Text style={styles.name}>{profile.first_name} {profile.last_name}</Text>
           <Text style={styles.membership}>{formatMembership(profile.created_at)}</Text>
@@ -66,12 +74,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
-  },
-  avatar: { 
-    width: 90, 
-    height: 90, 
-    borderRadius: 45, 
-    backgroundColor: '#ccc',
   },
   names: {
     flexDirection: 'column',

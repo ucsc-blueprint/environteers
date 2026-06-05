@@ -5,10 +5,13 @@ import { useFocusEffect, useRouter } from 'expo-router';
 
 import { supabase } from "@/constants/supabase";
 
+import { UserAvatar } from '@/components/UserAvatar';
+
 type Volunteer = {
   id: string;
   name: string;
   membership: string;
+  profilePicture: string | null;
 };
 
 const includesText = (str: string, search: string) => 
@@ -47,7 +50,7 @@ export const AdminVolunteersView = () => {
         try {
           const { data, error } = await supabase
             .from('users')
-            .select('user_id, first_name, last_name, created_at')
+            .select('user_id, first_name, last_name, created_at, profile_picture')
             .eq("is_admin", false);
 
           if (error) {
@@ -59,7 +62,8 @@ export const AdminVolunteersView = () => {
             return {
               id: user.user_id,
               name: `${user.first_name} ${user.last_name}`,
-              membership: formatMembership(user.created_at)
+              membership: formatMembership(user.created_at),
+              profilePicture: user.profile_picture ?? null,
             };
           });
 
@@ -109,7 +113,14 @@ export const AdminVolunteersView = () => {
                 params: { volunteerName: item.name, membershipStatus: item.membership, volunteerID: item.id }
               })}
             >
-              <View style={styles.avatar} />
+              <View style={{ marginRight: 12 }}>
+                <UserAvatar
+                  firstName={item.name.split(' ')[0]}
+                  lastName={item.name.split(' ')[1] ?? ''}
+                  photoUrl={item.profilePicture}
+                  size={40}
+                />
+              </View>
 
               <View style={{ flex: 1 }}>
                 <Text style={styles.name}>{item.name}</Text>
@@ -167,13 +178,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#ddd',
-    marginRight: 12,
   },
   name: {
     fontSize: 16,

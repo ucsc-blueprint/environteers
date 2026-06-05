@@ -13,7 +13,8 @@ export default function Settings() {
     lastName: string,
     email: string,
     currentPassword: string,
-    password: string
+    password: string,
+    profilePicture: string | null,
   ): Promise<string | null> => {
     if (!user) return "User not logged in";
 
@@ -68,6 +69,19 @@ export default function Settings() {
           });
           return null;
         }
+      }
+    }
+
+    // Update profile picture
+    if (profilePicture !== (profile?.profile_picture ?? null)) {
+      const { error } = await supabase
+        .from('users')
+        .update({ profile_picture: profilePicture || null })
+        .eq('user_id', user.id);
+
+      if (error) {
+        Toast.show({ type: 'error', text1: 'Failed to update profile picture' });
+        return null;
       }
     }
 
@@ -129,6 +143,7 @@ export default function Settings() {
         initialFirstName={profile?.first_name ?? ""}
         initialLastName={profile?.last_name ?? ""}
         initialEmail={user?.email ?? ""}
+        initialProfilePicture={profile?.profile_picture ?? null}
       />
     </SafeAreaView>
   );
