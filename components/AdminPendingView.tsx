@@ -55,7 +55,10 @@ export const AdminPendingView = () => {
         // Set is_admin to true for selected admin
         const { error } = await supabase
           .from("users")
-          .update({ is_admin: true })
+          .update({ 
+            is_admin: true ,
+            pending_admin: false,
+          })
           .eq("user_id", selectedAdmin?.id);
 
         if (error) {
