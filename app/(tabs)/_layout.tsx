@@ -5,16 +5,22 @@ import Octicons from '@expo/vector-icons/Octicons'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { useAuth } from '@/context/AuthContext'
 import { Text } from 'react-native'
+import { supabase } from "@/constants/supabase"
 
 export default function TabsLayout() {
   const router = useRouter();
-  const { user, loading, profile } = useAuth();
+  const { user, loading, profile, isBanned } = useAuth();
 
   useEffect(() => {
     if (!loading && !user && !profile) {
       router.replace('/');
     }
-  }, [user, loading, profile, router]);
+
+    if (isBanned) {
+      supabase.auth.signOut();
+      router.replace('/');
+    }
+  }, [user, loading, profile, isBanned, router]);
 
   if (loading) {
     return <Text>Loading...</Text>;

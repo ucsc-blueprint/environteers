@@ -32,7 +32,7 @@ export default function AuthConfirmScreen() {
           router.replace('/(tabs)/volunteer'); //fallback route
         }
       });
-  }, [url]);
+  }, [url, router]);
 
   if (error) {
     return (

@@ -1,13 +1,6 @@
 // src/components/SignupForm.tsx
 import React, { useState } from 'react';
-import {
-  View,
-  TextInput,
-  Text,
-  Pressable,
-  GestureResponderEvent,
-  StyleSheet,
-} from 'react-native';
+import {View, TextInput, Text, Pressable, GestureResponderEvent, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
 import { send } from '@emailjs/react-native';

@@ -9,7 +9,7 @@ export default function LoginScreen() {
   const { isAdmin : isAdminParam } = useLocalSearchParams();
 
   async function onSubmit(email: string, password: string) {
-    const {error} = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: email,
       password: password
     });
@@ -19,6 +19,24 @@ export default function LoginScreen() {
         text1: 'Login failed',
         text2: error.message
       })
+      return;
+    }
+
+    const { data: userData } = await supabase
+      .from('users')
+      .select('banned_until')
+      .eq('user_id', data.user.id)
+      .single();
+    
+    const isBanned = userData?.banned_until && new Date(userData.banned_until) > new Date();
+
+    if (isBanned) {
+      await supabase.auth.signOut();
+      Toast.show({
+        type: 'error',
+        text1: 'Login failed',
+        text2: 'Your account is currently banned.'
+      });
       return;
     }
 
