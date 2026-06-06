@@ -67,6 +67,13 @@ export const AdminPendingView = () => {
             text1: 'Failed to assign admin',
           });
         }
+
+        // Remove from UI, close modal
+        setAllAdmins(prev =>
+          prev.filter(admin => admin.id !== selectedAdmin.id)
+        );
+        setApproveVisible(false);
+        
         // Send email to user confirming admin approval
         await send(
           process.env.EMAILJS_SERVICE_ID!,
@@ -75,10 +82,9 @@ export const AdminPendingView = () => {
             from_email: process.env.ADMIN_EMAIL, // sender
             to_email: selectedAdmin.email // receiver
           },
-          {
-            publicKey: process.env.EMAILJS_PUBLIC_KEY!,
-          }
+          { publicKey: process.env.EMAILJS_PUBLIC_KEY!}
         );
+        
       } catch (err) {
         console.error('EmailJS Error:', err);
       }
@@ -86,7 +92,6 @@ export const AdminPendingView = () => {
       console.log('Select an admin before proceeding.');
       return;
     }
-    setApproveVisible(false)
   }
 
   const handleDelete = () => {
