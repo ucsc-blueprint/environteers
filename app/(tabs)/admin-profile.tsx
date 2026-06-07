@@ -1,23 +1,32 @@
 import React, { useState } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, Pressable, Image } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet, Pressable } from 'react-native';
 import { AdminProfileView } from '@/components/AdminProfileView';
 import { AdminPendingView } from '@/components/AdminPendingView';
-import { LogoutButton } from '@/components/LogoutButton';
 import { useAuth } from '@/context/AuthContext';
-import { Redirect } from 'expo-router';
+import { useRouter, Redirect } from 'expo-router';
 import { formatMembership } from '@/components/AdminVolunteersView'
 import { UserAvatar } from '@/components/UserAvatar';
+import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AdminProfile() {
   const [tab, setTab] = useState<"pending" | "active">("pending");
   const { profile, loading } = useAuth();
+  const router = useRouter();
 
   if (loading) return <ActivityIndicator size="large" color="#000000" />
   if (!profile) return <Redirect href="/" />
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.headerContainer}>
+        <Pressable
+          style={styles.settingsIcon}
+          onPress={() => router.push('/SettingsHub')}
+        >
+          <Ionicons name="settings-outline" size={24} color="#333" />
+        </Pressable>
+
         <View style={{ marginRight: 6 }}>
           <UserAvatar
             firstName={profile.first_name}
@@ -54,10 +63,8 @@ export default function AdminProfile() {
 
       <View style={styles.content}>
         {tab === "pending" ? <AdminPendingView /> : <AdminProfileView />}
-        
-        <LogoutButton />
       </View>
-    </View>
+    </SafeAreaView>
   )
 }
 
@@ -118,5 +125,19 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     backgroundColor: "#EAF2F6",
-  }
+  },
+  settingsIcon: {
+    position: 'absolute',
+    top: 0,
+    right: 20,
+  },
+  headerContainer: {
+    backgroundColor: '#fff',
+    marginTop: '15%',
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
 })
