@@ -12,6 +12,7 @@ import { ACHIEVEMENTS } from '@/constants/achievements';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BanDeleteModal, ModalType } from "@/components/BanDeleteModal";
 import Toast from "react-native-toast-message";
+import { UserAvatar } from '@/components/UserAvatar';
 
 type CompletedItem = {
   id: string;
@@ -34,6 +35,7 @@ export default function AdminAnalytics() {
   const [loadingCompleted, setLoadingCompleted] = React.useState(true);
   const [ecoCount, setEcoCount] = React.useState(0);
   const [bannedUntil, setBannedUntil] = React.useState<string | null>(null);
+  const [viewedUserPhoto, setViewedUserPhoto] = React.useState<string | null>(null);
 
   const [modalVisible, setModalVisible] = React.useState(false);
   const [modalType, setModalType] = React.useState<ModalType | null>(null);
@@ -143,20 +145,21 @@ export default function AdminAnalytics() {
       setLoadingCompleted(false);
     };
 
-    const fetchBannedUntil = async() => {
-      const { data, error } = await supabase
+    const fetchUserProfile = async () => {
+      const { data } = await supabase
         .from('users')
-        .select('banned_until')
+        .select('banned_until, profile_picture')
         .eq('user_id', id)
         .single();
-      
-      if (error) return;
-      setBannedUntil(data?.banned_until ?? null);
+      if (data) {
+        setBannedUntil(data.banned_until ?? null);
+        setViewedUserPhoto(data.profile_picture ?? null);
+      }
     };
 
     fetchFeedback();
     fetchInteractions();
-    fetchBannedUntil();
+    fetchUserProfile();
   }, [volunteerID, volunteerName, membershipStatus]);
 
   const lastUnlocked = [...ACHIEVEMENTS].reverse().find(a => ecoCount >= a.threshold);
@@ -252,7 +255,13 @@ export default function AdminAnalytics() {
       </Pressable>
 
       <View style={styles.avatarSection}>
-        <View style={styles.avatar} />
+        <UserAvatar
+          firstName={name.split(' ')[0]}
+          lastName={name.split(' ')[1] ?? ''}
+          photoUrl={viewedUserPhoto}
+          size={90}
+        />
+        <View style={{ marginBottom: 10 }} />
         <Text style={styles.name}>{name}</Text>
         <Text style={styles.memberSince}>{membership}</Text>
       </View>

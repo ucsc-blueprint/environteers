@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ConfettiCannon from "react-native-confetti-cannon";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { UserAvatar } from '@/components/UserAvatar';
 
 import { ACHIEVEMENTS } from '@/constants/achievements';
 
@@ -112,7 +113,13 @@ export default function Profile() {
 
         {/* Avatar + name */}
         <View style={styles.avatarSection}>
-          <Image style={styles.avatar} source={require('../../assets/images/PFP.png')} />
+          <UserAvatar
+            firstName={profile.first_name}
+            lastName={profile.last_name}
+            photoUrl={profile.profile_picture}
+            size={90}
+          />
+          <View style={{ marginBottom: 10 }} />
           <Text style={styles.name}>{profile.first_name} {profile.last_name}</Text>
           <Text style={styles.memberSince}>{formatMembership(profile.created_at)}</Text>
         </View>

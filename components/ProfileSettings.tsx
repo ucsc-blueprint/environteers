@@ -2,6 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, Image, StyleSheet, TextInput, GestureResponderEvent } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
+import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system/legacy';
+import { decode } from 'base64-arraybuffer';
+import { supabase } from '@/constants/supabase';
+import { UserAvatar } from './UserAvatar';
 
 export interface ProfileSettingsProps {
   onSubmit: (
@@ -9,25 +14,36 @@ export interface ProfileSettingsProps {
     lastName: string,
     email: string,
     currentPassword: string,
-    password: string
+    password: string,
+    profilePicture: string,
   ) => Promise<string | null>; //thanks to this, we can return an error message if the update fails, or null if it succeeds
   initialFirstName?: string;
   initialLastName?: string;
   initialEmail?: string;
+  initialProfilePicture?: string | null;
 }
 
-const ProfileSettings = ({ onSubmit, initialFirstName = '', initialLastName = '', initialEmail = '' }: ProfileSettingsProps) => {
+const ProfileSettings = ({
+  onSubmit,
+  initialFirstName = '',
+  initialLastName = '',
+  initialEmail = '',
+  initialProfilePicture = null,
+}: ProfileSettingsProps) => {
   const router = useRouter();
   const [firstName, setFirstName] = useState(initialFirstName);
   const [lastName, setLastName] = useState(initialLastName);
   const [email, setEmail] = useState(initialEmail);
+  const [profilePicture, setProfilePicture] = useState<string | null>(initialProfilePicture ?? null);
+  const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
 
-  // Update initial name + email once they finish fetching
+  // Update initial info once it finishes fetching
   useEffect(() => {
     setFirstName(initialFirstName);
     setLastName(initialLastName);
     setEmail(initialEmail);
-  }, [initialFirstName, initialLastName, initialEmail]);
+    setProfilePicture(initialProfilePicture ?? null);
+  }, [initialFirstName, initialLastName, initialEmail, initialProfilePicture]);
 
   const [currentPassword, setCurrentPassword] = useState(''); 
   const [newPassword, setPassword] = useState('');
@@ -38,6 +54,7 @@ const ProfileSettings = ({ onSubmit, initialFirstName = '', initialLastName = ''
     firstName !== initialFirstName ||
     lastName !== initialLastName ||
     email !== initialEmail ||
+    profilePicture !== initialProfilePicture ||
     (currentPassword !== "" &&
     newPassword !== "" &&
     confirmPassword !== "");
@@ -47,6 +64,44 @@ const ProfileSettings = ({ onSubmit, initialFirstName = '', initialLastName = ''
   const [showConfirm, setShowConfirm] = useState(false);
 
   const [error, setError] = useState('');
+
+  const handleChangePicture = async () => {
+    if (!status?.granted) {
+      await requestPermission();
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (!result.canceled) {
+      setProfilePicture(result.assets[0].uri);
+    }
+  };
+
+  const handleRemovePicture = () => {
+    setProfilePicture(null);
+  };
+
+  const uploadProfilePicture = async (uri: string): Promise<string | null> => {
+    if (uri.startsWith('http://') || uri.startsWith('https://')) return uri;
+    try {
+      const fileName = `${Date.now()}.jpg`;
+      const filePath = `user_uploads/${fileName}`;
+      const base64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
+      const bytes = decode(base64);
+      const { error } = await supabase.storage
+        .from('profile-pictures')
+        .upload(filePath, bytes, { contentType: 'image/jpeg' });
+      if (error) throw error;
+      const { data } = supabase.storage.from('profile-pictures').getPublicUrl(filePath);
+      return data.publicUrl;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
 
   const handleSubmit = async (_event: GestureResponderEvent) => {
     setError("");
@@ -66,13 +121,21 @@ const ProfileSettings = ({ onSubmit, initialFirstName = '', initialLastName = ''
       return;
     }
 
+    let uploadedUrl = profilePicture ?? '';
+    if (profilePicture && !profilePicture.startsWith('http')) {
+      const url = await uploadProfilePicture(profilePicture);
+      if (!url) { setError('Failed to upload profile picture'); return; }
+      uploadedUrl = url;
+    }
+
     const result = await onSubmit(
       firstName,
       lastName,
       email,
       currentPassword,
-      newPassword
-    );
+      newPassword,
+      uploadedUrl 
+   );
 
     if (result) {
       setError(result);
@@ -94,9 +157,11 @@ const ProfileSettings = ({ onSubmit, initialFirstName = '', initialLastName = ''
 
       <Text style={styles.header}>Profile</Text>
       <View style={styles.avatarRow}>
-        <Image
-          source={require('../assets/images/PFP.png')}
-          style={styles.avatar}
+        <UserAvatar
+          firstName={firstName}
+          lastName={lastName}
+          photoUrl={profilePicture}
+          size={80}
         />
         <View style={styles.photoButtons}>
           <Pressable
@@ -104,7 +169,7 @@ const ProfileSettings = ({ onSubmit, initialFirstName = '', initialLastName = ''
               styles.changePhotoButton,
               pressed && styles.changePhotoButtonPressed,
             ]}
-            onPress={() => {}} // Do nothing for now
+            onPress={handleChangePicture}
           >
             <Text style={styles.changePhotoText}>Change Profile Photo</Text>
           </Pressable>
@@ -113,7 +178,7 @@ const ProfileSettings = ({ onSubmit, initialFirstName = '', initialLastName = ''
               styles.removePhotoButton,
               pressed && styles.removePhotoButtonPressed,
             ]}
-            onPress={() => {}} // Do nothing for now
+            onPress={handleRemovePicture}
           >
             <Text style={styles.removePhotoText}>Remove Profile Photo</Text>
           </Pressable>

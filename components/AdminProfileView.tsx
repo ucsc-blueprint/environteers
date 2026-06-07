@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import {View, Text, Image, FlatList, StyleSheet,
+import {View, Text, FlatList, StyleSheet,
 } from 'react-native';
 import { supabase } from "@/constants/supabase";
+import { UserAvatar } from '@/components/UserAvatar';
 
 type Admin = {
   id: string;
   name: string;
   email: string;
+  profilePicture: string | null;
 };
 
 export const AdminProfileView = () => {
@@ -17,7 +19,7 @@ export const AdminProfileView = () => {
       try {
         const { data, error } = await supabase
           .from('users')
-          .select('user_id, first_name, last_name, email')
+          .select('user_id, first_name, last_name, email, profile_picture')
           .eq("is_admin", true);
         
         if (error) {
@@ -30,6 +32,7 @@ export const AdminProfileView = () => {
             id: admin.user_id,
             name: `${admin.first_name} ${admin.last_name}`,
             email: admin.email,
+            profilePicture: admin.profile_picture ?? null,
           };
         });
 
@@ -53,7 +56,12 @@ export const AdminProfileView = () => {
         renderItem={({ item }) => (
           <View style={styles.profileContainer}>
             <View style={styles.avatarSection}>
-              <Image style={styles.avatar} source={require('../assets/images/PFP.png')} />
+              <UserAvatar
+                firstName={item.name.split(' ')[0]}
+                lastName={item.name.split(' ')[1] ?? ''}
+                photoUrl={item.profilePicture}
+                size={60}
+              />
               <View style={styles.names}>
                 <Text style={styles.name}>{item.name}</Text>
                 <Text style={styles.role}>Administrator</Text>
@@ -88,12 +96,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
-  },
-  avatar: { 
-    width: 60, 
-    height: 60, 
-    borderRadius: 45, 
-    backgroundColor: '#ccc',
   },
   names: {
     flexDirection: 'column',
