@@ -45,7 +45,7 @@ export default function ResetPassword() {
     if (error) {
       Alert.alert(
         'Error',
-        `${error.message}. Please request a new reset link.`,
+        `${error.message} Please request a new reset link.`,
         [{ text: 'OK', onPress: () => router.replace('/forgotPassword') }]
       );
     } else {

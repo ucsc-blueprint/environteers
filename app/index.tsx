@@ -14,7 +14,11 @@ export default function LandingIndex() {
     if (loading) return;
 
     if (user && profile && pathname !== '/resetPassword') {
-      router.replace('/(tabs)/volunteer');
+      if (profile.is_admin) {
+        router.replace('/(tabs)/admin-dashboard');
+      } else {
+        router.replace('/(tabs)/volunteer');
+      }
     }
   }, [user, profile, loading, router, pathname]);
 
