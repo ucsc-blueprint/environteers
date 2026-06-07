@@ -131,13 +131,4 @@ const styles = StyleSheet.create({
     top: 0,
     right: 20,
   },
-  headerContainer: {
-    backgroundColor: '#fff',
-    marginTop: '15%',
-    borderRadius: 16,
-    paddingHorizontal: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
 })
