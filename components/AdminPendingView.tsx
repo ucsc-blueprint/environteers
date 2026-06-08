@@ -6,7 +6,6 @@ import { ChevronRight } from "lucide-react-native";
 import { AdminApprove } from "@/components/AdminApprove";
 import Toast from 'react-native-toast-message';
 
-
 type Admin = {
   id: string;
   name: string;
@@ -66,6 +65,7 @@ export const AdminPendingView = () => {
             type: 'error',
             text1: 'Failed to assign admin',
           });
+          return;
         }
 
         // Remove from UI, close modal
@@ -73,16 +73,15 @@ export const AdminPendingView = () => {
           prev.filter(admin => admin.id !== selectedAdmin.id)
         );
         setApproveVisible(false);
-        
+
         // Send email to user confirming admin approval
         await send(
-          process.env.EMAILJS_SERVICE_ID!,
-          process.env.EMAILJS_TEMPLATE_ID_APPROVED!,
+          process.env.EXPO_PUBLIC_EMAILJS_SERVICE_ID!,
+          process.env.EXPO_PUBLIC_EMAILJS_TEMPLATE_ID_APPROVED!,
           {
-            from_email: process.env.ADMIN_EMAIL, // sender
-            to_email: selectedAdmin.email // receiver
+            to_email: selectedAdmin.email, // receiver
           },
-          { publicKey: process.env.EMAILJS_PUBLIC_KEY!}
+          { publicKey: process.env.EXPO_PUBLIC_EMAILJS_PUBLIC_KEY! }
         );
         
       } catch (err) {
@@ -94,7 +93,20 @@ export const AdminPendingView = () => {
     }
   }
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
+    if (!selectedAdmin) return;
+
+    const { error } = await supabase
+      .from('users')
+      .update({ pending_admin: false })
+      .eq('user_id', selectedAdmin.id);
+
+    if (error) {
+      Toast.show({ type: 'error', text1: 'Failed to reject request' });
+      return;
+    }
+
+    setAllAdmins(prev => prev.filter(admin => admin.id !== selectedAdmin.id));
     setApproveVisible(false)
   }
 

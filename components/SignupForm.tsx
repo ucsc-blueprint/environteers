@@ -29,14 +29,17 @@ const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
 
   const sendSignupEmail = async () => {
     try {
+
       await send(
-        process.env.EMAILJS_SERVICE_ID!,
-        process.env.EMAILJS_TEMPLATE_ID_SIGNUP!,
+        process.env.EXPO_PUBLIC_EMAILJS_SERVICE_ID!,
+        process.env.EXPO_PUBLIC_EMAILJS_TEMPLATE_ID_SIGNUP!,
         {
-          email: process.env.ADMIN_EMAIL, // receiver
+          email: process.env.EXPO_PUBLIC_ADMIN_EMAIL, // receiver
+          user_name: `${firstName} ${lastName}`,
+          user_email: email,
         },
         {
-          publicKey: process.env.EMAILJS_PUBLIC_KEY!,
+          publicKey: process.env.EXPO_PUBLIC_EMAILJS_PUBLIC_KEY!,
         }
       );
 
