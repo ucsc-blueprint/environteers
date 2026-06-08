@@ -37,12 +37,21 @@ export default function SignupScreen() {
       })
       return;
     };
+    if (!data.user) {
+      Toast.show({
+        type: 'error',
+        text1: 'Signup failed',
+        text2: 'User account was not created.',
+      });
+      return;
+    }
+
     const {error: insertError} = await supabase.from('users').insert({
-      user_id: data.user!.id,
+      user_id: data.user.id,
       first_name: firstName,
       last_name: lastName,
       email,
-      is_admin: isAdmin
+      pending_admin: isAdmin,
     })
     if (insertError) {
       Toast.show({

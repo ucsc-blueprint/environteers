@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import {View, Text, FlatList, StyleSheet, Pressable,
-} from 'react-native';
+import {View, Text, FlatList, StyleSheet, Pressable } from 'react-native';
+import { send } from '@emailjs/react-native';
 import { supabase } from "@/constants/supabase";
 import { ChevronRight } from "lucide-react-native";
 import { AdminApprove } from "@/components/AdminApprove";
+import Toast from 'react-native-toast-message';
 
 type Admin = {
   id: string;
@@ -22,7 +23,8 @@ export const AdminPendingView = () => {
         const { data, error } = await supabase
           .from('users')
           .select('user_id, first_name, last_name, email')
-          .eq("is_admin", true);
+          .eq("is_admin", false)
+          .eq("pending_admin", true);
         
         if (error) {
           console.error("Error fetching admins:", error);
@@ -46,11 +48,65 @@ export const AdminPendingView = () => {
     fetchAdmins();
   }, [])
 
-  const handleApproval = () => {
-    setApproveVisible(false)
+  const handleApproval = async () => {
+    if (selectedAdmin) {
+      try {
+        // Set is_admin to true for selected admin
+        const { error } = await supabase
+          .from("users")
+          .update({ 
+            is_admin: true ,
+            pending_admin: false,
+          })
+          .eq("user_id", selectedAdmin?.id);
+
+        if (error) {
+          Toast.show({
+            type: 'error',
+            text1: 'Failed to assign admin',
+          });
+          return;
+        }
+
+        // Remove from UI, close modal
+        setAllAdmins(prev =>
+          prev.filter(admin => admin.id !== selectedAdmin.id)
+        );
+        setApproveVisible(false);
+
+        // Send email to user confirming admin approval
+        await send(
+          process.env.EXPO_PUBLIC_EMAILJS_SERVICE_ID!,
+          process.env.EXPO_PUBLIC_EMAILJS_TEMPLATE_ID_APPROVED!,
+          {
+            to_email: selectedAdmin.email, // receiver
+          },
+          { publicKey: process.env.EXPO_PUBLIC_EMAILJS_PUBLIC_KEY! }
+        );
+        
+      } catch (err) {
+        console.error('EmailJS Error:', err);
+      }
+    } else {
+      console.log('Select an admin before proceeding.');
+      return;
+    }
   }
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
+    if (!selectedAdmin) return;
+
+    const { error } = await supabase
+      .from('users')
+      .update({ pending_admin: false })
+      .eq('user_id', selectedAdmin.id);
+
+    if (error) {
+      Toast.show({ type: 'error', text1: 'Failed to reject request' });
+      return;
+    }
+
+    setAllAdmins(prev => prev.filter(admin => admin.id !== selectedAdmin.id));
     setApproveVisible(false)
   }
 
