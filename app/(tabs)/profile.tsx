@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator, Text, View, ScrollView, StyleSheet,
-  Image, FlatList, Pressable, Modal
+  FlatList, Pressable, Modal
 } from "react-native";
 import { LogoutButton } from "@/components/LogoutButton";
 import { formatMembership } from "@/components/AdminVolunteersView";

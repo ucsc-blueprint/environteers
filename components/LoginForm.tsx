@@ -83,7 +83,7 @@ const LoginForm = ({ onSubmit, isAdmin = false }: LoginFormProps) => {
                     <Text style={styles.loginButtonText}>Login</Text>
                 </Pressable>
 
-                <Pressable>
+                <Pressable onPress={() => router.push('/forgotPassword')}>
                     <Text style={styles.forgotPassword}>Forgot password?</Text>
                 </Pressable>
             </View>

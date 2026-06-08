@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, Image, StyleSheet, TextInput, GestureResponderEvent } from 'react-native';
+import { View, Text, Pressable, StyleSheet, TextInput, GestureResponderEvent } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
