@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, Text, Pressable, StyleSheet, TextInput, GestureResponderEvent } from 'react-native';
+import { View, Text, Pressable, StyleSheet, TextInput, GestureResponderEvent } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
 
