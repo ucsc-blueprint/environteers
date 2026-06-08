@@ -12,22 +12,29 @@ export default function TabsLayout() {
   const { user, loading, profile, isBanned } = useAuth();
 
   useEffect(() => {
-    if (!loading && !user && !profile) {
+    console.log('layout effect:', { loading, user: !!user, profile: !!profile, isBanned });
+    if (loading) return;
+
+    if (!user) {
+      console.log('redirecting to /');
       router.replace('/');
+      return;
     }
 
     if (isBanned) {
       supabase.auth.signOut();
       router.replace('/');
     }
-  }, [user, loading, profile, isBanned, router]);
+  }, [user, loading, isBanned, router]);
 
-  if (loading) {
+  console.log('loading:', loading, 'profile:', !!profile, 'user:', !!user);
+
+  if (loading || !profile) {
     return <Text>Loading...</Text>;
   }
 
-  const adminHref = profile?.is_admin ? null : undefined;
-  const userHref = profile?.is_admin ? undefined : null;
+  const adminHref = profile?.is_admin === true ? null : undefined;
+  const userHref = profile?.is_admin === true ? undefined : null;
 
   return (
     <Tabs

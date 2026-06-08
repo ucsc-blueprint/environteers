@@ -1,11 +1,12 @@
 import { View } from 'react-native';
 import LoginForm from '@/components/LoginForm';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '@/constants/supabase';
 import Toast from 'react-native-toast-message';
 import React from 'react';
 
 export default function LoginScreen() {
+  const router = useRouter();
   const { isAdmin : isAdminParam } = useLocalSearchParams();
 
   async function onSubmit(email: string, password: string) {
@@ -24,7 +25,7 @@ export default function LoginScreen() {
 
     const { data: userData } = await supabase
       .from('users')
-      .select('banned_until')
+      .select('banned_until, is_admin')
       .eq('user_id', data.user.id)
       .single();
     
@@ -43,7 +44,9 @@ export default function LoginScreen() {
     Toast.show({
       type: 'success',
       text1: 'You are now logged in',
-    })
+    });
+
+    router.replace('/');
   }
 
   return (

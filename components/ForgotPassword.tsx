@@ -21,7 +21,7 @@ export default function ForgotPassword() {
     if (error) {
       Toast.show({ type: 'error', text1: 'Failed to send reset email', text2: error.message });
     } else {
-      Toast.show({ type: 'success', text1: 'Successful', text2: 'Reset link sent!' });
+      Toast.show({ type: 'success', text1: 'Check your email', text2: 'If an account exists for that email, a reset link has been sent.' });
     }
   };
 
