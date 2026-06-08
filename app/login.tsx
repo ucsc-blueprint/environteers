@@ -1,11 +1,12 @@
 import { View } from 'react-native';
 import LoginForm from '@/components/LoginForm';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '@/constants/supabase';
 import Toast from 'react-native-toast-message';
-
 import React from 'react';
+
 export default function LoginScreen() {
+  const router = useRouter();
   const { isAdmin : isAdminParam } = useLocalSearchParams();
 
   async function onSubmit(email: string, password: string) {
@@ -43,11 +44,16 @@ export default function LoginScreen() {
     Toast.show({
       type: 'success',
       text1: 'You are now logged in',
-    })
+    });
+
+    router.replace('/');
   }
+
   return (
     <View style={{flex: 1}}>
-      <LoginForm onSubmit={onSubmit} isAdmin={isAdminParam === 'true'} />
+      <LoginForm
+        onSubmit={onSubmit}
+        isAdmin={isAdminParam === 'true'} />
     </View>
   )
 }
