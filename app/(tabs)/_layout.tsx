@@ -12,11 +12,9 @@ export default function TabsLayout() {
   const { user, loading, profile, isBanned } = useAuth();
 
   useEffect(() => {
-    console.log('layout effect:', { loading, user: !!user, profile: !!profile, isBanned });
     if (loading) return;
 
     if (!user) {
-      console.log('redirecting to /');
       router.replace('/');
       return;
     }

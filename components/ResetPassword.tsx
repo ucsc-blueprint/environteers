@@ -1,14 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
-import * as Linking from 'expo-linking';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '@/constants/supabase';
 import Toast from 'react-native-toast-message';
 
 export default function ResetPassword() {
   const router = useRouter();
-  const url = Linking.useLinkingURL();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);

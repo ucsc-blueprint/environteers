@@ -35,7 +35,7 @@ export default function ForgotPassword() {
       <View style={styles.body}>
         <Text style={styles.title}>Forgot Password?</Text>
         <Text style={styles.paragraph}>
-          No worries, we'll send a reset link to the account email.
+          {`No worries, we'll send a reset link to the account email.`}
         </Text>
 
         <TextInput
