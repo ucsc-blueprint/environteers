@@ -25,8 +25,6 @@ export default function TabsLayout() {
     }
   }, [user, loading, isBanned, router]);
 
-  console.log('loading:', loading, 'profile:', !!profile, 'user:', !!user);
-
   if (loading || !profile) {
     return <Text>Loading...</Text>;
   }

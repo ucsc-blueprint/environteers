@@ -25,7 +25,7 @@ export default function LoginScreen() {
 
     const { data: userData } = await supabase
       .from('users')
-      .select('banned_until, is_admin')
+      .select('banned_until')
       .eq('user_id', data.user.id)
       .single();
     
