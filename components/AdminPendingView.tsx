@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {View, Text, FlatList, StyleSheet, Pressable } from 'react-native';
-import { send } from '@emailjs/react-native';
 import { supabase } from "@/constants/supabase";
 import { ChevronRight } from "lucide-react-native";
 import { AdminApprove } from "@/components/AdminApprove";
@@ -73,19 +72,8 @@ export const AdminPendingView = () => {
           prev.filter(admin => admin.id !== selectedAdmin.id)
         );
         setApproveVisible(false);
-
-        // Send email to user confirming admin approval
-        await send(
-          process.env.EXPO_PUBLIC_EMAILJS_SERVICE_ID!,
-          process.env.EXPO_PUBLIC_EMAILJS_TEMPLATE_ID_APPROVED!,
-          {
-            to_email: selectedAdmin.email, // receiver
-          },
-          { publicKey: process.env.EXPO_PUBLIC_EMAILJS_PUBLIC_KEY! }
-        );
-        
       } catch (err) {
-        console.error('EmailJS Error:', err);
+        console.error('Error:', err);
       }
     } else {
       console.log('Select an admin before proceeding.');
