@@ -358,6 +358,7 @@ export const DisplayEcoAction = ({
               <View style={styles.section}>
                 <Text style={styles.label}>
                   {typeOfAction === "online" ? "Link/Email" : "Sign Up Link"}
+                  {typeOfAction === "online" && <Text style={{ color: "red" }}> *</Text>}
                 </Text> 
                 <TextInput
                   style={styles.input}
