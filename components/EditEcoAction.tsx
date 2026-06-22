@@ -24,6 +24,8 @@ type Props =
     const [endTime, setEndTime] = useState<Date | null>(null);
     const [campaignType, setCampaignType] = useState("");
     const [location, setLocation] = useState("");
+    const [locationLat, setLocationLat] = useState<number | null>(null);
+    const [locationLng, setLocationLng] = useState<number | null>(null);
     const [link, setLink] = useState("");
     const BUCKETNAME = 'eco-action images'
 
@@ -90,15 +92,17 @@ type Props =
       
       const resetAll = () => 
       {
-        setLocation("")
-        setHost("")
-        setEventDate(new Date())
-        setDescription("")
-        setTitle("")
-        setCoverPhoto("")
-        setLink("")
-        setCampaignType("")
-        setCustomCampaignType("")
+        setLocation("");
+        setLocationLat(null);
+        setLocationLng(null);
+        setHost("");
+        setEventDate(new Date());
+        setDescription("");
+        setTitle("");
+        setCoverPhoto("");
+        setLink("");
+        setCampaignType("");
+        setCustomCampaignType("");
         setEventDate((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
         setStartTime((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
         setEndTime((typeOfAction === "in-person" || typeOfAction === "event")? new Date() : null);
@@ -127,6 +131,10 @@ type Props =
         }
         if (typeOfAction === "event" && !location){
           Alert.alert("Location required for events");
+          return;
+        }
+        if ((typeOfAction === "in-person" || typeOfAction === "event") && (!locationLat || !locationLng)) {
+          Alert.alert("Please select a location from the dropdown suggestions");
           return;
         }
         if (typeOfAction === "online" && !link)
@@ -183,6 +191,8 @@ type Props =
               start_date: startTime!.toISOString(),
               end_date: endTime!.toISOString(),
               location: location,
+              location_latitude: locationLat,
+              location_longitude: locationLng,
               sign_up_link: link,
               cover_photo: imageUrl,
               host_organization: host,
@@ -203,6 +213,8 @@ type Props =
               start_date: startTime!.toISOString(),
               end_date: endTime!.toISOString(),
               location: location,
+              location_latitude: locationLat,
+              location_longitude: locationLng,
               sign_up_link: link,
               cover_photo: imageUrl,
               host_organization: host,
@@ -256,6 +268,8 @@ type Props =
           setCoverPhoto(data.cover_photo ?? '');
           setHost(data.host_organization ?? '');
           setLocation(data.location ?? '');
+          setLocationLat(data.location_latitude ?? null);
+          setLocationLng(data.location_longitude ?? null);
           setLink(data.sign_up_link ?? data.email_link ?? '');
           setCampaignType(data.campaign_type ?? '');
           setCustomCampaignType(data.campaign_type ?? '');
@@ -297,6 +311,12 @@ type Props =
           location={location}
           setLocation={setLocation}
 
+          locationLat={locationLat}
+          setLocationLat={setLocationLat}
+
+          locationLng={locationLng}
+          setLocationLng={setLocationLng}
+
           link={link}
           setLink={setLink}
 
@@ -325,6 +345,3 @@ type Props =
           getImage = {getImage}
         />
     )}
-
-
-        

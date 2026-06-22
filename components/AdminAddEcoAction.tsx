@@ -34,6 +34,8 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
     const [coverPhoto, setCoverPhoto] = useState("");
     const [campaignType, setCampaignType] = useState("");
     const [location, setLocation] = useState("");
+    const [locationLat, setLocationLat] = useState<number | null>(null);
+    const [locationLng, setLocationLng] = useState<number | null>(null);
     const [link, setLink] = useState("");
     const BUCKETNAME = 'eco-action images'
 
@@ -95,15 +97,17 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
       
       const resetAll = () => 
       {
-        setLocation("")
-        setHost("")
-        setEventDate(new Date())
-        setDescription("")
-        setTitle("")
-        setCoverPhoto("")
-        setLink("")
-        setCampaignType("")
-        setCustomCampaignType("")
+        setLocation("");
+        setLocationLat(null);
+        setLocationLng(null);
+        setHost("");
+        setEventDate(new Date());
+        setDescription("");
+        setTitle("");
+        setCoverPhoto("");
+        setLink("");
+        setCampaignType("");
+        setCustomCampaignType("");
         setEventDate(null);
         setStartTime(null);
         setEndTime(null);
@@ -135,6 +139,10 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
         }
         if (typeOfAction === "event" && !location){
           Alert.alert("Location required for events");
+          return;
+        }
+        if ((typeOfAction === "in-person" || typeOfAction === "event") && (!locationLat || !locationLng)) {
+          Alert.alert("Please select a location from the dropdown suggestions");
           return;
         }
         if (typeOfAction === "online" && !link)
@@ -186,6 +194,8 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
               start_date: startTime!.toISOString(),
               end_date: endTime!.toISOString(),
               location: location,
+              location_latitude: locationLat,
+              location_longitude: locationLng,
               sign_up_link: link,
               cover_photo: imageUrl,
               host_organization: host,
@@ -205,6 +215,8 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
               start_date: startTime!.toISOString(),
               end_date: endTime!.toISOString(),
               location: location,
+              location_latitude: locationLat,
+              location_longitude: locationLng,
               sign_up_link: link,
               cover_photo: imageUrl,
               host_organization: host,
@@ -242,6 +254,12 @@ export const AdminAddEcoAction = ({typeOfAction}: {typeOfAction: string}) => { /
 
           location={location}
           setLocation={setLocation}
+
+          locationLat={locationLat}
+          setLocationLat={setLocationLat}
+
+          locationLng={locationLng}
+          setLocationLng={setLocationLng}
 
           link={link}
           setLink={setLink}

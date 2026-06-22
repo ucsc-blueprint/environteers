@@ -7,6 +7,7 @@ import { actions, RichEditor, RichToolbar } from 'react-native-pell-rich-editor'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ActivityIndicator } from 'react-native-paper';
+import { LocationInput } from '@/components/LocationInput';
 type Props = {
   typeOfAction: string;
   isEdit: boolean;
@@ -22,6 +23,12 @@ type Props = {
 
   location: string;
   setLocation: Dispatch<SetStateAction<string>>;
+
+  locationLat?: number | null;
+  setLocationLat?: Dispatch<SetStateAction<number | null>>;
+
+  locationLng?: number | null;
+  setLocationLng?: Dispatch<SetStateAction<number | null>>;
 
   link: string;
   setLink: Dispatch<SetStateAction<string>>;
@@ -66,6 +73,12 @@ export const DisplayEcoAction = ({
 
     location,
     setLocation,
+
+    locationLat,
+    setLocationLat,
+
+    locationLng,
+    setLocationLng,
 
     link,
     setLink,
@@ -330,12 +343,14 @@ export const DisplayEcoAction = ({
               <View style={styles.section}>
                 
                 <Text style={styles.label}>Location<Text style={{ color: "red" }}> *</Text></Text>
-                <TextInput
-                  style={styles.input}
+                <LocationInput
                   placeholder="Select Location Address"
-                  placeholderTextColor= "#888"
                   value={location}
-                  onChangeText={setLocation}
+                  onSelectLocation={(address, lat, lng) => {
+                    setLocation(address);
+                    setLocationLat?.(lat);
+                    setLocationLng?.(lng);
+                  }}
                 />
               </View>
               )}

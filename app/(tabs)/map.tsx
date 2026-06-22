@@ -134,20 +134,6 @@ export default function Map() {
     }
   };
 
-  async function geocodeAddress(address: string) {
-    const res = await Location.geocodeAsync(address);
-
-    if (!res || res.length === 0) {
-      console.warn('Failed to geocode', address);
-      return null;
-    }
-
-    return {
-        latitude: res[0].latitude,
-        longitude: res[0].longitude,
-    };
-  }
-
   const getInteractionState = useCallback((id: string, type: string) => {
     const match = interactionCards.find(
       c => c.cardInfo.id === id && c.cardType === type
@@ -188,41 +174,15 @@ export default function Map() {
         console.error("Error fetching in-person eco-actions from supabase", ecoInPersonError);
       }
 
-      const processLocation = async (item: any, type: "event" | "in_person") => {
-        let coords = null;
-        if (item.location_longitude && item.location_latitude) {
-          coords = {
-            latitude: item.location_latitude,
-            longitude: item.location_longitude,
-          };
-        } else {
-          if (!item.location || item.location.trim() === "") {
-            return null;
-          }
-          coords = await geocodeAddress(item.location);
-
-          if (coords) {
-            const table = type === "event" ? "events" : "inperson_ecoactions"
-            const {error} = await supabase
-              .from(table)
-              .update({
-                location_latitude: coords.latitude,
-                location_longitude: coords.longitude,
-              })
-              .eq("id", item.id);
-
-            if (error) {
-              console.error("Error updating coordinates on supabase", error);
-            }
-          }
+      const processLocation = (item: any, type: "event" | "in_person") => {
+        if (!item.location_longitude || !item.location_latitude) {
+          return null;
         }
-
-        if (!coords) return null;
 
         return {
           id: item.id,
-          latitude: coords.latitude,
-          longitude: coords.longitude,
+          latitude: item.location_latitude,
+          longitude: item.location_longitude,
           title: item.title,
           type,
         };
@@ -277,15 +237,15 @@ export default function Map() {
             feedback: null,
           }));
 
-      const markerResults = await Promise.all([
+      const markerResults = [
         ...((event || [])
           .filter((e) => !isPastItem(e))
           .map((e) => processLocation(e, "event"))),
-      
+
         ...((ecoInPerson || [])
           .filter((e) => !isPastItem(e))
           .map((e) => processLocation(e, "in_person"))),
-      ]);
+      ];
 
       const markers = markerResults.filter((m) => m !== null);
 
