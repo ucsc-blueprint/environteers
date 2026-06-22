@@ -94,12 +94,13 @@ export const OnlineCard = ({
   };
 
   const shouldShowPrompt =
+    !isAdmin &&
     expanded &&
     clicked &&
     completed === null;
 
   const openSignUpLink = async () => {
-    if (user?.id) {
+    if (user?.id && !isAdmin) {
 
       // Reset completion ONLY if previously false
       if (completed === false) {

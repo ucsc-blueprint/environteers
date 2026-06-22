@@ -108,6 +108,7 @@ export const EventCard = ({
   const isPastEvent = isPast(cardInfo.end_date);
 
   const shouldShowCompletionPrompt =
+    !isAdmin &&
     expanded &&
     clicked &&
     signed_up === true &&
@@ -115,12 +116,13 @@ export const EventCard = ({
     isPastEvent;
 
   const shouldShowPrompt =
+    !isAdmin &&
     expanded &&
     clicked &&
     signed_up === null;
 
   const openSignUpLink = async (link: string) => {
-    if (user?.id) {
+    if (user?.id && !isAdmin) {
 
       // Reset signed_up ONLY if it was false
       if (signed_up === false) {

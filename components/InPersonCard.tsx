@@ -110,6 +110,7 @@ export const InPersonCard = ({
     : false;
 
   const shouldShowCompletionPrompt =
+    !isAdmin &&
     expanded &&
     clicked &&
     signed_up === true &&
@@ -117,12 +118,13 @@ export const InPersonCard = ({
     isPastEvent;
 
   const shouldShowPrompt =
+    !isAdmin &&
     expanded &&
     clicked &&
     signed_up === null;
 
   const openSignUpLink = async (link: string) => {
-    if (user?.id) {
+    if (user?.id && !isAdmin) {
       // Reset signed_up ONLY if it was false
       if (signed_up === false) {
         await supabase
