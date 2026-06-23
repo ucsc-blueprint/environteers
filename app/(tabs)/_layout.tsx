@@ -56,9 +56,21 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        tabBarActiveTintColor: '#57811D',
       }}
     >
       {/* User Tabs */}
+      <Tabs.Screen
+        name='volunteer'
+        options={{
+          title: 'Home',
+          href: adminHref,
+          tabBarIcon: ({ color, size }) => (
+            <Feather name='home' size={size} color={color} />
+          ),
+        }}
+      />
+
       <Tabs.Screen
         name='activity'
         options={{
@@ -68,17 +80,6 @@ export default function TabsLayout() {
             <TabBarIconWithBadge showBadge={hasRequiresAction}>
               <Feather name='activity' size={size} color={color} />
             </TabBarIconWithBadge>
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name='volunteer'
-        options={{
-          title: 'Volunteer',
-          href: adminHref,
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name='hand-extended' size={size} color={color} />
           ),
         }}
       />
