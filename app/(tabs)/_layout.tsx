@@ -40,15 +40,6 @@ export default function TabsLayout() {
     >
       {/* User Tabs */}
       <Tabs.Screen
-        name='home'
-        options={{
-          title: 'Home',
-          href: adminHref,
-          tabBarIcon: ({ color, size }) => <Ionicons name='home' size={size} color={color} />,
-        }}
-      />
-
-      <Tabs.Screen
         name='activity'
         options={{
           title: 'Activity',

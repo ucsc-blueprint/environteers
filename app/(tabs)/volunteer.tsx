@@ -21,7 +21,7 @@ import { EventCardDataProps } from '@/components/EventCard';
 import { DeleteToast } from '@/components/DeleteToast';
 import { router, useFocusEffect } from 'expo-router';
 import * as Location from 'expo-location';
-import { getVisibleEcoActions } from '@/app/utils/cards';
+import { getVisibleEcoActions } from '@/components/cards';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export type CardProps = InPersonCardDataProps | OnlineCardDataProps | EventCardDataProps;

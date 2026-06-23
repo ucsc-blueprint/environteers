@@ -1,7 +1,7 @@
 import { useAuth } from '@/context/AuthContext';
 import { View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
 import React, { useState } from 'react';
-import { CardStyles } from '@/app/stylesheets/CardStyles';
+import { CardStyles } from '@/components/CardStyles';
 import { InPersonCard } from '@/components/InPersonCard';
 import { OnlineCard } from '@/components/OnlineCard';
 import { EventCard } from '@/components/EventCard';

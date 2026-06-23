@@ -9,7 +9,6 @@ export default function ContactUs() {
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  //const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
 
   const handleSend = async () => {
@@ -18,8 +17,6 @@ export default function ContactUs() {
       return;
     }
 
-    //const userEmail = user?.email || profile?.email || 'unknown-user';
-
     const subject = encodeURIComponent('Environteers App Feedback');
 
     const body = encodeURIComponent(` 
@@ -27,7 +24,7 @@ export default function ContactUs() {
       Message: ${message}
     `);
 
-    const email = 'test-email@gmail.com';
+    const email = 'info@environteers.org';
 
     const gmailUrl = `googlegmail://co?to=${email}&subject=${subject}&body=${body}`;
 
@@ -99,19 +96,6 @@ export default function ContactUs() {
           value={lastName}
           onChangeText={setLastName}
         />
-
-        {/* Email 
-        <Text style={styles.label}>Email</Text>
-
-        <TextInput
-          style={styles.input}
-          placeholder="Enter your email address"
-          placeholderTextColor="#9A9A9A"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          value={email}
-          onChangeText={setEmail}
-        /> /* }
 
         {/* Message */}
         <Text style={styles.label}>Let us know how we can help:</Text>
