@@ -162,24 +162,16 @@ export default function Activity() {
           </View>
         </Pressable>
 
-        {isOpen && (
+        {isOpen && cardsToRender.length > 0 && (
           <View style={styles.cardsContainer}>
-            {cardsToRender.length === 0 ? (
-              <Text style={styles.emptyText}>
-                No activity yet...
-                {'\n'}
-                Go to the Volunteer page to discover your next opportunity!
-              </Text>
-            ) : (
-              cardsToRender.map((card) => (
-                <EcoFeed
-                  key={`${card.cardType}-${card.cardInfo.id}`}
-                  card={card}
-                  highlight={highlight}
-                  showFeedback={showFeedback}
-                />
-              ))
-            )}
+            {cardsToRender.map((card) => (
+              <EcoFeed
+                key={`${card.cardType}-${card.cardInfo.id}`}
+                card={card}
+                highlight={highlight}
+                showFeedback={showFeedback}
+              />
+            ))}
           </View>
         )}
       </View>
@@ -271,7 +263,15 @@ export default function Activity() {
         {/* Main Content */}
         {!loading &&
           (selectedFilter === 'favorites' ? (
-            renderSection('Favorites', likedCards, favoritesOpen, setFavoritesOpen)
+            likedCards.length === 0 ? (
+              <Text style={styles.emptyText}>
+                No activity yet...
+                {'\n'}
+                Go to the Volunteer page to discover your next opportunity!
+              </Text>
+            ) : (
+              renderSection('Favorites', likedCards, favoritesOpen, setFavoritesOpen)
+            )
           ) : (
             <>
               {renderSection(
@@ -292,10 +292,18 @@ export default function Activity() {
                 false,
                 true,
               )}
+
+              {requiresActionCards.length === 0 &&
+                upcomingCards.length === 0 &&
+                completedCards.length === 0 && (
+                  <Text style={styles.emptyText}>
+                    No activity yet...
+                    {'\n'}
+                    Go to the Volunteer page to discover your next opportunity!
+                  </Text>
+                )}
             </>
           ))}
-
-        {/* <LogoutButton /> */}
       </ScrollView>
     </SafeAreaView>
   );
