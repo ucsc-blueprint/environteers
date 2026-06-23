@@ -486,13 +486,19 @@ export const InPersonCard = ({
                 <Text style={{ color: '#3A5513' }}>Did you complete this eco action?</Text>
 
                 <View style={CardStyles.confirmationButtons}>
-                  <Pressable onPress={() => handleCompletion(true)}>
-                    <Text>Yes</Text>
+                  <Pressable
+                    style={CardStyles.confirmationButton}
+                    onPress={() => handleCompletion(true)}
+                  >
+                    <Text style={CardStyles.confirmationText}>Yes</Text>
                     <MaterialCommunityIcons name='check' size={20} color='black' />
                   </Pressable>
 
-                  <Pressable onPress={() => handleCompletion(false)}>
-                    <Text>No</Text>
+                  <Pressable
+                    style={CardStyles.confirmationButton}
+                    onPress={() => handleCompletion(false)}
+                  >
+                    <Text style={CardStyles.confirmationText}>No</Text>
                     <MaterialCommunityIcons name='close' size={20} color='black' />
                   </Pressable>
                 </View>
