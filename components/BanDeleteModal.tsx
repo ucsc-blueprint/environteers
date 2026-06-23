@@ -10,32 +10,39 @@ type BanDeleteModalProps = {
   volunteerName: string;
 };
 
-export const BanDeleteModal = ({ visible, type, onCancel, onConfirm, volunteerName }: BanDeleteModalProps) => {
+export const BanDeleteModal = ({
+  visible,
+  type,
+  onCancel,
+  onConfirm,
+  volunteerName,
+}: BanDeleteModalProps) => {
   if (!type) return null;
 
   const action = type === 'ban' ? 'ban' : 'delete';
 
   return (
-    <Modal visible={visible} transparent animationType="fade">
+    <Modal visible={visible} transparent animationType='fade'>
       <View style={styles.modalBackground}>
         <View style={styles.modalContainer}>
           <Text style={styles.modalTitle}>Are you sure?</Text>
 
           <View>
             <Text style={styles.modalText}>
-              {action === 'ban' ?
+              {action === 'ban' ? (
                 <>
                   {'Are you sure you want to temporarily ban '}
                   <Text style={{ fontWeight: 'bold' }}>{volunteerName}</Text>
-                  {'? They won\'t be able to use this app and track their activities for the next '}
+                  {"? They won't be able to use this app and track their activities for the next "}
                   <Text style={{ fontWeight: 'bold' }}>14 days</Text>
-                </> :
+                </>
+              ) : (
                 <>
                   {'Are you sure you want to delete '}
                   <Text style={{ fontWeight: 'bold' }}>{volunteerName}</Text>
                   {'? This action would permanently erase their information from the app.'}
                 </>
-              }
+              )}
             </Text>
           </View>
 
@@ -52,8 +59,8 @@ export const BanDeleteModal = ({ visible, type, onCancel, onConfirm, volunteerNa
         </View>
       </View>
     </Modal>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   modalBackground: {
@@ -96,5 +103,5 @@ const styles = StyleSheet.create({
   },
   confirmButtonText: {
     color: '#F2F7F5',
-  }
-})
+  },
+});

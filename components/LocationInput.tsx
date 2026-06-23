@@ -8,7 +8,11 @@ type LocationInputProps = {
   placeholder?: string;
 };
 
-export const LocationInput = ({ value, onSelectLocation, placeholder = 'Enter location' }: LocationInputProps) => {
+export const LocationInput = ({
+  value,
+  onSelectLocation,
+  placeholder = 'Enter location',
+}: LocationInputProps) => {
   const ref = useRef<any>(null);
 
   useEffect(() => {
@@ -28,7 +32,7 @@ export const LocationInput = ({ value, onSelectLocation, placeholder = 'Enter lo
             onSelectLocation(
               data.description,
               details.geometry.location.lat,
-              details.geometry.location.lng
+              details.geometry.location.lng,
             );
           }
         }}
@@ -36,8 +40,8 @@ export const LocationInput = ({ value, onSelectLocation, placeholder = 'Enter lo
           key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
           language: 'en',
         }}
-        listViewDisplayed="auto"
-        keyboardShouldPersistTaps="always"
+        listViewDisplayed='auto'
+        keyboardShouldPersistTaps='always'
         styles={{
           container: { flex: 0 },
           textInput: styles.input,

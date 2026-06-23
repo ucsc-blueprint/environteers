@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import {View, Text, FlatList, StyleSheet,
-} from 'react-native';
-import { supabase } from "@/constants/supabase";
+import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { supabase } from '@/constants/supabase';
 import { UserAvatar } from '@/components/UserAvatar';
 
 type Admin = {
@@ -20,14 +19,14 @@ export const AdminProfileView = () => {
         const { data, error } = await supabase
           .from('users')
           .select('user_id, first_name, last_name, email, profile_picture')
-          .eq("is_admin", true);
-        
+          .eq('is_admin', true);
+
         if (error) {
-          console.error("Error fetching admins:", error);
+          console.error('Error fetching admins:', error);
           return;
         }
 
-        const admins: Admin[] = (data ?? []).map(admin => {
+        const admins: Admin[] = (data ?? []).map((admin) => {
           return {
             id: admin.user_id,
             name: `${admin.first_name} ${admin.last_name}`,
@@ -38,21 +37,21 @@ export const AdminProfileView = () => {
 
         setAllAdmins(admins);
       } catch (error) {
-        console.error("Unexpected error:", error);
+        console.error('Unexpected error:', error);
       }
     };
 
     fetchAdmins();
-  }, [])
+  }, []);
 
   return (
-    <View style = {styles.container}>
+    <View style={styles.container}>
       {/* admin list */}
       <FlatList
         data={allAdmins}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ padding: 28, gap: 24}}
+        contentContainerStyle={{ padding: 28, gap: 24 }}
         renderItem={({ item }) => (
           <View style={styles.profileContainer}>
             <View style={styles.avatarSection}>
@@ -67,7 +66,7 @@ export const AdminProfileView = () => {
                 <Text style={styles.role}>Administrator</Text>
               </View>
             </View>
-    
+
             <View style={styles.emailContainer}>
               <Text style={styles.emailHeader}>Email</Text>
               <Text style={styles.email}>{item.email}</Text>
@@ -108,7 +107,7 @@ const styles = StyleSheet.create({
   role: {
     fontWeight: 500,
     fontSize: 12,
-    color: "#929292",
+    color: '#929292',
   },
   emailContainer: {
     backgroundColor: '#D9D9D9',
@@ -126,4 +125,3 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
-

@@ -4,17 +4,15 @@ import { useAuth } from '@/context/AuthContext';
 import { Redirect } from 'expo-router';
 import { ActivityIndicator } from 'react-native';
 
-export default function Newsletter(){
+export default function Newsletter() {
   const { profile, loading } = useAuth();
   if (loading) {
-      return <ActivityIndicator size="large" color="#000000" />
-  }
-  
-  if (!profile) {
-      return <Redirect href="/" />
+    return <ActivityIndicator size='large' color='#000000' />;
   }
 
-  return (
-      <NewsView isAdmin={profile.is_admin} />
-  )
+  if (!profile) {
+    return <Redirect href='/' />;
+  }
+
+  return <NewsView isAdmin={profile.is_admin} />;
 }

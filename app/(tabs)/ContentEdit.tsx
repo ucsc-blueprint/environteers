@@ -8,38 +8,21 @@ export default function ContentEdit() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ flexGrow: 1 }}>
-      
       <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>
-          Manage content
-        </Text>
-        <Text style={styles.headerSubtitle}>
-          Add, edit, and delete
-        </Text>
+        <Text style={styles.headerTitle}>Manage content</Text>
+        <Text style={styles.headerSubtitle}>Add, edit, and delete</Text>
       </View>
 
       <View style={styles.contentContainer}>
-        
-        <Pressable
-          onPress={() => router.push('/(tabs)/volunteer')}
-          style={styles.card}
-        >
-          <Text style={styles.cardText}>
-            Manage events and eco-actions
-          </Text>
-          <ChevronRight color="#757575" />
+        <Pressable onPress={() => router.push('/(tabs)/volunteer')} style={styles.card}>
+          <Text style={styles.cardText}>Manage events and eco-actions</Text>
+          <ChevronRight color='#757575' />
         </Pressable>
 
-        <Pressable
-          onPress={() => router.push('/(tabs)/newsletter')}
-          style={styles.card}
-        >
-          <Text style={styles.cardText}>
-            Manage newsletters
-          </Text>
-          <ChevronRight color="#757575" />
+        <Pressable onPress={() => router.push('/(tabs)/newsletter')} style={styles.card}>
+          <Text style={styles.cardText}>Manage newsletters</Text>
+          <ChevronRight color='#757575' />
         </Pressable>
-
       </View>
     </ScrollView>
   );
@@ -56,7 +39,7 @@ const styles = {
     marginTop: '15%',
     borderRadius: 16,
     paddingHorizontal: 20,
-    paddingVertical: 10
+    paddingVertical: 10,
   },
 
   headerTitle: {
@@ -97,5 +80,4 @@ const styles = {
     fontSize: 14,
     color: '#79B128',
   },
-
 } as const;

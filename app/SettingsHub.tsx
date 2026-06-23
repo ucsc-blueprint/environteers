@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  ScrollView,
-} from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -19,7 +13,7 @@ export default function SettingsHub() {
       {/* Header */}
       <View style={styles.header}>
         <Pressable onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={30} color="#132433" />
+          <Ionicons name='chevron-back' size={30} color='#132433' />
         </Pressable>
 
         <Text style={styles.headerTitle}>Settings</Text>
@@ -30,54 +24,44 @@ export default function SettingsHub() {
       {/* Card */}
       <View style={styles.cardContainer}>
         {/* Manage Account */}
-        <Pressable
-          style={styles.option}
-          onPress={() => router.push('/profilesettings')}
-        >
+        <Pressable style={styles.option} onPress={() => router.push('/profilesettings')}>
           <View style={styles.optionLeft}>
             <View style={styles.iconCircle}>
-              <Ionicons name="person-outline" size={32} color="#132433" />
+              <Ionicons name='person-outline' size={32} color='#132433' />
             </View>
 
             <View style={styles.textContainer}>
               <Text style={styles.optionTitle}>Manage Account</Text>
-              <Text style={styles.optionSubtitle}>
-                View account, email, and password reset
-              </Text>
+              <Text style={styles.optionSubtitle}>View account, email, and password reset</Text>
             </View>
           </View>
 
           <View style={styles.chevron}>
-            <Ionicons name="chevron-forward" size={28} color="#132433" />
+            <Ionicons name='chevron-forward' size={28} color='#132433' />
           </View>
         </Pressable>
 
         <View style={styles.divider} />
 
         {/* Contact Us */}
-        <Pressable
-          style={styles.option}
-          onPress={() => router.push('/ContactUs')}
-        >
+        <Pressable style={styles.option} onPress={() => router.push('/ContactUs')}>
           <View style={styles.optionLeft}>
             <View style={styles.iconCircle}>
-              <Ionicons name="chatbubble-outline" size={30} color="#132433" />
+              <Ionicons name='chatbubble-outline' size={30} color='#132433' />
             </View>
 
             <View style={styles.textContainer}>
               <Text style={styles.optionTitle}>Contact Us</Text>
-              <Text style={styles.optionSubtitle}>
-                Questions or comments? Let us know!
-              </Text>
+              <Text style={styles.optionSubtitle}>Questions or comments? Let us know!</Text>
             </View>
           </View>
 
           <View style={styles.chevron}>
-            <Ionicons name="chevron-forward" size={28} color="#132433" />
+            <Ionicons name='chevron-forward' size={28} color='#132433' />
           </View>
         </Pressable>
       </View>
-      < LogoutButton />
+      <LogoutButton />
     </ScrollView>
   );
 }
@@ -135,7 +119,7 @@ const styles = StyleSheet.create({
   },
 
   textContainer: {
-    flex: 1, 
+    flex: 1,
   },
 
   optionTitle: {

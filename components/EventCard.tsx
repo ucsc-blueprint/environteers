@@ -1,42 +1,58 @@
-import { useAuth } from "@/context/AuthContext";
-import { View, Image, Text, Pressable, Linking, Alert, Share, useWindowDimensions } from 'react-native';
-import { useState } from "react";
+import { useAuth } from '@/context/AuthContext';
+import {
+  View,
+  Image,
+  Text,
+  Pressable,
+  Linking,
+  Alert,
+  Share,
+  useWindowDimensions,
+} from 'react-native';
+import { useState } from 'react';
 import { mdiOpenInNew } from '@mdi/js';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { MaterialIcons } from '@expo/vector-icons';
-import { CardStyles } from "@/app/stylesheets/CardStyles";
-import { renderIcon, renderCoverPhoto, formatEventDate, toggleLike, addClick, isPast } from "@/app/utils/cards";
-import { router } from "expo-router";
-import { supabase } from "@/constants/supabase";
-import { useInteractions } from "@/context/InteractionsContext";
-import { ActivityFeedback } from "@/components/ActivityFeedback";
-import { DeleteActionModal } from "./DeleteActionModal";
-import { AdminCardActionSelection } from "./AdminCardActionSelection";
+import { CardStyles } from '@/app/stylesheets/CardStyles';
+import {
+  renderIcon,
+  renderCoverPhoto,
+  formatEventDate,
+  toggleLike,
+  addClick,
+  isPast,
+} from '@/app/utils/cards';
+import { router } from 'expo-router';
+import { supabase } from '@/constants/supabase';
+import { useInteractions } from '@/context/InteractionsContext';
+import { ActivityFeedback } from '@/components/ActivityFeedback';
+import { DeleteActionModal } from './DeleteActionModal';
+import { AdminCardActionSelection } from './AdminCardActionSelection';
 import RenderHtml from 'react-native-render-html';
 
 export type EventCardData = {
-  id: string,
-  title: string,
-  start_date?: Date,
-  end_date?: Date,
-  location?: string,
-  cover_photo?: string,
-  google_calendar_link?: string,
-  description?: string,
-  sign_up_link?: string,
-  hidden: boolean,
-}
+  id: string;
+  title: string;
+  start_date?: Date;
+  end_date?: Date;
+  location?: string;
+  cover_photo?: string;
+  google_calendar_link?: string;
+  description?: string;
+  sign_up_link?: string;
+  hidden: boolean;
+};
 
 export type EventCardDataProps = {
-  cardType: "event";
-  cardInfo: EventCardData,
-  liked: boolean,
-  signed_up: boolean | null,
-  completed: boolean | null,
-  clicked: boolean,
-  feedback: boolean | null,
-  statCount?: number,
-}
+  cardType: 'event';
+  cardInfo: EventCardData;
+  liked: boolean;
+  signed_up: boolean | null;
+  completed: boolean | null;
+  clicked: boolean;
+  feedback: boolean | null;
+  statCount?: number;
+};
 
 type EventCardProps = EventCardDataProps & {
   expanded?: boolean;
@@ -46,7 +62,7 @@ type EventCardProps = EventCardDataProps & {
   highlight?: boolean;
   showFeedback?: boolean;
   onDelete?: () => void;
-  onHide?: () => void; 
+  onHide?: () => void;
 };
 
 const htmlTagsStyles = {
@@ -68,8 +84,8 @@ const htmlRenderersProps = {
 };
 
 export const EventCard = ({
-  cardInfo, 
-  liked, 
+  cardInfo,
+  liked,
   showFeedback,
   signed_up,
   completed,
@@ -87,9 +103,10 @@ export const EventCard = ({
   const { user, profile } = useAuth();
   const isAdmin = profile?.is_admin === true;
 
-  const { updateLike, updateSignUp, updateCompleted, updateClicked, updateFeedback } = useInteractions();
+  const { updateLike, updateSignUp, updateCompleted, updateClicked, updateFeedback } =
+    useInteractions();
 
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false); 
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
   const [actionMenuVisible, setActionMenuVisible] = useState(false);
 
@@ -101,71 +118,61 @@ export const EventCard = ({
     if (onToggle) {
       onToggle();
     } else {
-      setInternalExpanded(prev => !prev);
+      setInternalExpanded((prev) => !prev);
     }
   };
 
   const isPastEvent = isPast(cardInfo.end_date);
 
   const shouldShowCompletionPrompt =
-    !isAdmin &&
-    expanded &&
-    clicked &&
-    signed_up === true &&
-    completed === null &&
-    isPastEvent;
+    !isAdmin && expanded && clicked && signed_up === true && completed === null && isPastEvent;
 
-  const shouldShowPrompt =
-    !isAdmin &&
-    expanded &&
-    clicked &&
-    signed_up === null;
+  const shouldShowPrompt = !isAdmin && expanded && clicked && signed_up === null;
 
   const openSignUpLink = async (link: string) => {
     if (user?.id && !isAdmin) {
-
       // Reset signed_up ONLY if it was false
       if (signed_up === false) {
         await supabase
-          .from("interactions_events") 
+          .from('interactions_events')
           .update({ signed_up: null })
-          .eq("event_id", cardInfo.id)
-          .eq("user_id", user.id);
+          .eq('event_id', cardInfo.id)
+          .eq('user_id', user.id);
 
         updateSignUp(
-          { cardType: "event", cardInfo, liked, signed_up, completed, clicked, feedback },
-          null
+          { cardType: 'event', cardInfo, liked, signed_up, completed, clicked, feedback },
+          null,
         );
       }
 
-      await addClick(
-        "interactions_events",
-        cardInfo.id,
-        user.id,
-        'event_id'
-      );
+      await addClick('interactions_events', cardInfo.id, user.id, 'event_id');
 
-      updateClicked(
-        { cardType: "event", cardInfo, liked, signed_up, completed, clicked, feedback }
-      );
+      updateClicked({
+        cardType: 'event',
+        cardInfo,
+        liked,
+        signed_up,
+        completed,
+        clicked,
+        feedback,
+      });
     }
 
     Linking.openURL(link);
   };
-  
 
   const handleSignUp = async (response: boolean) => {
     if (!user?.id) return;
 
     await supabase
-      .from("interactions_events")
+      .from('interactions_events')
       .update({ signed_up: response, signed_up_timestamp: new Date().toISOString() })
-      .eq("event_id", cardInfo.id)
-      .eq("user_id", user.id);
+      .eq('event_id', cardInfo.id)
+      .eq('user_id', user.id);
 
     updateSignUp(
-      { cardType: "event", cardInfo, liked, signed_up, completed, clicked, feedback },
-      response
+      { cardType: 'event', cardInfo, liked, signed_up, completed, clicked, feedback },
+      response,
     );
 
     if (!response) {
@@ -177,17 +184,17 @@ export const EventCard = ({
     if (!user?.id) return;
 
     await supabase
-      .from("interactions_events")
-      .update({ completed: response, completed_timestamp: new Date().toISOString(), })
-      .eq("event_id", cardInfo.id)
-      .eq("user_id", user.id);
+      .from('interactions_events')
+      .update({ completed: response, completed_timestamp: new Date().toISOString() })
+      .eq('event_id', cardInfo.id)
+      .eq('user_id', user.id);
 
     if (response) {
       setFeedbackVisible(true);
     } else {
       updateCompleted(
-        { cardType: "event", cardInfo, liked, signed_up, completed, clicked, feedback },
-        response
+        { cardType: 'event', cardInfo, liked, signed_up, completed, clicked, feedback },
+        response,
       );
       toggleExpanded();
     }
@@ -197,44 +204,42 @@ export const EventCard = ({
     if (!user?.id) return;
 
     await Promise.all([
+      supabase.from('feedback').insert({
+        user_id: user.id,
+        content: feedbackText,
+        event_id: cardInfo.id,
+      }),
       supabase
-        .from("feedback")
-        .insert({
-          user_id: user.id,
-          content: feedbackText,
-          event_id: cardInfo.id,
-        }),
-      supabase
-        .from("interactions_events")
+        .from('interactions_events')
         .update({ feedback: true })
-        .eq("event_id", cardInfo.id)
-        .eq("user_id", user.id)
-    ])
-      
+        .eq('event_id', cardInfo.id)
+        .eq('user_id', user.id),
+    ]);
+
     setFeedbackVisible(false);
     updateCompleted(
-      { cardType: "event", cardInfo, liked, signed_up, completed: true, clicked, feedback },
-      true
+      { cardType: 'event', cardInfo, liked, signed_up, completed: true, clicked, feedback },
+      true,
     );
     updateFeedback(
-      { cardType: "event", cardInfo, liked, signed_up, completed: true, clicked, feedback },
-      true
+      { cardType: 'event', cardInfo, liked, signed_up, completed: true, clicked, feedback },
+      true,
     );
-    toggleExpanded()
-  }
+    toggleExpanded();
+  };
 
   const handleFeedbackCancel = () => {
     setFeedbackVisible(false);
     updateCompleted(
-      { cardType: "event", cardInfo, liked, signed_up, completed: true, clicked, feedback },
-      true
+      { cardType: 'event', cardInfo, liked, signed_up, completed: true, clicked, feedback },
+      true,
     );
     updateFeedback(
-      { cardType: "event", cardInfo, liked, signed_up, completed: true, clicked, feedback },
-      false
+      { cardType: 'event', cardInfo, liked, signed_up, completed: true, clicked, feedback },
+      false,
     );
-    toggleExpanded()
-  }
+    toggleExpanded();
+  };
 
   const handleLikes = async () => {
     if (!user?.id) {
@@ -242,16 +247,11 @@ export const EventCard = ({
       return;
     }
 
-    await toggleLike(
-      "interactions_events",
-      cardInfo.id,
-      user.id,
-      liked,
-      'event_id'
-    );
-    
+    await toggleLike('interactions_events', cardInfo.id, user.id, liked, 'event_id');
+
     updateLike(
-      { cardType: "event", cardInfo, liked, signed_up, completed, clicked, feedback }, !liked
+      { cardType: 'event', cardInfo, liked, signed_up, completed, clicked, feedback },
+      !liked,
     );
   };
 
@@ -259,13 +259,13 @@ export const EventCard = ({
     try {
       const message = `From the Environteers app: 
         ${cardInfo.title}
-        ${cardInfo.start_date ? formatEventDate(cardInfo.start_date, cardInfo.end_date!) : ""}
-        ${cardInfo.location ?? "" }
-        ${cardInfo.description ?? "" }      
-      `
+        ${cardInfo.start_date ? formatEventDate(cardInfo.start_date, cardInfo.end_date!) : ''}
+        ${cardInfo.location ?? ''}
+        ${cardInfo.description ?? ''}      
+      `;
       await Share.share({ message });
     } catch (error) {
-      console.error("Error sharing:", error);
+      console.error('Error sharing:', error);
     }
   };
 
@@ -274,27 +274,26 @@ export const EventCard = ({
     if (supported) {
       await Linking.openURL(url);
     } else {
-      Alert.alert("Invalid link");
+      Alert.alert('Invalid link');
     }
   };
 
   return (
-    <View style={[
-        CardStyles.card,
-        highlight && CardStyles.requiredCard
-      ]}
-    >
-      <ActivityFeedback 
-        visible={feedbackVisible} 
-        onSubmit={handleFeedbackSubmit} 
-        onCancel={handleFeedbackCancel} 
+    <View style={[CardStyles.card, highlight && CardStyles.requiredCard]}>
+      <ActivityFeedback
+        visible={feedbackVisible}
+        onSubmit={handleFeedbackSubmit}
+        onCancel={handleFeedbackCancel}
       />
       <DeleteActionModal
         visible={deleteModalVisible}
         onClose={() => setDeleteModalVisible(false)}
-        onFullDelete={() => { setDeleteModalVisible(false); onDelete?.(); }}
-        cardTitle = {cardInfo.title}
-        cardType = "event"
+        onFullDelete={() => {
+          setDeleteModalVisible(false);
+          onDelete?.();
+        }}
+        cardTitle={cardInfo.title}
+        cardType='event'
       />
       <AdminCardActionSelection
         visible={actionMenuVisible}
@@ -304,29 +303,26 @@ export const EventCard = ({
         onDelete={() => setDeleteModalVisible(true)}
       />
 
-    {/* // <View style={CardStyles.card}> */}
       <Pressable onPress={toggleExpanded}>
         <View style={CardStyles.cardInfo}>
           <View style={CardStyles.imageColumn}>
-            { cardInfo.cover_photo && (
+            {cardInfo.cover_photo && (
               <View style={{ position: 'relative' }}>
                 {renderCoverPhoto(cardInfo.cover_photo, signed_up || completed ? 0.5 : 1)}
                 {/* Admin stat tag */}
                 {isAdmin && statCount !== undefined && (
                   <View style={CardStyles.statTag}>
-                    <MaterialIcons name="mail-outline" size={14} color="#11C484" />
+                    <MaterialIcons name='mail-outline' size={14} color='#11C484' />
                     <Text style={CardStyles.statTagText}>{statCount} RSVPs</Text>
                   </View>
                 )}
                 {/* User status tag */}
                 {!isAdmin && (completed || signed_up) && (
                   <View style={CardStyles.userTag}>
-                    <MaterialCommunityIcons
-                      name={"check-circle"}
-                      size={14}
-                      color="#11C484"
-                    />
-                    <Text style={CardStyles.userTagText}>{completed ? "Completed" : "Signed Up"}</Text>
+                    <MaterialCommunityIcons name={'check-circle'} size={14} color='#11C484' />
+                    <Text style={CardStyles.userTagText}>
+                      {completed ? 'Completed' : 'Signed Up'}
+                    </Text>
                   </View>
                 )}
               </View>
@@ -334,118 +330,101 @@ export const EventCard = ({
           </View>
           <View style={CardStyles.contentColumn}>
             <Text>{cardInfo.title}</Text>
-            { cardInfo.start_date && cardInfo.end_date &&
+            {cardInfo.start_date && cardInfo.end_date && (
               <View style={[CardStyles.formatRow, CardStyles.date]}>
                 {cardInfo.google_calendar_link && (
                   <Pressable onPress={() => openLink(cardInfo.google_calendar_link!)}>
                     <Image
-                      source={require("../assets/images/google-calendar.png")}
+                      source={require('../assets/images/google-calendar.png')}
                       style={{ width: 18, height: 18 }}
                     />
                   </Pressable>
                 )}
                 <Text>{formatEventDate(cardInfo.start_date, cardInfo.end_date)}</Text>
               </View>
-            }
+            )}
 
-            { cardInfo.location &&
+            {cardInfo.location && (
               <View style={CardStyles.formatRow}>
-                <MaterialIcons name="location-on" size={25} color={'black'} />
+                <MaterialIcons name='location-on' size={25} color={'black'} />
                 <Text>{cardInfo.location}</Text>
               </View>
-            }
+            )}
           </View>
           {/* Like/Share Icons */}
           {isAdmin ? (
             <View style={CardStyles.iconsColumn}>
-              <View style={CardStyles.iconBackgrounds}> 
-              <MaterialCommunityIcons
-                name="pencil-outline"
-                size={25}
-                color={'#0282D3'}
-                onPress={() => {
-                  console.log("Edit pressed, id: ", cardInfo.id);
-                  router.push({
-                    pathname: '/(tabs)/AdminEditEcoAction',
-                    params: { typeOfAction: "event", id: cardInfo.id}
-                  })
-                }}
-              />
-              </View>
-                <View style={CardStyles.iconBackgrounds}>
-                  <MaterialCommunityIcons name="dots-horizontal" size={25} color="#0282D3" 
-                  onPress = {() => 
-                  {
-                    // console.log("delete press, id: ", cardInfo.id);
-                    // setDeleteModalVisible(true);
-                    setActionMenuVisible(true);
+              <View style={CardStyles.iconBackgrounds}>
+                <MaterialCommunityIcons
+                  name='pencil-outline'
+                  size={25}
+                  color={'#0282D3'}
+                  onPress={() => {
+                    router.push({
+                      pathname: '/(tabs)/AdminEditEcoAction',
+                      params: { typeOfAction: 'event', id: cardInfo.id },
+                    });
                   }}
-                  />
-                </View>    
+                />
               </View>
-          ): (
-          // <View style={CardStyles.iconsColumn}>
-          //   <View style={CardStyles.iconBackgrounds}>
-          //   <MaterialCommunityIcons
-          //       name={liked ? "cards-heart" : "cards-heart-outline"}
-          //       size={25}
-          //       color={'#0282D3'}
-          //       onPress={handleLikes}
-          //       disabled={!user?.id}
-          //     />
-          //   </View>
-          //   <View style={CardStyles.iconBackgrounds}><MaterialIcons name="ios-share" size={25} color={'#0282D3'} onPress={handleShare}/></View>
-          // </View>
-
-          <View style={CardStyles.iconsColumn}>
-            <View style={CardStyles.iconBackgrounds}>
-              {showFeedback ? (
+              <View style={CardStyles.iconBackgrounds}>
                 <MaterialCommunityIcons
-                  name="message-alert-outline"
+                  name='dots-horizontal'
                   size={25}
-                  color={'#0282D3'}
-                  onPress={() => setFeedbackVisible(true)}
+                  color='#0282D3'
+                  onPress={() => setActionMenuVisible(true)}
                 />
-              ) : (
-                <MaterialCommunityIcons
-                  name={liked ? "cards-heart" : "cards-heart-outline"}
-                  size={25}
-                  color={'#0282D3'}
-                  onPress={handleLikes}   
-                  disabled={!user?.id}
-                />
-              )}
+              </View>
             </View>
-            <View style={CardStyles.iconBackgrounds}>
-              <MaterialIcons name="ios-share" size={25} color={'#0282D3'} onPress={handleShare}/>
+          ) : (
+            <View style={CardStyles.iconsColumn}>
+              <View style={CardStyles.iconBackgrounds}>
+                {showFeedback ? (
+                  <MaterialCommunityIcons
+                    name='message-alert-outline'
+                    size={25}
+                    color={'#0282D3'}
+                    onPress={() => setFeedbackVisible(true)}
+                  />
+                ) : (
+                  <MaterialCommunityIcons
+                    name={liked ? 'cards-heart' : 'cards-heart-outline'}
+                    size={25}
+                    color={'#0282D3'}
+                    onPress={handleLikes}
+                    disabled={!user?.id}
+                  />
+                )}
+              </View>
+              <View style={CardStyles.iconBackgrounds}>
+                <MaterialIcons name='ios-share' size={25} color={'#0282D3'} onPress={handleShare} />
+              </View>
             </View>
-          </View>
           )}
         </View>
-          {/* Expanded Content */}
-          { expanded && 
-            <View style={CardStyles.signUpContainer}>
-              { cardInfo.description && (
-                <RenderHtml
-                  contentWidth={width}
-                  source={{ html: cardInfo.description }}
-                  baseStyle={{ marginTop: 20 }}
-                  tagsStyles={htmlTagsStyles}
-                  renderersProps={htmlRenderersProps}
-                />
-              )}
-              {/* Verify If User Signed-up */}
-              { /* signUpClick && !signUpStatus && */ 
-               shouldShowPrompt &&
-                <View style={CardStyles.confirmationContainer}>
-                  <Text style={{color: '#3A5513'}}>Did you sign up for this event?</Text>
-                  <View style={CardStyles.confirmationButtons}>
+        {/* Expanded Content */}
+        {expanded && (
+          <View style={CardStyles.signUpContainer}>
+            {cardInfo.description && (
+              <RenderHtml
+                contentWidth={width}
+                source={{ html: cardInfo.description }}
+                baseStyle={{ marginTop: 20 }}
+                tagsStyles={htmlTagsStyles}
+                renderersProps={htmlRenderersProps}
+              />
+            )}
+            {/* Verify If User Signed-up */}
+            {shouldShowPrompt && (
+              <View style={CardStyles.confirmationContainer}>
+                <Text style={{ color: '#3A5513' }}>Did you sign up for this event?</Text>
+                <View style={CardStyles.confirmationButtons}>
                   <Pressable
                     style={CardStyles.confirmationButton}
                     onPress={() => handleSignUp(true)}
                   >
                     <Text style={CardStyles.confirmationText}>Yes</Text>
-                    <MaterialCommunityIcons name="check" size={20} color={'black'} />
+                    <MaterialCommunityIcons name='check' size={20} color={'black'} />
                   </Pressable>
 
                   <Pressable
@@ -453,26 +432,23 @@ export const EventCard = ({
                     onPress={() => handleSignUp(false)}
                   >
                     <Text style={CardStyles.confirmationText}>No</Text>
-                    <MaterialCommunityIcons name="close" size={20} color={'black'} />
+                    <MaterialCommunityIcons name='close' size={20} color={'black'} />
                   </Pressable>
-
-                  </View>
                 </View>
-              }
+              </View>
+            )}
 
-              {shouldShowCompletionPrompt && (
-                <View style={CardStyles.confirmationContainer}>
-                  <Text style={{ color: '#3A5513' }}>
-                    Did you complete this event?
-                  </Text>
+            {shouldShowCompletionPrompt && (
+              <View style={CardStyles.confirmationContainer}>
+                <Text style={{ color: '#3A5513' }}>Did you complete this event?</Text>
 
-                  <View style={CardStyles.confirmationButtons}>
+                <View style={CardStyles.confirmationButtons}>
                   <Pressable
                     style={CardStyles.confirmationButton}
                     onPress={() => handleCompletion(true)}
                   >
                     <Text style={CardStyles.confirmationText}>Yes</Text>
-                    <MaterialCommunityIcons name="check" size={20} color={'black'} />
+                    <MaterialCommunityIcons name='check' size={20} color={'black'} />
                   </Pressable>
 
                   <Pressable
@@ -480,30 +456,31 @@ export const EventCard = ({
                     onPress={() => handleCompletion(false)}
                   >
                     <Text style={CardStyles.confirmationText}>No</Text>
-                    <MaterialCommunityIcons name="close" size={20} color={'black'} />
-                  </Pressable>
-
-                  </View>
-                </View>
-              )}
-
-              {/* Sign Up Button */}
-              { cardInfo.sign_up_link &&
-                <View style={CardStyles.signUpButtonContainer}>
-                  <Pressable style={[CardStyles.signUpButton, CardStyles.formatRow]} onPress={() => openSignUpLink(cardInfo.sign_up_link!)}> 
-                    { signed_up ? 
-                      <Text style={CardStyles.signUpText}>Revisit Link</Text> : 
-                      <Text style={CardStyles.signUpText}>Take Action</Text> 
-                    }
-                    {renderIcon(15, mdiOpenInNew, 'white')}
+                    <MaterialCommunityIcons name='close' size={20} color={'black'} />
                   </Pressable>
                 </View>
-              }
-            </View>
-          }
+              </View>
+            )}
+
+            {/* Sign Up Button */}
+            {cardInfo.sign_up_link && (
+              <View style={CardStyles.signUpButtonContainer}>
+                <Pressable
+                  style={[CardStyles.signUpButton, CardStyles.formatRow]}
+                  onPress={() => openSignUpLink(cardInfo.sign_up_link!)}
+                >
+                  {signed_up ? (
+                    <Text style={CardStyles.signUpText}>Revisit Link</Text>
+                  ) : (
+                    <Text style={CardStyles.signUpText}>Take Action</Text>
+                  )}
+                  {renderIcon(15, mdiOpenInNew, 'white')}
+                </Pressable>
+              </View>
+            )}
+          </View>
+        )}
       </Pressable>
     </View>
   );
-}
-
-
+};

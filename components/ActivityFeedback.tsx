@@ -8,19 +8,11 @@ interface ActivityFeedbackProps {
   onCancel: () => void;
 }
 
-export const ActivityFeedback = ({
-  visible,
-  onSubmit,
-  onCancel,
-}: ActivityFeedbackProps) => {
-  const [feedback, setFeedback] = useState("");
+export const ActivityFeedback = ({ visible, onSubmit, onCancel }: ActivityFeedbackProps) => {
+  const [feedback, setFeedback] = useState('');
 
   return (
-    <Modal
-      transparent
-      visible={visible}
-      animationType="fade"
-    >
+    <Modal transparent visible={visible} animationType='fade'>
       <View style={styles.modalBackground}>
         <View style={styles.modalContainer}>
           <Text style={styles.modalTitle}>Share your Feedback!</Text>
@@ -28,27 +20,33 @@ export const ActivityFeedback = ({
           <View style={styles.feedbackContainer}>
             <TextInput
               style={styles.feedbackInput}
-              placeholder="Please let us know how the event/eco-action went for you or suggest any improvements for the future!"
+              placeholder='Please let us know how the event/eco-action went for you or suggest any improvements for the future!'
               onChangeText={setFeedback}
-              placeholderTextColor="#868E8B"
+              placeholderTextColor='#868E8B'
               value={feedback}
               multiline
-              textAlignVertical="top"
+              textAlignVertical='top'
             />
           </View>
 
-          <Pressable style={styles.submitButton} onPress={() => { onSubmit(feedback); setFeedback(""); }}>
+          <Pressable
+            style={styles.submitButton}
+            onPress={() => {
+              onSubmit(feedback);
+              setFeedback('');
+            }}
+          >
             <Text style={styles.buttonText}>Submit</Text>
           </Pressable>
 
           <Pressable style={styles.cancelButton} onPress={() => onCancel()}>
-            <X size={18} color="black" />
+            <X size={18} color='black' />
           </Pressable>
         </View>
       </View>
     </Modal>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   modalBackground: {
@@ -88,7 +86,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 20,
-    backgroundColor: "#3A5513",
+    backgroundColor: '#3A5513',
     borderRadius: 12,
     width: 86,
     height: 40,
@@ -101,6 +99,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#F2F7F5',
     fontWeight: '400',
-    fontSize: 14
-  }
-})
+    fontSize: 14,
+  },
+});

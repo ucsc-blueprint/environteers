@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '@/constants/supabase';
@@ -13,7 +21,10 @@ export default function ResetPassword() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const { access_token, refresh_token } = useLocalSearchParams<{ access_token: string, refresh_token: string }>();
+  const { access_token, refresh_token } = useLocalSearchParams<{
+    access_token: string;
+    refresh_token: string;
+  }>();
 
   const handleReset = async () => {
     if (!password || !confirmPassword) {
@@ -27,8 +38,8 @@ export default function ResetPassword() {
     setSubmitting(true);
 
     const { error: sessionError } = await supabase.auth.setSession({
-        access_token,
-        refresh_token
+      access_token,
+      refresh_token,
     });
     if (sessionError) {
       Alert.alert('Error', sessionError.message);
@@ -41,11 +52,9 @@ export default function ResetPassword() {
     setSubmitting(false);
 
     if (error) {
-      Alert.alert(
-        'Error',
-        `${error.message} Please request a new reset link.`,
-        [{ text: 'OK', onPress: () => router.replace('/forgotPassword') }]
-      );
+      Alert.alert('Error', `${error.message} Please request a new reset link.`, [
+        { text: 'OK', onPress: () => router.replace('/forgotPassword') },
+      ]);
     } else {
       Toast.show({
         type: 'success',
@@ -59,41 +68,43 @@ export default function ResetPassword() {
   return (
     <View style={styles.container}>
       <Pressable style={styles.backButton} onPress={() => router.back()}>
-        <ChevronLeft size={20} color="#757575" />
+        <ChevronLeft size={20} color='#757575' />
         <Text style={styles.backText}>Back</Text>
       </Pressable>
 
       <View style={styles.body}>
         <Text style={styles.title}>Reset Password</Text>
-        <Text style={styles.paragraph}>
-          Please enter a new password for your account.
-        </Text>
+        <Text style={styles.paragraph}>Please enter a new password for your account.</Text>
 
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
-            placeholder="Enter new password"
-            placeholderTextColor="#868E8B"
+            placeholder='Enter new password'
+            placeholderTextColor='#868E8B'
             secureTextEntry={!showPassword}
             value={password}
             onChangeText={setPassword}
           />
-          <Pressable style={styles.eyeIcon} onPress={() => setShowPassword(prev => !prev)}>
-            {showPassword ? <EyeOff size={18} color="#868E8B" /> : <Eye size={18} color="#868E8B" />}
+          <Pressable style={styles.eyeIcon} onPress={() => setShowPassword((prev) => !prev)}>
+            {showPassword ? (
+              <EyeOff size={18} color='#868E8B' />
+            ) : (
+              <Eye size={18} color='#868E8B' />
+            )}
           </Pressable>
         </View>
 
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
-            placeholder="Confirm new password"
-            placeholderTextColor="#868E8B"
+            placeholder='Confirm new password'
+            placeholderTextColor='#868E8B'
             secureTextEntry={!showConfirm}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
           />
-          <Pressable style={styles.eyeIcon} onPress={() => setShowConfirm(prev => !prev)}>
-            {showConfirm ? <EyeOff size={18} color="#868E8B" /> : <Eye size={18} color="#868E8B" />}
+          <Pressable style={styles.eyeIcon} onPress={() => setShowConfirm((prev) => !prev)}>
+            {showConfirm ? <EyeOff size={18} color='#868E8B' /> : <Eye size={18} color='#868E8B' />}
           </Pressable>
         </View>
 
@@ -107,7 +118,7 @@ export default function ResetPassword() {
           disabled={submitting}
         >
           {submitting ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color='#fff' />
           ) : (
             <Text style={styles.buttonText}>Confirm Password Reset</Text>
           )}

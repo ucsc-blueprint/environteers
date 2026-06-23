@@ -1,16 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-native-web-vite';
 import { SignupForm } from '@/components/SignupForm';
 import { fn } from 'storybook/test';
-import { View } from 'react-native';
 
 const meta = {
   title: 'Example/SignupForm',
   component: SignupForm,
-  decorators: [
-    (Story) => (
-      <Story />
-    ),
-  ],
+  decorators: [(Story) => <Story />],
 } satisfies Meta<typeof SignupForm>;
 
 export default meta;

@@ -1,5 +1,5 @@
 import { Modal, View, Text, Pressable, StyleSheet } from 'react-native';
-import {MaterialIcons} from '@expo/vector-icons'
+import { MaterialIcons } from '@expo/vector-icons';
 
 type Props = {
   visible: boolean;
@@ -7,35 +7,38 @@ type Props = {
   onFullDelete: () => void;
   cardTitle?: string;
   cardType?: string;
-
 };
 
-export const DeleteActionModal = ({ visible, onClose, onFullDelete, cardTitle, cardType }: Props) => {
+export const DeleteActionModal = ({
+  visible,
+  onClose,
+  onFullDelete,
+  cardTitle,
+  cardType,
+}: Props) => {
+  const label = cardType === 'event' ? 'event' : 'eco-action';
 
-    const label = cardType === 'event' ? 'event' : 'eco-action';
-
-    return (
-        
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+  return (
+    <Modal visible={visible} transparent animationType='fade' onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose}>
         <Pressable style={styles.popup} onPress={() => {}}>
           <View style={styles.header}>
             <View style={styles.headerLeft}>
-              <MaterialIcons name="error-outline" size={22} color="#EA4335" />
+              <MaterialIcons name='error-outline' size={22} color='#EA4335' />
               <Text style={styles.title}>Deleting an {label}</Text>
             </View>
             <Pressable onPress={onClose}>
-              <MaterialIcons name="close" size={22} color="#333" />
+              <MaterialIcons name='close' size={22} color='#333' />
             </Pressable>
           </View>
 
-        <Text style={styles.body}>
+          <Text style={styles.body}>
             {"You're about to delete "}
             <Text style={styles.eventName}>{cardTitle}</Text>
-            {". This action cannot be undone."}
-        </Text>
+            {'. This action cannot be undone.'}
+          </Text>
 
-        <View style={styles.buttonRow}>
+          <View style={styles.buttonRow}>
             <Pressable onPress={onClose}>
               <Text style={styles.cancelTextLabel}>Cancel</Text>
             </Pressable>
@@ -43,13 +46,11 @@ export const DeleteActionModal = ({ visible, onClose, onFullDelete, cardTitle, c
               <Text style={styles.deleteTextLabel}>Delete</Text>
             </Pressable>
           </View>
-
         </Pressable>
       </Pressable>
     </Modal>
   );
-
-}
+};
 
 const styles = StyleSheet.create({
   backdrop: {
@@ -99,8 +100,8 @@ const styles = StyleSheet.create({
   deleteTextButton: {
     paddingVertical: 15,
     paddingHorizontal: 20,
-    backgroundColor: "#E00000",
-    borderRadius: 12
+    backgroundColor: '#E00000',
+    borderRadius: 12,
   },
   deleteTextLabel: {
     color: '#FFFFFF',
@@ -108,7 +109,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   cancelTextLabel: {
-    color: "#E00000",
-    fontWeight: '300'
-  }
+    color: '#E00000',
+    fontWeight: '300',
+  },
 });

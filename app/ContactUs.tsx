@@ -1,14 +1,5 @@
-
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  Pressable,
-  Alert,
-  Linking
-} from 'react-native';
+import { View, Text, StyleSheet, TextInput, Pressable, Alert, Linking } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -26,41 +17,36 @@ export default function ContactUs() {
       Alert.alert('Please fill out all fields.');
       return;
     }
-  
+
     //const userEmail = user?.email || profile?.email || 'unknown-user';
-  
+
     const subject = encodeURIComponent('Environteers App Feedback');
-  
+
     const body = encodeURIComponent(` 
       Name: ${firstName} ${lastName}
       Message: ${message}
     `);
-  
+
     const email = 'test-email@gmail.com';
-  
-    const gmailUrl =
-      `googlegmail://co?to=${email}&subject=${subject}&body=${body}`;
-  
-    const mailtoUrl =
-      `mailto:${email}?subject=${subject}&body=${body}`;
-  
+
+    const gmailUrl = `googlegmail://co?to=${email}&subject=${subject}&body=${body}`;
+
+    const mailtoUrl = `mailto:${email}?subject=${subject}&body=${body}`;
+
     try {
       const canOpenGmail = await Linking.canOpenURL(gmailUrl);
-  
+
       if (canOpenGmail) {
         await Linking.openURL(gmailUrl);
       } else {
         await Linking.openURL(mailtoUrl);
       }
-  
+
       setFirstName('');
       setLastName('');
       setMessage('');
     } catch {
-      Alert.alert(
-        'Could not open email app',
-        'Please make sure a mail app is installed.'
-      );
+      Alert.alert('Could not open email app', 'Please make sure a mail app is installed.');
     }
   };
 
@@ -68,14 +54,14 @@ export default function ContactUs() {
     <KeyboardAwareScrollView
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
-      keyboardShouldPersistTaps="handled"
+      keyboardShouldPersistTaps='handled'
       enableOnAndroid={true}
       extraScrollHeight={40}
     >
       {/* Header */}
       <View style={styles.header}>
         <Pressable onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={32} color="#132433" />
+          <Ionicons name='chevron-back' size={32} color='#132433' />
         </Pressable>
 
         <Text style={styles.headerTitle}>Contact Us</Text>
@@ -88,9 +74,8 @@ export default function ContactUs() {
         <Text style={styles.title}>Share your thoughts</Text>
 
         <Text style={styles.description}>
-          If you’d like to share feedback, share information
-          about your event, or just drop us a line, fill out the
-          form below:
+          If you’d like to share feedback, share information about your event, or just drop us a
+          line, fill out the form below:
         </Text>
 
         {/* First Name */}
@@ -98,8 +83,8 @@ export default function ContactUs() {
 
         <TextInput
           style={styles.input}
-          placeholder="Enter your first name"
-          placeholderTextColor="#9A9A9A"
+          placeholder='Enter your first name'
+          placeholderTextColor='#9A9A9A'
           value={firstName}
           onChangeText={setFirstName}
         />
@@ -109,8 +94,8 @@ export default function ContactUs() {
 
         <TextInput
           style={styles.input}
-          placeholder="Enter your last name"
-          placeholderTextColor="#9A9A9A"
+          placeholder='Enter your last name'
+          placeholderTextColor='#9A9A9A'
           value={lastName}
           onChangeText={setLastName}
         />
@@ -133,10 +118,10 @@ export default function ContactUs() {
 
         <TextInput
           style={styles.messageInput}
-          placeholder="Start typing your message..."
-          placeholderTextColor="#9A9A9A"
+          placeholder='Start typing your message...'
+          placeholderTextColor='#9A9A9A'
           multiline
-          textAlignVertical="top"
+          textAlignVertical='top'
           value={message}
           onChangeText={setMessage}
         />
@@ -168,7 +153,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 24,
     paddingBottom: 18,
-    fontFamily: 'Mulish'
+    fontFamily: 'Mulish',
   },
 
   headerTitle: {

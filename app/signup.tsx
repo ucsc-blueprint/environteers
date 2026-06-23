@@ -8,18 +8,23 @@ import * as Linking from 'expo-linking';
 import React from 'react';
 export default function SignupScreen() {
   const router = useRouter();
-  const {user, profile} = useAuth();
-    
+  const { user, profile } = useAuth();
+
   React.useEffect(() => {
     if (user && profile) {
-      router.push('/(tabs)/volunteer')
+      router.push('/(tabs)/volunteer');
     }
-  }, [user, profile, router])
+  }, [user, profile, router]);
 
   const { isAdmin: isAdminParam } = useLocalSearchParams();
 
-  async function onSubmit(firstName: string, lastName: string, email: string, password: string, isAdmin: boolean) {
-    console.log('onSubmit fired');
+  async function onSubmit(
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string,
+    isAdmin: boolean,
+  ) {
     const redirectTo = Linking.createURL('confirm'); // link for going back into the app for the email verification button
 
     const { data, error } = await supabase.auth.signUp({
@@ -33,10 +38,10 @@ export default function SignupScreen() {
       Toast.show({
         type: 'error',
         text1: 'Signup failed',
-        text2: error.message
-      })
+        text2: error.message,
+      });
       return;
-    };
+    }
     if (!data.user) {
       Toast.show({
         type: 'error',
@@ -46,32 +51,32 @@ export default function SignupScreen() {
       return;
     }
 
-    const {error: insertError} = await supabase.from('users').insert({
+    const { error: insertError } = await supabase.from('users').insert({
       user_id: data.user.id,
       first_name: firstName,
       last_name: lastName,
       email,
       pending_admin: isAdmin,
-    })
+    });
     if (insertError) {
       Toast.show({
         type: 'error',
         text1: 'Signup failed',
-        text2: insertError.message
-      })
+        text2: insertError.message,
+      });
       return;
-    };
+    }
 
     Toast.show({
       type: 'success',
       text1: 'check your email',
-      text2: 'Click the verification link in your email to complete the signup process'
-    })    
+      text2: 'Click the verification link in your email to complete the signup process',
+    });
     router.push({ pathname: '/verifyEmail', params: { email } });
   }
   return (
-    <View style={{flex: 1}}>
+    <View style={{ flex: 1 }}>
       <SignupForm onSubmit={onSubmit} isAdmin={isAdminParam === 'true'} />
     </View>
-  )
+  );
 }

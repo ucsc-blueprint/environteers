@@ -1,11 +1,11 @@
-import { Tabs, useRouter } from 'expo-router'
-import React, { useEffect } from 'react'
-import { Ionicons } from '@expo/vector-icons'
-import Octicons from '@expo/vector-icons/Octicons'
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
-import { useAuth } from '@/context/AuthContext'
-import { Text } from 'react-native'
-import { supabase } from "@/constants/supabase"
+import { Tabs, useRouter } from 'expo-router';
+import React, { useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import Octicons from '@expo/vector-icons/Octicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useAuth } from '@/context/AuthContext';
+import { Text } from 'react-native';
+import { supabase } from '@/constants/supabase';
 
 export default function TabsLayout() {
   const router = useRouter();
@@ -40,170 +40,120 @@ export default function TabsLayout() {
     >
       {/* User Tabs */}
       <Tabs.Screen
-        name="home"
+        name='home'
         options={{
           title: 'Home',
           href: adminHref,
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name='home' size={size} color={color} />,
         }}
       />
 
       <Tabs.Screen
-        name="activity"
+        name='activity'
         options={{
           title: 'Activity',
           href: adminHref,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons
-              name="analytics-outline"
-              size={size}
-              color={color}
-            />
+            <Ionicons name='analytics-outline' size={size} color={color} />
           ),
         }}
       />
 
       <Tabs.Screen
-        name="volunteer"
+        name='volunteer'
         options={{
           title: 'Volunteer',
           href: adminHref,
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons
-              name="hand-extended"
-              size={size}
-              color={color}
-            />
+            <MaterialCommunityIcons name='hand-extended' size={size} color={color} />
           ),
         }}
       />
 
       <Tabs.Screen
-        name="map"
+        name='map'
         options={{
           title: 'Map',
           href: null,
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons
-              name="map"
-              size={size}
-              color={color}
-            />
+            <MaterialCommunityIcons name='map' size={size} color={color} />
           ),
         }}
       />
 
       <Tabs.Screen
-        name="newsletter"
+        name='newsletter'
         options={{
           title: 'Newsletter',
           href: adminHref,
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons
-              name="newspaper"
-              size={size}
-              color={color}
-            />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name='newspaper' size={size} color={color} />,
         }}
       />
 
       <Tabs.Screen
-        name="profile"
+        name='profile'
         options={{
           title: 'Profile',
           href: adminHref,
-          tabBarIcon: ({ color, size }) => (
-            <Octicons
-              name="person"
-              size={size}
-              color={color}
-            />
-          ),
+          tabBarIcon: ({ color, size }) => <Octicons name='person' size={size} color={color} />,
         }}
       />
 
       {/* Admin Tabs */}
       <Tabs.Screen
-        name="admin-dashboard"
+        name='admin-dashboard'
         options={{
           title: 'Dashboard',
           href: userHref,
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons
-              name="home-variant-outline"
-              size={size}
-              color={color}
-            />
+            <MaterialCommunityIcons name='home-variant-outline' size={size} color={color} />
           ),
         }}
       />
 
       <Tabs.Screen
-        name="ContentEdit"
+        name='ContentEdit'
         options={{
           title: 'Content Edit',
           href: userHref,
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons
-              name="newspaper-variant-multiple"
-              size={size}
-              color={color}
-            />
+            <MaterialCommunityIcons name='newspaper-variant-multiple' size={size} color={color} />
           ),
         }}
       />
 
       <Tabs.Screen
-        name="admin-profile"
+        name='admin-profile'
         options={{
           title: 'Profile',
           href: userHref,
-          tabBarIcon: ({ color, size }) => (
-            <Octicons
-              name="person"
-              size={size}
-              color={color}
-            />
-          ),
+          tabBarIcon: ({ color, size }) => <Octicons name='person' size={size} color={color} />,
         }}
       />
 
       <Tabs.Screen
-        name="admin-analytics"
+        name='admin-analytics'
         options={{
           title: 'Analytics',
           href: null,
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons
-              name="chart-bar"
-              size={size}
-              color={color}
-            />
+            <MaterialCommunityIcons name='chart-bar' size={size} color={color} />
           ),
         }}
       />
 
       <Tabs.Screen
-        name="VolunteerView"
+        name='VolunteerView'
         options={{
           title: 'Volunteer View',
           href: null,
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons
-              name="bar-chart"
-              size={size}
-              color={color}
-            />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name='bar-chart' size={size} color={color} />,
         }}
       />
 
       {/* Hidden Routes */}
       <Tabs.Screen
-        name="AddEcoAction"
+        name='AddEcoAction'
         options={{
           href: null,
           title: 'Add Eco Action',
@@ -211,7 +161,7 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
-        name="AdminEditEcoAction"
+        name='AdminEditEcoAction'
         options={{
           href: null,
           title: 'Edit Eco Action',
@@ -219,7 +169,7 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
-        name="AdminNewsAddFormView"
+        name='AdminNewsAddFormView'
         options={{
           href: null,
           title: 'News Add Form',
@@ -227,7 +177,7 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
-        name="AdminNewsEditFormView"
+        name='AdminNewsEditFormView'
         options={{
           href: null,
           title: 'Edit Newsletter',

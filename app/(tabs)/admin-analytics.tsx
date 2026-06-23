@@ -1,7 +1,12 @@
 import React from 'react';
 import {
-  View, ScrollView, Text, ActivityIndicator,
-  StyleSheet, FlatList, Pressable,
+  View,
+  ScrollView,
+  Text,
+  ActivityIndicator,
+  StyleSheet,
+  FlatList,
+  Pressable,
 } from 'react-native';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,8 +15,8 @@ import { AdminFeedbackList } from '@/components/AdminFeedbackList';
 import { supabase } from '@/constants/supabase';
 import { ACHIEVEMENTS } from '@/constants/achievements';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BanDeleteModal, ModalType } from "@/components/BanDeleteModal";
-import Toast from "react-native-toast-message";
+import { BanDeleteModal, ModalType } from '@/components/BanDeleteModal';
+import Toast from 'react-native-toast-message';
 import { UserAvatar } from '@/components/UserAvatar';
 
 type CompletedItem = {
@@ -53,10 +58,15 @@ export default function AdminAnalytics() {
         .eq('user_id', id)
         .order('created_at', { ascending: false });
 
-      if (error || !data) { setLoadingFeedback(false); return; }
-      const eventIds = data.filter(i => i.event_id).map(i => i.event_id);
-      const inPersonIds = data.filter(i => i.inperson_ecoaction_id).map(i => i.inperson_ecoaction_id);
-      const onlineIds = data.filter(i => i.online_ecoaction_id).map(i => i.online_ecoaction_id);
+      if (error || !data) {
+        setLoadingFeedback(false);
+        return;
+      }
+      const eventIds = data.filter((i) => i.event_id).map((i) => i.event_id);
+      const inPersonIds = data
+        .filter((i) => i.inperson_ecoaction_id)
+        .map((i) => i.inperson_ecoaction_id);
+      const onlineIds = data.filter((i) => i.online_ecoaction_id).map((i) => i.online_ecoaction_id);
       const [eventsRes, inPersonRes, onlineRes] = await Promise.all([
         eventIds.length > 0
           ? supabase.from('events').select('id, title').in('id', eventIds)
@@ -70,13 +80,16 @@ export default function AdminAnalytics() {
       ]);
 
       const eventMap = Object.fromEntries((eventsRes.data ?? []).map((r: any) => [r.id, r.title]));
-      const inPersonMap = Object.fromEntries((inPersonRes.data ?? []).map((r: any) => [r.id, r.title]));
+      const inPersonMap = Object.fromEntries(
+        (inPersonRes.data ?? []).map((r: any) => [r.id, r.title]),
+      );
       const onlineMap = Object.fromEntries((onlineRes.data ?? []).map((r: any) => [r.id, r.title]));
 
-      const formatted = data.map(item => {
+      const formatted = data.map((item) => {
         let eventName = '';
         if (item.event_id) eventName = eventMap[item.event_id] ?? '';
-        else if (item.inperson_ecoaction_id) eventName = inPersonMap[item.inperson_ecoaction_id] ?? '';
+        else if (item.inperson_ecoaction_id)
+          eventName = inPersonMap[item.inperson_ecoaction_id] ?? '';
         else if (item.online_ecoaction_id) eventName = onlineMap[item.online_ecoaction_id] ?? '';
 
         return {
@@ -139,7 +152,7 @@ export default function AdminAnalytics() {
       setEcoCount(inPersonItems.length + onlineItems.length);
 
       const all = [...inPersonItems, ...onlineItems, ...eventItems].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
       );
       setCompletedItems(all);
       setLoadingCompleted(false);
@@ -162,8 +175,8 @@ export default function AdminAnalytics() {
     fetchUserProfile();
   }, [volunteerID, volunteerName, membershipStatus]);
 
-  const lastUnlocked = [...ACHIEVEMENTS].reverse().find(a => ecoCount >= a.threshold);
-  const nextAchievement = ACHIEVEMENTS.find(a => ecoCount < a.threshold);
+  const lastUnlocked = [...ACHIEVEMENTS].reverse().find((a) => ecoCount >= a.threshold);
+  const nextAchievement = ACHIEVEMENTS.find((a) => ecoCount < a.threshold);
   const prevThreshold = lastUnlocked
     ? (ACHIEVEMENTS[ACHIEVEMENTS.indexOf(lastUnlocked) - 1]?.threshold ?? 0)
     : 0;
@@ -175,13 +188,17 @@ export default function AdminAnalytics() {
   const isBanned = bannedUntil && new Date(bannedUntil) > new Date();
 
   if (loading || loadingCompleted || loadingFeedback) {
-    return <ActivityIndicator size="large" color="#000" />;
+    return <ActivityIndicator size='large' color='#000' />;
   }
-  if (!profile) return <Redirect href="/" />;
-  if (!profile.is_admin) return <Redirect href="/(tabs)/volunteer" />;
+  if (!profile) return <Redirect href='/' />;
+  if (!profile.is_admin) return <Redirect href='/(tabs)/volunteer' />;
 
-  const name = Array.isArray(volunteerName) ? volunteerName[0] : volunteerName ?? 'Volunteer Name';
-  const membership = Array.isArray(membershipStatus) ? membershipStatus[0] : membershipStatus ?? '';
+  const name = Array.isArray(volunteerName)
+    ? volunteerName[0]
+    : (volunteerName ?? 'Volunteer Name');
+  const membership = Array.isArray(membershipStatus)
+    ? membershipStatus[0]
+    : (membershipStatus ?? '');
 
   const formatDate = (iso: string) => {
     if (!iso) return '';
@@ -206,22 +223,22 @@ export default function AdminAnalytics() {
           type: 'error',
           text1: 'Failed to ban user',
           text2: error.message,
-        })
+        });
         return;
       }
     }
-    
+
     if (type === 'delete') {
       const { error } = await supabase.functions.invoke('delete-user', {
         body: { user_id: id },
-      })
+      });
 
       if (error) {
         Toast.show({
           type: 'error',
           text1: 'Failed to delete user',
           text2: error.message,
-        })
+        });
         return;
       }
 
@@ -230,167 +247,179 @@ export default function AdminAnalytics() {
         text1: 'User deleted successfully',
       });
 
-      
       router.push('/(tabs)/VolunteerView');
     }
 
     setModalVisible(false);
-  }
+  };
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-    <ScrollView style={styles.container}>
-
-      <BanDeleteModal 
-        visible={modalVisible}
-        type={modalType}
-        onCancel={() => setModalVisible(false)}
-        onConfirm={(type) => { onBanDeleteConfirm(type); setModalType(null);}}
-        volunteerName = {name}
-      />
-
-      <Pressable style={styles.backRow} onPress={() => router.push('/(tabs)/VolunteerView')}>
-        <Ionicons name="chevron-back" size={16} color="#172A36" />
-        <Text style={styles.backText}>All Users</Text>
-      </Pressable>
-
-      <View style={styles.avatarSection}>
-        <UserAvatar
-          firstName={name.split(' ')[0]}
-          lastName={name.split(' ')[1] ?? ''}
-          photoUrl={viewedUserPhoto}
-          size={90}
+      <ScrollView style={styles.container}>
+        <BanDeleteModal
+          visible={modalVisible}
+          type={modalType}
+          onCancel={() => setModalVisible(false)}
+          onConfirm={(type) => {
+            onBanDeleteConfirm(type);
+            setModalType(null);
+          }}
+          volunteerName={name}
         />
-        <View style={{ marginBottom: 10 }} />
-        <Text style={styles.name}>{name}</Text>
-        <Text style={styles.memberSince}>{membership}</Text>
-      </View>
 
-      <View style={styles.statsCard}>
-        <View style={styles.statsRow}>
-          <Ionicons name="leaf" size={32} color="#618E20" />
-          <View style={{ marginLeft: 8 }}>
-            <Text style={styles.ecoCount}>{ecoCount}</Text>
-            <Text style={styles.ecoLabel}>Eco-Actions</Text>
-          </View>
-          {nextAchievement && (
-            <View style={styles.rewardPill}>
-              <Text style={styles.rewardPillText}>{remaining} until next reward!</Text>
+        <Pressable style={styles.backRow} onPress={() => router.push('/(tabs)/VolunteerView')}>
+          <Ionicons name='chevron-back' size={16} color='#172A36' />
+          <Text style={styles.backText}>All Users</Text>
+        </Pressable>
+
+        <View style={styles.avatarSection}>
+          <UserAvatar
+            firstName={name.split(' ')[0]}
+            lastName={name.split(' ')[1] ?? ''}
+            photoUrl={viewedUserPhoto}
+            size={90}
+          />
+          <View style={{ marginBottom: 10 }} />
+          <Text style={styles.name}>{name}</Text>
+          <Text style={styles.memberSince}>{membership}</Text>
+        </View>
+
+        <View style={styles.statsCard}>
+          <View style={styles.statsRow}>
+            <Ionicons name='leaf' size={32} color='#618E20' />
+            <View style={{ marginLeft: 8 }}>
+              <Text style={styles.ecoCount}>{ecoCount}</Text>
+              <Text style={styles.ecoLabel}>Eco-Actions</Text>
             </View>
-          )}
-        </View>
-        <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { flex: Math.max(progress, 0.01) }]} />
-          <View style={{ flex: Math.max(1 - progress, 0) }} />
-        </View>
-      </View>
-
-      <View style={styles.tabBar}>
-        <Pressable
-          style={[styles.tabBtn, tab === 'achievements' && styles.tabBtnActive]}
-          onPress={() => setTab('achievements')}
-        >
-          <Text style={[styles.tabText, tab === 'achievements' && styles.tabTextActive]}>
-            User Achievements
-          </Text>
-        </Pressable>
-        <Pressable
-          style={[styles.tabBtn, tab === 'manage' && styles.tabBtnActive]}
-          onPress={() => setTab('manage')}
-        >
-          <Text style={[styles.tabText, tab === 'manage' && styles.tabTextActive]}>
-            Manage this user
-          </Text>
-        </Pressable>
-      </View>
-
-      {tab === 'achievements' && (
-        <>
-          <Text style={styles.sectionHeader}>Achievements</Text>
-          <View style={styles.achievementsCard}>
-            <FlatList
-              data={ACHIEVEMENTS}
-              numColumns={4}
-              scrollEnabled={false}
-              keyExtractor={(item) => item.label}
-              renderItem={({ item }) => {
-                const unlocked = ecoCount >= item.threshold;
-                return (
-                  <View style={styles.achievementCell}>
-                    <View style={[
-                      styles.achievementCircle,
-                      unlocked && styles.achievementCircleUnlocked,
-                    ]}>
-                      <Ionicons
-                        name={unlocked ? 'trophy' : 'lock-closed'}
-                        size={28}
-                        color={unlocked ? '#618E20' : '#8BAFC4'}
-                      />
-                    </View>
-                    <Text style={[
-                      styles.achievementLabel,
-                      unlocked && styles.achievementLabelUnlocked,
-                    ]}>
-                      {unlocked ? item.label : '???'}
-                    </Text>
-                  </View>
-                );
-              }}
-            />
-          </View>
-
-          <Text style={styles.sectionHeader}>Events + Eco-actions completed</Text>
-          <View style={styles.completedCard}>
-            {completedItems.length === 0 ? (
-              <Text style={styles.emptyText}>No completed items yet</Text>
-            ) : (
-              completedItems.map((item, index) => (
-                <View key={item.id}>
-                  <View style={styles.completedRow}>
-                    <Text style={styles.completedTitle}>
-                      {item.type === 'event' ? 'For Event ' : 'Eco-Action '}
-                      <Text style={{ fontWeight: '600' }}>{item.title}</Text>
-                    </Text>
-                    <Text style={styles.completedDate}>{formatDate(item.date)}</Text>
-                  </View>
-                  {index < completedItems.length - 1 && <View style={styles.divider} />}
-                </View>
-              ))
+            {nextAchievement && (
+              <View style={styles.rewardPill}>
+                <Text style={styles.rewardPillText}>{remaining} until next reward!</Text>
+              </View>
             )}
           </View>
-        </>
-      )}
-
-      {tab === 'manage' && (
-        <View>
-          <View style={styles.moderationButtons}>
-            <Pressable 
-              style={isBanned ? styles.banButtonDisabled : styles.banButton}
-              onPress={() => { if (!isBanned) { setModalType('ban'); setModalVisible(true); } }}
-            >
-              <Text style={isBanned ? styles.banButtonDisabledText : styles.banButtonText}>
-                {isBanned ? `User temporarily banned` : `Ban user temporarily`}
-              </Text>
-            </Pressable>
-
-            <Pressable 
-              style={styles.deleteButton}
-              onPress={() => { setModalType('delete'); setModalVisible(true); }}
-            >
-              <Text style={styles.deleteButtonText}>Delete user</Text>
-            </Pressable>
+          <View style={styles.progressTrack}>
+            <View style={[styles.progressFill, { flex: Math.max(progress, 0.01) }]} />
+            <View style={{ flex: Math.max(1 - progress, 0) }} />
           </View>
-
-          <Text style={styles.sectionHeader}>Event feedback sent</Text>
-          {feedback.length > 0 ? (
-            <AdminFeedbackList data={feedback} />
-          ) : (
-            <Text style={styles.emptyText}>No feedback yet</Text>
-          )}
         </View>
-      )}
 
-    </ScrollView>
+        <View style={styles.tabBar}>
+          <Pressable
+            style={[styles.tabBtn, tab === 'achievements' && styles.tabBtnActive]}
+            onPress={() => setTab('achievements')}
+          >
+            <Text style={[styles.tabText, tab === 'achievements' && styles.tabTextActive]}>
+              User Achievements
+            </Text>
+          </Pressable>
+          <Pressable
+            style={[styles.tabBtn, tab === 'manage' && styles.tabBtnActive]}
+            onPress={() => setTab('manage')}
+          >
+            <Text style={[styles.tabText, tab === 'manage' && styles.tabTextActive]}>
+              Manage this user
+            </Text>
+          </Pressable>
+        </View>
+
+        {tab === 'achievements' && (
+          <>
+            <Text style={styles.sectionHeader}>Achievements</Text>
+            <View style={styles.achievementsCard}>
+              <FlatList
+                data={ACHIEVEMENTS}
+                numColumns={4}
+                scrollEnabled={false}
+                keyExtractor={(item) => item.label}
+                renderItem={({ item }) => {
+                  const unlocked = ecoCount >= item.threshold;
+                  return (
+                    <View style={styles.achievementCell}>
+                      <View
+                        style={[
+                          styles.achievementCircle,
+                          unlocked && styles.achievementCircleUnlocked,
+                        ]}
+                      >
+                        <Ionicons
+                          name={unlocked ? 'trophy' : 'lock-closed'}
+                          size={28}
+                          color={unlocked ? '#618E20' : '#8BAFC4'}
+                        />
+                      </View>
+                      <Text
+                        style={[
+                          styles.achievementLabel,
+                          unlocked && styles.achievementLabelUnlocked,
+                        ]}
+                      >
+                        {unlocked ? item.label : '???'}
+                      </Text>
+                    </View>
+                  );
+                }}
+              />
+            </View>
+
+            <Text style={styles.sectionHeader}>Events + Eco-actions completed</Text>
+            <View style={styles.completedCard}>
+              {completedItems.length === 0 ? (
+                <Text style={styles.emptyText}>No completed items yet</Text>
+              ) : (
+                completedItems.map((item, index) => (
+                  <View key={item.id}>
+                    <View style={styles.completedRow}>
+                      <Text style={styles.completedTitle}>
+                        {item.type === 'event' ? 'For Event ' : 'Eco-Action '}
+                        <Text style={{ fontWeight: '600' }}>{item.title}</Text>
+                      </Text>
+                      <Text style={styles.completedDate}>{formatDate(item.date)}</Text>
+                    </View>
+                    {index < completedItems.length - 1 && <View style={styles.divider} />}
+                  </View>
+                ))
+              )}
+            </View>
+          </>
+        )}
+
+        {tab === 'manage' && (
+          <View>
+            <View style={styles.moderationButtons}>
+              <Pressable
+                style={isBanned ? styles.banButtonDisabled : styles.banButton}
+                onPress={() => {
+                  if (!isBanned) {
+                    setModalType('ban');
+                    setModalVisible(true);
+                  }
+                }}
+              >
+                <Text style={isBanned ? styles.banButtonDisabledText : styles.banButtonText}>
+                  {isBanned ? `User temporarily banned` : `Ban user temporarily`}
+                </Text>
+              </Pressable>
+
+              <Pressable
+                style={styles.deleteButton}
+                onPress={() => {
+                  setModalType('delete');
+                  setModalVisible(true);
+                }}
+              >
+                <Text style={styles.deleteButtonText}>Delete user</Text>
+              </Pressable>
+            </View>
+
+            <Text style={styles.sectionHeader}>Event feedback sent</Text>
+            {feedback.length > 0 ? (
+              <AdminFeedbackList data={feedback} />
+            ) : (
+              <Text style={styles.emptyText}>No feedback yet</Text>
+            )}
+          </View>
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -572,9 +601,9 @@ const styles = StyleSheet.create({
   banButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: "#FFFFFF",
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: "#E00000",
+    borderColor: '#E00000',
     width: '100%',
     height: 45,
     borderRadius: 12,
@@ -583,7 +612,7 @@ const styles = StyleSheet.create({
   banButtonDisabled: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: "#E00000",
+    backgroundColor: '#E00000',
     width: '100%',
     height: 45,
     borderRadius: 12,
@@ -591,12 +620,12 @@ const styles = StyleSheet.create({
     opacity: 0.3,
   },
   banButtonText: {
-    color: "#E00000",
+    color: '#E00000',
     fontSize: 16,
     fontWeight: '500',
   },
   banButtonDisabledText: {
-    color: "#FFFFFF",
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '500',
   },

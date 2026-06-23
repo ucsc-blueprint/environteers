@@ -12,7 +12,6 @@ export default function AuthConfirmScreen() {
 
   useEffect(() => {
     if (!url) return;
-    console.log('Received URL:', url);
 
     const hash = url.split('#')[1];
     if (!hash) return;
@@ -31,12 +30,10 @@ export default function AuthConfirmScreen() {
         params: { access_token, refresh_token },
       });
     } else {
-      supabase.auth
-        .setSession({ access_token, refresh_token })
-        .then(({ error }) => {
-          if (error) setError(error.message);
-          else router.replace('/(tabs)/volunteer');
-        });
+      supabase.auth.setSession({ access_token, refresh_token }).then(({ error }) => {
+        if (error) setError(error.message);
+        else router.replace('/(tabs)/volunteer');
+      });
     }
   }, [url, router]);
 
@@ -44,8 +41,8 @@ export default function AuthConfirmScreen() {
     return (
       <View style={styles.container}>
         <Pressable style={styles.backButton} onPress={() => router.replace('/')}>
-            <ChevronLeft size={20} color="#757575" />
-            <Text style={styles.backText}>Back to Home</Text>
+          <ChevronLeft size={20} color='#757575' />
+          <Text style={styles.backText}>Back to Home</Text>
         </Pressable>
         <Text style={styles.errorText}>{error}</Text>
       </View>
@@ -54,7 +51,7 @@ export default function AuthConfirmScreen() {
 
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color="#86AE42" />
+      <ActivityIndicator size='large' color='#86AE42' />
       <Text style={styles.label}>Verifying your email…</Text>
     </View>
   );

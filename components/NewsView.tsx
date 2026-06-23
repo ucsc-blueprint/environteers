@@ -1,15 +1,24 @@
-import { Text, TextInput, FlatList, Pressable, View, StyleSheet, Modal, ActivityIndicator } from "react-native";
-import React, { useState, useCallback } from "react";
-import { NewsCard } from "@/components/NewsCard";
-import { DeleteNewsConfirmationModal } from "@/components/DeleteNewsConfirmationModal";
-import { WebView } from "react-native-webview";
-import DropDownPicker from 'react-native-dropdown-picker'
-import {supabase} from "@/constants/supabase";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  Text,
+  TextInput,
+  FlatList,
+  Pressable,
+  View,
+  StyleSheet,
+  Modal,
+  ActivityIndicator,
+} from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { NewsCard } from '@/components/NewsCard';
+import { DeleteNewsConfirmationModal } from '@/components/DeleteNewsConfirmationModal';
+import { WebView } from 'react-native-webview';
+import DropDownPicker from 'react-native-dropdown-picker';
+import { supabase } from '@/constants/supabase';
+import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
-import { useRouter } from "expo-router";
-import { useFocusEffect } from "@react-navigation/native";
-import { useAuth } from "@/context/AuthContext";
+import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
+import { useAuth } from '@/context/AuthContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const includesText = (str: string, search: string) =>
@@ -27,7 +36,7 @@ const includesDate = (dateStr: string, filter: 'week' | '2weeks' | 'month' | 'al
   if (filter === '2weeks') return diffDays <= 14;
   if (filter === 'month') return diffDays <= 30;
   return false;
-}
+};
 
 export interface newsLetterItem {
   newsletter_id: string;
@@ -41,7 +50,10 @@ export interface newsLetterItem {
 const logSubscriptionClick = async (userId: string) => {
   const { error } = await supabase
     .from('newsletter_subscription_clicks')
-    .upsert({ user_id: userId, opened_at: new Date().toISOString() }, { onConflict: 'user_id', ignoreDuplicates: true });
+    .upsert(
+      { user_id: userId, opened_at: new Date().toISOString() },
+      { onConflict: 'user_id', ignoreDuplicates: true },
+    );
   if (error) console.warn('[Supabase] subscription log failed:', error.message);
 };
 
@@ -49,9 +61,11 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
   const router = useRouter();
   const [newsLetters, setNewsLetters] = useState<newsLetterItem[]>([]);
   const [activeUrl, setActiveUrl] = useState<string | null>(null);
-  const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
-  const [filterDateLength, setFilterDateLength] = useState<'week' | '2weeks' | 'month' | 'all'>('all');
+  const [filterDateLength, setFilterDateLength] = useState<'week' | '2weeks' | 'month' | 'all'>(
+    'all',
+  );
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [refreshing, setRefreshing] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
@@ -87,7 +101,7 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
   const handleOpenDeleteModal = (newsletter: newsLetterItem) => {
     setSelectedNewsletter(newsletter);
     setDeleteModalVisible(true);
-  }
+  };
 
   const handleDelete = async () => {
     if (!selectedNewsletter) return;
@@ -100,71 +114,69 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
       Toast.show({
         type: 'success',
         text1: 'Newsletter deleted',
-        text2: 'Users can no longer see this newsletter on their feed.'
+        text2: 'Users can no longer see this newsletter on their feed.',
       });
     } else {
       Toast.show({
         type: 'error',
         text1: 'Failed to delete newsletter',
-        text2: 'Please try again later.'
+        text2: 'Please try again later.',
       });
     }
-  }
+  };
 
-const deleteNewsletter = async (newsletter_id: string) => {
-  try {
-    const newsletter = newsLetters.find((n) => n.newsletter_id === newsletter_id);
+  const deleteNewsletter = async (newsletter_id: string) => {
+    try {
+      const newsletter = newsLetters.find((n) => n.newsletter_id === newsletter_id);
 
-    const { error } = await supabase
-      .from("news")
-      .delete()
-      .eq("newsletter_id", newsletter_id);
+      const { error } = await supabase.from('news').delete().eq('newsletter_id', newsletter_id);
 
-    if (error) {
-      console.error("Error deleting newsletter:", error);
+      if (error) {
+        console.error('Error deleting newsletter:', error);
+        return false;
+      }
+
+      if (newsletter?.preview_image) {
+        const url = newsletter.preview_image;
+        const filePath = decodeURIComponent(url.split('/news-images/')[1]);
+        const { error: storageError } = await supabase.storage
+          .from('news-images')
+          .remove([filePath]);
+
+        if (storageError) {
+          console.error('Failed to delete preview image:', storageError);
+        }
+      }
+
+      setNewsLetters((prev) => prev.filter((n) => n.newsletter_id !== newsletter_id));
+      return true;
+    } catch (error) {
+      console.error('Unexpected error:', error);
       return false;
     }
-
-    if (newsletter?.preview_image) {
-      const url = newsletter.preview_image;
-      console.log('Image URL:', url);
-      const filePath = decodeURIComponent(url.split('/news-images/')[1]);
-      console.log('File path:', filePath);
-      const { data, error: storageError } = await supabase.storage
-        .from('news-images')
-        .remove([filePath]);
-      console.log('Delete data:', JSON.stringify(data));
-      console.log('Delete error:', storageError);
-    }
-
-    setNewsLetters((prev) => prev.filter((n) => n.newsletter_id !== newsletter_id));
-    return true;
-  } catch (error) {
-    console.error("Unexpected error:", error);
-    return false;
-  }
-}
+  };
 
   const handleCancel = () => {
     setDeleteModalVisible(false);
     setSelectedNewsletter(null);
-  }
+  };
 
   useFocusEffect(
     useCallback(() => {
       fetchNewsletters();
-    }, [])
+    }, []),
   );
 
   const filteredNewsletters = newsLetters
-    .filter((n) =>
-      includesText(`Environteers Weekly Update: ${n.edition_number}th Edition`, searchText) &&
-      includesDate(n.date, filterDateLength)
+    .filter(
+      (n) =>
+        includesText(`Environteers Weekly Update: ${n.edition_number}th Edition`, searchText) &&
+        includesDate(n.date, filterDateLength),
     )
     .sort((a, b) =>
-      sortOrder === "newest"
+      sortOrder === 'newest'
         ? new Date(b.date).getTime() - new Date(a.date).getTime()
-        : new Date(a.date).getTime() - new Date(b.date).getTime()
+        : new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
 
   if (activeUrl) {
@@ -172,15 +184,11 @@ const deleteNewsletter = async (newsletter_id: string) => {
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <Pressable
           onPress={() => setActiveUrl(null)}
-          style={{ padding: 12, backgroundColor: "#eee" }}
+          style={{ padding: 12, backgroundColor: '#eee' }}
         >
           <Text>← Back</Text>
         </Pressable>
-        <WebView
-          source={{ uri: activeUrl }}
-          style={{ flex: 1 }}
-          startInLoadingState={true}
-        />
+        <WebView source={{ uri: activeUrl }} style={{ flex: 1 }} startInLoadingState={true} />
       </SafeAreaView>
     );
   }
@@ -189,23 +197,54 @@ const deleteNewsletter = async (newsletter_id: string) => {
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }} edges={['top']}>
       {isAdmin ? (
         <>
-          <Text style={{ marginTop: 8, marginBottom: 4, marginLeft: 12, fontWeight: "bold", fontSize: 30 }}>Manage Newsletters</Text>
-          <Text style={{ marginBottom: 12, marginLeft: 12, fontSize: 16, color: "#79B128" }}>Add, edit, and delete</Text>
+          <Text
+            style={{
+              marginTop: 8,
+              marginBottom: 4,
+              marginLeft: 12,
+              fontWeight: 'bold',
+              fontSize: 30,
+            }}
+          >
+            Manage Newsletters
+          </Text>
+          <Text style={{ marginBottom: 12, marginLeft: 12, fontSize: 16, color: '#79B128' }}>
+            Add, edit, and delete
+          </Text>
         </>
       ) : (
-        <Text style={{ marginTop: 8, marginBottom: 12, marginLeft: 12, fontWeight: "bold", fontSize: 30 }}> Weekly Updates</Text>
+        <Text
+          style={{
+            marginTop: 8,
+            marginBottom: 12,
+            marginLeft: 12,
+            fontWeight: 'bold',
+            fontSize: 30,
+          }}
+        >
+          {' '}
+          Weekly Updates
+        </Text>
       )}
 
       <TextInput
-        placeholder="Search newsletters"
-        placeholderTextColor="#999"
+        placeholder='Search newsletters'
+        placeholderTextColor='#999'
         style={styles.search}
         value={searchText}
         onChangeText={setSearchText}
       />
 
-      <View style={{ flexDirection: 'row', marginLeft: 12, marginRight: 12, alignItems: 'center', gap: 8 }}>
-        <Ionicons name="filter-outline" size={24} />
+      <View
+        style={{
+          flexDirection: 'row',
+          marginLeft: 12,
+          marginRight: 12,
+          alignItems: 'center',
+          gap: 8,
+        }}
+      >
+        <Ionicons name='filter-outline' size={24} />
         <DropDownPicker
           open={filterOpen}
           setOpen={setFilterOpen}
@@ -222,13 +261,10 @@ const deleteNewsletter = async (newsletter_id: string) => {
           containerStyle={{ width: 200 }}
         />
         <Pressable
-          onPress={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')}
+          onPress={() => setSortOrder((prev) => (prev === 'newest' ? 'oldest' : 'newest'))}
           style={styles.sortButton}
         >
-          <Ionicons
-            name={sortOrder === 'newest' ? 'arrow-down' : 'arrow-up'}
-            size={16}
-          />
+          <Ionicons name={sortOrder === 'newest' ? 'arrow-down' : 'arrow-up'} size={16} />
         </Pressable>
       </View>
 
@@ -250,22 +286,24 @@ const deleteNewsletter = async (newsletter_id: string) => {
             onPress={() => setActiveUrl(item.link)}
             onDelete={() => handleOpenDeleteModal(item)}
             onEdit={() => {
-              console.log("Edit pressed, id:", item.newsletter_id);
               router.push({
                 pathname: '/(tabs)/AdminNewsEditFormView',
-                params: { id: item.newsletter_id }
+                params: { id: item.newsletter_id },
               });
             }}
           />
         )}
       />
-{isAdmin && (
+      {isAdmin && (
         <>
           <Pressable
             style={styles.addNewsletterButton}
-            onPress={() => router.push({
-              pathname: '/(tabs)/AdminNewsAddFormView'
-            })}>
+            onPress={() =>
+              router.push({
+                pathname: '/(tabs)/AdminNewsAddFormView',
+              })
+            }
+          >
             <Text style={styles.addNewsletterButtonText}>+ Add</Text>
           </Pressable>
 
@@ -276,7 +314,7 @@ const deleteNewsletter = async (newsletter_id: string) => {
             newsletterTitle={
               selectedNewsletter
                 ? `Environteers Weekly Update: ${selectedNewsletter.edition_number}th Edition`
-                : "Selected newsletter"
+                : 'Selected newsletter'
             }
           />
         </>
@@ -292,26 +330,26 @@ const deleteNewsletter = async (newsletter_id: string) => {
             setSignupModalVisible(true);
           }}
         >
-          <Ionicons name="mail" size={24} color="#fff" />
+          <Ionicons name='mail' size={24} color='#fff' />
         </Pressable>
       )}
 
       <Modal
         visible={signupModalVisible}
-        animationType="slide"
-        presentationStyle="pageSheet"
+        animationType='slide'
+        presentationStyle='pageSheet'
         onRequestClose={() => setSignupModalVisible(false)}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Subscribe to Newsletter</Text>
             <Pressable onPress={() => setSignupModalVisible(false)} style={styles.modalCloseBtn}>
-              <Ionicons name="close" size={20} color="#555" />
+              <Ionicons name='close' size={20} color='#555' />
             </Pressable>
           </View>
           {signupLoading && (
             <View style={styles.loadingOverlay}>
-              <ActivityIndicator size="large" color="#57801d" />
+              <ActivityIndicator size='large' color='#57801d' />
             </View>
           )}
           <WebView
@@ -326,14 +364,14 @@ const deleteNewsletter = async (newsletter_id: string) => {
       </Modal>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   search: {
     borderWidth: 1,
-    width: "90%",
-    alignSelf: "center",
-    borderColor: "#151414",
+    width: '90%',
+    alignSelf: 'center',
+    borderColor: '#151414',
     borderRadius: 24,
     paddingHorizontal: 16,
     paddingVertical: 10,
@@ -342,13 +380,13 @@ const styles = StyleSheet.create({
   dropDownContainerStyle: {
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: "#151414",
+    borderColor: '#151414',
   },
   filter: {
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: "#151414",
-    backgroundColor: "transparent",
+    borderColor: '#151414',
+    backgroundColor: 'transparent',
   },
   sortButton: {
     flexDirection: 'row',

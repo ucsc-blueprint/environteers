@@ -7,19 +7,19 @@ import React from 'react';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { isAdmin : isAdminParam } = useLocalSearchParams();
+  const { isAdmin: isAdminParam } = useLocalSearchParams();
 
   async function onSubmit(email: string, password: string) {
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email,
-      password: password
+      password: password,
     });
     if (error) {
       Toast.show({
         type: 'error',
         text1: 'Login failed',
-        text2: error.message
-      })
+        text2: error.message,
+      });
       return;
     }
 
@@ -28,7 +28,7 @@ export default function LoginScreen() {
       .select('banned_until')
       .eq('user_id', data.user.id)
       .single();
-    
+
     const isBanned = userData?.banned_until && new Date(userData.banned_until) > new Date();
 
     if (isBanned) {
@@ -36,7 +36,7 @@ export default function LoginScreen() {
       Toast.show({
         type: 'error',
         text1: 'Login failed',
-        text2: 'Your account is currently banned.'
+        text2: 'Your account is currently banned.',
       });
       return;
     }
@@ -50,10 +50,8 @@ export default function LoginScreen() {
   }
 
   return (
-    <View style={{flex: 1}}>
-      <LoginForm
-        onSubmit={onSubmit}
-        isAdmin={isAdminParam === 'true'} />
+    <View style={{ flex: 1 }}>
+      <LoginForm onSubmit={onSubmit} isAdmin={isAdminParam === 'true'} />
     </View>
-  )
+  );
 }

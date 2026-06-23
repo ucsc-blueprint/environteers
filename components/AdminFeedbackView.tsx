@@ -64,8 +64,7 @@ export default function AdminFeedbackView() {
           if (event) {
             eventName = event.title;
           }
-        }
-        else if (item.inperson_ecoaction_id) {
+        } else if (item.inperson_ecoaction_id) {
           const { data: inperson } = await supabase
             .from('inperson_ecoactions')
             .select('title')
@@ -75,8 +74,7 @@ export default function AdminFeedbackView() {
           if (inperson) {
             eventName = inperson.title;
           }
-        }
-        else if (item.online_ecoaction_id) {
+        } else if (item.online_ecoaction_id) {
           const { data: online } = await supabase
             .from('online_ecoactions')
             .select('title')
@@ -107,32 +105,28 @@ export default function AdminFeedbackView() {
   }, []);
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#000000" />;
+    return <ActivityIndicator size='large' color='#000000' />;
   }
 
   if (!profile) {
-    return <Redirect href="/" />;
+    return <Redirect href='/' />;
   }
 
   if (!profile.is_admin) {
-    return <Redirect href="/(tabs)/volunteer" />;
+    return <Redirect href='/(tabs)/volunteer' />;
   }
 
   return (
     <ScrollView style={{ flex: 1, padding: 16 }}>
-
-      <Text style={styles.sortText}>
-        Sorted by most recent
-      </Text>
+      <Text style={styles.sortText}>Sorted by most recent</Text>
 
       {loadingFeedback ? (
-        <ActivityIndicator size="large" color="#000000" />
+        <ActivityIndicator size='large' color='#000000' />
       ) : feedback.length > 0 ? (
         <AdminFeedbackList data={feedback} />
       ) : (
         <Text>No feedback yet</Text>
       )}
-
     </ScrollView>
   );
 }

@@ -17,16 +17,13 @@ export const UserAvatar = ({ firstName = '', lastName = '', photoUrl, size = 90 
       <Image
         source={{ uri: photoUrl }}
         style={[styles.avatar, { width: size, height: size, borderRadius: size / 2 }]}
-        contentFit="cover"
+        contentFit='cover'
       />
     );
   }
 
   return (
-    <View style={[
-      styles.initialsCircle,
-      { width: size, height: size, borderRadius: size / 2 }
-    ]}>
+    <View style={[styles.initialsCircle, { width: size, height: size, borderRadius: size / 2 }]}>
       <Text style={[styles.initialsText, { fontSize: size * 0.35 }]}>{initials}</Text>
     </View>
   );

@@ -1,50 +1,48 @@
-import { ActivityIndicator, View, Pressable, Text, StyleSheet } from "react-native";
-import { AdminVolunteersView } from "@/components/AdminVolunteersView";
-import AdminFeedbackView from '@/components/AdminFeedbackView'
-import React from "react";
+import { ActivityIndicator, View, Pressable, Text, StyleSheet } from 'react-native';
+import { AdminVolunteersView } from '@/components/AdminVolunteersView';
+import AdminFeedbackView from '@/components/AdminFeedbackView';
+import React from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Redirect } from 'expo-router';
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function VolunteerView() {
-  const [tab, setTab] = React.useState<"volunteers" | "feedback">("volunteers");
+  const [tab, setTab] = React.useState<'volunteers' | 'feedback'>('volunteers');
   const { profile, loading } = useAuth();
 
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#84bd00" />
+        <ActivityIndicator size='large' color='#84bd00' />
       </View>
     );
   }
 
-  if (!profile) return <Redirect href="/" />;
-  if (!profile.is_admin) return <Redirect href="/(tabs)/volunteer" />;
+  if (!profile) return <Redirect href='/' />;
+  if (!profile.is_admin) return <Redirect href='/(tabs)/volunteer' />;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.tabBar}>
-        <Pressable 
-          onPress={() => setTab("volunteers")}
-          style={[styles.tabButton, tab === "volunteers" && styles.activeTab]}
+        <Pressable
+          onPress={() => setTab('volunteers')}
+          style={[styles.tabButton, tab === 'volunteers' && styles.activeTab]}
         >
-          <Text style={[styles.tabText, tab === "volunteers" && styles.activeTabText]}>
+          <Text style={[styles.tabText, tab === 'volunteers' && styles.activeTabText]}>
             Volunteers
           </Text>
         </Pressable>
 
-        <Pressable 
-          onPress={() => setTab("feedback")}
-          style={[styles.tabButton, tab === "feedback" && styles.activeTab]}
+        <Pressable
+          onPress={() => setTab('feedback')}
+          style={[styles.tabButton, tab === 'feedback' && styles.activeTab]}
         >
-          <Text style={[styles.tabText, tab === "feedback" && styles.activeTabText]}>
-            Feedback
-          </Text>
+          <Text style={[styles.tabText, tab === 'feedback' && styles.activeTabText]}>Feedback</Text>
         </Pressable>
       </View>
 
       <View style={styles.content}>
-        {tab === "volunteers" ? <AdminVolunteersView /> : <AdminFeedbackView />}
+        {tab === 'volunteers' ? <AdminVolunteersView /> : <AdminFeedbackView />}
       </View>
     </SafeAreaView>
   );
@@ -61,7 +59,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tabBar: {
-    flexDirection: "row",
+    flexDirection: 'row',
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
@@ -89,5 +87,5 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-  }
+  },
 });

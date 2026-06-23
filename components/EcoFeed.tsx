@@ -1,11 +1,11 @@
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from '@/context/AuthContext';
 import { View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
-import React, { useState } from "react";
-import { CardStyles } from "@/app/stylesheets/CardStyles";
-import { InPersonCard } from "@/components/InPersonCard";
-import { OnlineCard } from "@/components/OnlineCard";
-import { EventCard } from "@/components/EventCard";
-import { CardProps } from "@/app/(tabs)/volunteer";
+import React, { useState } from 'react';
+import { CardStyles } from '@/app/stylesheets/CardStyles';
+import { InPersonCard } from '@/components/InPersonCard';
+import { OnlineCard } from '@/components/OnlineCard';
+import { EventCard } from '@/components/EventCard';
+import { CardProps } from '@/app/(tabs)/volunteer';
 import { SlidersHorizontal } from 'lucide-react-native';
 import { EcoFeedFilterDropdown } from '@/components/EcoFeedFilterDropdown';
 
@@ -20,48 +20,49 @@ type HeaderProps = {
 };
 
 type ExpandableProps = {
-  isSelected?: boolean,
+  isSelected?: boolean;
   showFeedback?: boolean;
-  setSelectedId?: React.Dispatch<React.SetStateAction<string | null>>; 
+  setSelectedId?: React.Dispatch<React.SetStateAction<string | null>>;
   highlight?: boolean;
   onDelete?: () => void;
-  onHide? : () => void;
-  onPress? : () => void;
+  onHide?: () => void;
+  onPress?: () => void;
 };
 
-export const Header = ({ 
+export const Header = ({
   resultsCount,
   search,
   setSearch,
   filterTypes,
   setFilterTypes,
   maxDistance,
-  setMaxDistance
+  setMaxDistance,
 }: HeaderProps) => {
   const { profile } = useAuth();
   const [showFilters, setShowFilters] = useState(false);
 
   return (
     <View style={CardStyles.feedHeader}>
-      <Text style={CardStyles.userText}>Ready to take action 
-        <Text style={ CardStyles.userName}> {profile?.first_name} {profile?.last_name}?</Text>
+      <Text style={CardStyles.userText}>
+        Ready to take action
+        <Text style={CardStyles.userName}>
+          {' '}
+          {profile?.first_name} {profile?.last_name}?
+        </Text>
       </Text>
       {/* Searchbar */}
       <View>
         <View style={styles.searchRow}>
           <TextInput
-            placeholder="Search..."
-            placeholderTextColor="#868E8B"
+            placeholder='Search...'
+            placeholderTextColor='#868E8B'
             value={search}
             onChangeText={setSearch}
             style={styles.searchInput}
           />
 
-          <Pressable
-            onPress={() => setShowFilters(prev => !prev)}
-            style={styles.filterButton}
-          >
-            <SlidersHorizontal size={18} color="black" />
+          <Pressable onPress={() => setShowFilters((prev) => !prev)} style={styles.filterButton}>
+            <SlidersHorizontal size={18} color='black' />
           </Pressable>
         </View>
 
@@ -69,9 +70,9 @@ export const Header = ({
           <View style={{ marginTop: 16 }}>
             <EcoFeedFilterDropdown
               typeOptions={[
-                { label: "In-Person Eco Actions", value: "in_person" },
-                { label: "Online Eco Actions", value: "online" },
-                { label: "Events", value: "event" },
+                { label: 'In-Person Eco Actions', value: 'in_person' },
+                { label: 'Online Eco Actions', value: 'online' },
+                { label: 'Events', value: 'event' },
               ]}
               selectedTypes={filterTypes}
               selectedDistance={maxDistance}
@@ -85,7 +86,7 @@ export const Header = ({
         )}
       </View>
     </View>
-    );
+  );
 };
 
 export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
@@ -97,25 +98,25 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
   const toggleExpanded = () => {
     if (props.setSelectedId) {
       const key = `${card.cardInfo.id}-${card.cardType}`;
-      props.setSelectedId(prev => (prev === key ? null : key));
+      props.setSelectedId((prev) => (prev === key ? null : key));
       props.onPress?.();
     }
-   };
+  };
 
   if (!card) return null;
 
   switch (card.cardType) {
-    case "in_person":
+    case 'in_person':
       return (
-        <InPersonCard 
-          {...card} 
+        <InPersonCard
+          {...card}
           highlight={props.highlight}
-          showFeedback={props.showFeedback === true}   
+          showFeedback={props.showFeedback === true}
           onDelete={props.onDelete}
           onHide={props.onHide}
-          liked={card.liked} 
-          signed_up={card.signed_up} 
-          completed={card.completed} 
+          liked={card.liked}
+          signed_up={card.signed_up}
+          completed={card.completed}
           clicked={card.clicked}
           feedbackVisible={feedbackVisible}
           setFeedbackVisible={setFeedbackVisible}
@@ -123,31 +124,31 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
           statCount={card.statCount}
         />
       );
-    case "online":
+    case 'online':
       return (
-        <OnlineCard 
-          {...card} 
+        <OnlineCard
+          {...card}
           highlight={props.highlight}
-          showFeedback={props.showFeedback === true}   
+          showFeedback={props.showFeedback === true}
           onDelete={props.onDelete}
           onHide={props.onHide}
-          liked={card.liked} 
-          completed={card.completed} 
+          liked={card.liked}
+          completed={card.completed}
           clicked={card.clicked}
           statCount={card.statCount}
         />
       );
-    case "event":
+    case 'event':
       return (
-        <EventCard 
-          {...card} 
+        <EventCard
+          {...card}
           highlight={props.highlight}
-          showFeedback={props.showFeedback === true}   
+          showFeedback={props.showFeedback === true}
           onDelete={props.onDelete}
           onHide={props.onHide}
-          liked={card.liked} 
-          signed_up={card.signed_up} 
-          completed={card.completed} 
+          liked={card.liked}
+          signed_up={card.signed_up}
+          completed={card.completed}
           clicked={card.clicked}
           feedbackVisible={feedbackVisible}
           setFeedbackVisible={setFeedbackVisible}
@@ -164,7 +165,7 @@ const styles = StyleSheet.create({
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: "#EAF2F6",
+    backgroundColor: '#EAF2F6',
     borderRadius: 8,
   },
   searchInput: {
@@ -181,4 +182,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 8,
   },
-})
+});

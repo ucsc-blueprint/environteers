@@ -15,29 +15,21 @@ export default function VerifyEmail({ email }: VerifyEmailProps) {
   const handleResend = async () => {
     if (!email) return;
     setResending(true);
-    try 
-    {
-        const { error } = await supabase.auth.resend({
-            type: 'signup',
-            email,
-        });
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+      });
 
-        if (error) 
-        {
-            Alert.alert('Failed to resend', error.message);
-        } 
-        else 
-        {
-            Alert.alert('Email sent', 'A new verification email has been sent to your inbox.');
-        }
-    } 
-    catch 
-    {
-        Alert.alert('Error', 'Something went wrong. Please try again.');
-    } 
-    finally 
-    {
-        setResending(false);
+      if (error) {
+        Alert.alert('Failed to resend', error.message);
+      } else {
+        Alert.alert('Email sent', 'A new verification email has been sent to your inbox.');
+      }
+    } catch {
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    } finally {
+      setResending(false);
     }
   };
 
@@ -45,7 +37,7 @@ export default function VerifyEmail({ email }: VerifyEmailProps) {
     <View style={styles.container}>
       {/* Back button */}
       <Pressable style={styles.backButton} onPress={() => router.back()}>
-        <ChevronLeft size={20} color="#757575" />
+        <ChevronLeft size={20} color='#757575' />
         <Text style={styles.backText}>Back</Text>
       </Pressable>
 
@@ -53,13 +45,12 @@ export default function VerifyEmail({ email }: VerifyEmailProps) {
         <Text style={styles.title}>Verify Email</Text>
 
         <Text style={styles.paragraph}>
-            We just sent a verification email to{' '}<Text style={styles.emailBold}>{email}</Text>.
+          We just sent a verification email to <Text style={styles.emailBold}>{email}</Text>.
         </Text>
 
-      {/* Body content */}
+        {/* Body content */}
         <Text style={styles.paragraph}>
-            Please check your inbox and click the verification link to activate
-            your account.
+          Please check your inbox and click the verification link to activate your account.
         </Text>
 
         {/* Resend button */}
@@ -73,7 +64,7 @@ export default function VerifyEmail({ email }: VerifyEmailProps) {
           disabled={resending}
         >
           {resending ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color='#fff' />
           ) : (
             <Text style={styles.resendButtonText}>Resend Email</Text>
           )}

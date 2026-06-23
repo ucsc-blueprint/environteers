@@ -1,47 +1,32 @@
 import React from 'react';
-import {
-  Pressable,
-  Text,
-  Alert,
-  StyleSheet,
-} from 'react-native';
+import { Pressable, Text, Alert, StyleSheet } from 'react-native';
 
 import { supabase } from '@/constants/supabase';
 
 export const LogoutButton: React.FC = () => {
-
   const handleLogout = async (): Promise<void> => {
-    Alert.alert(
-      'Log out',
-      'Are you sure you want to log out?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Log out',
-          style: 'destructive',
-          onPress: async () => {
-            const { error } = await supabase.auth.signOut();
+    Alert.alert('Log out', 'Are you sure you want to log out?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Log out',
+        style: 'destructive',
+        onPress: async () => {
+          const { error } = await supabase.auth.signOut();
 
-            if (error) {
-              Alert.alert('Error', error.message);
-            }
-          },
+          if (error) {
+            Alert.alert('Error', error.message);
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   return (
-    <Pressable
-      style={styles.logoutButton}
-      onPress={handleLogout}
-    >
-      <Text style={styles.logoutText}>
-        Log Out
-      </Text>
+    <Pressable style={styles.logoutButton} onPress={handleLogout}>
+      <Text style={styles.logoutText}>Log Out</Text>
     </Pressable>
   );
 };

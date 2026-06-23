@@ -1,6 +1,6 @@
 // src/components/SignupForm.tsx
 import React, { useState } from 'react';
-import {View, TextInput, Text, Pressable, GestureResponderEvent, StyleSheet } from 'react-native';
+import { View, TextInput, Text, Pressable, GestureResponderEvent, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
 
@@ -10,7 +10,7 @@ export interface SignupFormProps {
     lastName: string,
     email: string,
     password: string,
-    isAdmin: boolean
+    isAdmin: boolean,
   ) => void;
   isAdmin?: boolean;
 }
@@ -27,7 +27,6 @@ const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
   const [error, setError] = useState('');
 
   const handleSubmit = async (_event: GestureResponderEvent) => {
-
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
       setError('Please fill out all fields.');
       return;
@@ -47,7 +46,7 @@ const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
       setError('Please enter a valid email address!');
       return;
     }
-    
+
     onSubmit(firstName, lastName, email, password, isAdmin);
   };
 
@@ -55,10 +54,8 @@ const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
     <View style={styles.container}>
       <View style={styles.content}>
         <Pressable style={styles.backButton} onPress={() => router.push('/')}>
-          <ChevronLeft size={20} color="#757575" />
-          <Text style={styles.backText}>
-            {isAdmin ? 'Not an admin? Click to go back' : 'Back'}
-          </Text>
+          <ChevronLeft size={20} color='#757575' />
+          <Text style={styles.backText}>{isAdmin ? 'Not an admin? Click to go back' : 'Back'}</Text>
         </Pressable>
 
         <Text style={styles.title}>Welcome!</Text>
@@ -73,8 +70,8 @@ const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
           <TextInput
             value={firstName}
             onChangeText={setFirstName}
-            placeholder="Enter first name"
-            placeholderTextColor="#868E8B"
+            placeholder='Enter first name'
+            placeholderTextColor='#868E8B'
             style={styles.input}
           />
 
@@ -82,8 +79,8 @@ const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
           <TextInput
             value={lastName}
             onChangeText={setLastName}
-            placeholder="Enter last name"
-            placeholderTextColor="#868E8B"
+            placeholder='Enter last name'
+            placeholderTextColor='#868E8B'
             style={styles.input}
           />
 
@@ -91,10 +88,10 @@ const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
           <TextInput
             value={email}
             onChangeText={setEmail}
-            placeholder="Enter email"
-            placeholderTextColor="#868E8B"
-            keyboardType="email-address"
-            autoCapitalize="none"
+            placeholder='Enter email'
+            placeholderTextColor='#868E8B'
+            keyboardType='email-address'
+            autoCapitalize='none'
             style={styles.input}
           />
 
@@ -103,13 +100,17 @@ const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
             <TextInput
               value={password}
               onChangeText={setPassword}
-              placeholder="Enter password"
-              placeholderTextColor="#868E8B"
+              placeholder='Enter password'
+              placeholderTextColor='#868E8B'
               secureTextEntry={!showPassword}
               style={[styles.input, { flex: 1, marginBottom: 0 }]}
             />
-            <Pressable style={styles.eyeIcon} onPress={() => setShowPassword(prev => !prev)}>
-              {showPassword ? <EyeOff size={18} color="#868E8B" /> : <Eye size={18} color="#868E8B" />}
+            <Pressable style={styles.eyeIcon} onPress={() => setShowPassword((prev) => !prev)}>
+              {showPassword ? (
+                <EyeOff size={18} color='#868E8B' />
+              ) : (
+                <Eye size={18} color='#868E8B' />
+              )}
             </Pressable>
           </View>
           <Text style={styles.hint}>Must include at least 8 characters</Text>
@@ -119,26 +120,25 @@ const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
             <TextInput
               value={confirmPassword}
               onChangeText={setConfirmPassword}
-              placeholder="Re-type password"
-              placeholderTextColor="#868E8B"
+              placeholder='Re-type password'
+              placeholderTextColor='#868E8B'
               secureTextEntry={!showConfirm}
               style={[styles.input, { flex: 1, marginBottom: 0 }]}
             />
-            <Pressable style={styles.eyeIcon} onPress={() => setShowConfirm(prev => !prev)}>
-              {showConfirm ? <EyeOff size={18} color="#868E8B" /> : <Eye size={18} color="#868E8B" />}
+            <Pressable style={styles.eyeIcon} onPress={() => setShowConfirm((prev) => !prev)}>
+              {showConfirm ? (
+                <EyeOff size={18} color='#868E8B' />
+              ) : (
+                <Eye size={18} color='#868E8B' />
+              )}
             </Pressable>
           </View>
         </View>
 
-        {error !== '' && (
-          <Text style={styles.error}>{error}</Text>
-        )}
+        {error !== '' && <Text style={styles.error}>{error}</Text>}
 
         <Pressable
-          style={({ pressed }) => [
-            styles.submitButton,
-            pressed && styles.submitButtonPressed,
-          ]}
+          style={({ pressed }) => [styles.submitButton, pressed && styles.submitButtonPressed]}
           onPress={handleSubmit}
         >
           <Text style={styles.submitButtonText}>Create account</Text>
@@ -278,4 +278,3 @@ const styles = StyleSheet.create({
 });
 
 export default SignupForm;
-

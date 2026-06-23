@@ -9,12 +9,12 @@ const meta = {
   title: 'Example/LandingPage',
   component: LandingPage,
   decorators: [
-  (Story) => (
-    <View style={{ height: screenHeight, width: "100%" }}>
-      <Story />
-    </View>
-  ),
-],
+    (Story) => (
+      <View style={{ height: screenHeight, width: '100%' }}>
+        <Story />
+      </View>
+    ),
+  ],
 } satisfies Meta<typeof LandingPage>;
 export default meta;
 
@@ -24,5 +24,5 @@ export const Primary: Story = {
   args: {
     onLoginClick: fn(),
     onRegisterClick: fn(),
-  }
-}
+  },
+};

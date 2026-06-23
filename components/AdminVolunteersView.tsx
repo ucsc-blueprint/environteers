@@ -1,9 +1,8 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import {View, Text, TextInput, FlatList, Pressable, StyleSheet,
-} from 'react-native';
+import { View, Text, TextInput, FlatList, Pressable, StyleSheet } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 
-import { supabase } from "@/constants/supabase";
+import { supabase } from '@/constants/supabase';
 
 import { UserAvatar } from '@/components/UserAvatar';
 
@@ -14,7 +13,7 @@ type Volunteer = {
   profilePicture: string | null;
 };
 
-const includesText = (str: string, search: string) => 
+const includesText = (str: string, search: string) =>
   str.toLowerCase().includes(search.toLowerCase());
 
 export const formatMembership = (created_at: string) => {
@@ -22,22 +21,24 @@ export const formatMembership = (created_at: string) => {
   const now = new Date();
 
   const diffMs = now.getTime() - created.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) return "Joined today";
-  if (diffDays < 30) return `Member for ${diffDays} day${diffDays === 1 ? "" : "s"}`;
-  
+  if (diffDays === 0) return 'Joined today';
+  if (diffDays < 30) return `Member for ${diffDays} day${diffDays === 1 ? '' : 's'}`;
+
   const months = Math.floor(diffDays / 30);
-  if (months < 12) return `Member for ${months} month${months === 1 ? "" : "s"}`; 
+  if (months < 12) return `Member for ${months} month${months === 1 ? '' : 's'}`;
 
   const years = Math.floor(months / 12);
   const remainingMonths = months % 12;
 
-  if (remainingMonths === 0) return `Member for ${years} year${years === 1 ? "" : "s"}`;
+  if (remainingMonths === 0) return `Member for ${years} year${years === 1 ? '' : 's'}`;
 
-  return `Member for ${years} year${years === 1 ? "" : "s"} and ` +
-         `${remainingMonths} month${remainingMonths === 1 ? "" : "s"}`;
-}
+  return (
+    `Member for ${years} year${years === 1 ? '' : 's'} and ` +
+    `${remainingMonths} month${remainingMonths === 1 ? '' : 's'}`
+  );
+};
 
 export const AdminVolunteersView = () => {
   const router = useRouter();
@@ -51,14 +52,14 @@ export const AdminVolunteersView = () => {
           const { data, error } = await supabase
             .from('users')
             .select('user_id, first_name, last_name, created_at, profile_picture')
-            .eq("is_admin", false);
+            .eq('is_admin', false);
 
           if (error) {
-            console.error("Error fetching users:", error);
+            console.error('Error fetching users:', error);
             return;
           }
 
-          const users: Volunteer[] = (data ?? []).map(user => {
+          const users: Volunteer[] = (data ?? []).map((user) => {
             return {
               id: user.user_id,
               name: `${user.first_name} ${user.last_name}`,
@@ -69,32 +70,26 @@ export const AdminVolunteersView = () => {
 
           setAllVolunteers(users);
         } catch (error) {
-          console.error("Unexpected error:", error);
+          console.error('Unexpected error:', error);
         }
       };
 
       fetchUsers();
-    }, [])
+    }, []),
   );
 
   const volunteers = useMemo(() => {
     if (!searchText.trim()) return allVolunteers;
 
-    return allVolunteers.filter(user => 
-      includesText(user.name, searchText)
-    );
+    return allVolunteers.filter((user) => includesText(user.name, searchText));
   }, [allVolunteers, searchText]);
 
   return (
-    <View style = {styles.container}>
+    <View style={styles.container}>
       <View style={styles.container}>
-
         <TextInput
           placeholderTextColor='#999'
-          
-          placeholder="Search..."
-          
-
+          placeholder='Search...'
           style={styles.search}
           value={searchText}
           onChangeText={setSearchText}
@@ -104,14 +99,20 @@ export const AdminVolunteersView = () => {
         <FlatList
           data={volunteers}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingBottom: 24, paddingInline: 24}}
+          contentContainerStyle={{ paddingBottom: 24, paddingInline: 24 }}
           renderItem={({ item }) => (
-            <Pressable 
+            <Pressable
               style={styles.row}
-              onPress={() => router.push({
-                pathname: '/(tabs)/admin-analytics',
-                params: { volunteerName: item.name, membershipStatus: item.membership, volunteerID: item.id }
-              })}
+              onPress={() =>
+                router.push({
+                  pathname: '/(tabs)/admin-analytics',
+                  params: {
+                    volunteerName: item.name,
+                    membershipStatus: item.membership,
+                    volunteerID: item.id,
+                  },
+                })
+              }
             >
               <View style={{ marginRight: 12 }}>
                 <UserAvatar
@@ -124,8 +125,7 @@ export const AdminVolunteersView = () => {
 
               <View style={{ flex: 1 }}>
                 <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.subtext}>{item.membership}
-                </Text>
+                <Text style={styles.subtext}>{item.membership}</Text>
               </View>
             </Pressable>
           )}
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    width : '100%'
+    width: '100%',
   },
   title: {
     fontSize: 24,
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   },
   search: {
     borderWidth: 1,
-    width : '85%',
+    width: '85%',
     alignSelf: 'center',
     borderColor: '#151414',
     borderRadius: 24,
@@ -198,4 +198,3 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 });
-

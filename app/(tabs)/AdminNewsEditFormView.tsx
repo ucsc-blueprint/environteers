@@ -9,15 +9,13 @@ export default function AdminNewsEditFormView() {
   const { id } = useLocalSearchParams();
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#000000" />
+    return <ActivityIndicator size='large' color='#000000' />;
   }
   if (!profile) {
-    return <Redirect href="/" />
+    return <Redirect href='/' />;
   }
   if (!profile.is_admin) {
-    return <Redirect href="/(tabs)/volunteer" />
+    return <Redirect href='/(tabs)/volunteer' />;
   }
-  return (
-    <AdminNewsEditForm id={id as string} />
-  )
+  return <AdminNewsEditForm id={id as string} />;
 }

@@ -7,11 +7,11 @@ import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { EcoFeed } from '@/components/EcoFeed';
 import { InPersonCardDataProps } from '@/components/InPersonCard';
 import { EventCardDataProps } from '@/components/EventCard';
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, SlidersHorizontal } from 'lucide-react-native';
 import { EcoFeedFilterDropdown } from '@/components/EcoFeedFilterDropdown';
-import { useInteractions } from '@/context/InteractionsContext'
+import { useInteractions } from '@/context/InteractionsContext';
 
 type MapItem = InPersonCardDataProps | EventCardDataProps;
 
@@ -22,38 +22,45 @@ interface MapMarkerProps {
   selected: boolean;
 }
 
-const MarkerContent = ({type, selected} : {type: string; selected: boolean}) => {
-  const displayType = type === "event" ? "Event" : "Eco-Action";
+const MarkerContent = ({ type, selected }: { type: string; selected: boolean }) => {
+  const displayType = type === 'event' ? 'Event' : 'Eco-Action';
   return (
-    <View
-      style={styles.markerContainer}>
-      <View style={[type === "event" ? styles.bubbleEvent : styles.bubbleEcoAction,
-        selected &&  (type === "event" ? styles.bubbleEventSelect : styles.bubbleEcoActionSelect)]
-      }>
-        <Text style={[styles.text,
-          selected && (type === "event" ? styles.textEventSelect : styles.textEcoActionSelect)]
-        }>{displayType}</Text>
+    <View style={styles.markerContainer}>
+      <View
+        style={[
+          type === 'event' ? styles.bubbleEvent : styles.bubbleEcoAction,
+          selected && (type === 'event' ? styles.bubbleEventSelect : styles.bubbleEcoActionSelect),
+        ]}
+      >
+        <Text
+          style={[
+            styles.text,
+            selected && (type === 'event' ? styles.textEventSelect : styles.textEcoActionSelect),
+          ]}
+        >
+          {displayType}
+        </Text>
       </View>
-      <View style={type === "event" ? styles.tailEvent : styles.tailEcoAction}/>
+      <View style={type === 'event' ? styles.tailEvent : styles.tailEcoAction} />
     </View>
-  )
-}
+  );
+};
 
 const MapMarker = ({ coordinate, type, onPress, selected }: MapMarkerProps) => {
   return (
     <Marker
       coordinate={coordinate}
-      anchor={{x: 0.5, y: 1}}
-      centerOffset={{x: 0, y: -23}} 
+      anchor={{ x: 0.5, y: 1 }}
+      centerOffset={{ x: 0, y: -23 }}
       onPress={(e) => {
         e.stopPropagation();
         onPress();
       }}
-      tracksViewChanges={selected}>
+      tracksViewChanges={selected}
+    >
       <MarkerContent type={type} selected={selected} />
     </Marker>
-
-  )
+  );
 };
 
 // for filtering past events/in-person cards
@@ -68,25 +75,29 @@ const isPastItem = (item: any) => {
 
 const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
   const R = 3958.8;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
 
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  
+
   return R * c;
 };
 
 export default function Map() {
   const router = useRouter();
 
-  const [userLocation, setUserLocation] = useState<{ latitude: number, longitude: number } | null>(null);
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(
+    null,
+  );
   const [markers, setMarkers] = useState<any[]>([]);
   const [items, setItems] = useState<MapItem[]>([]);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filterTypes, setFilterTypes] = useState<string[]>([]);
   const [maxDistance, setMaxDistance] = useState<number | null>(null);
@@ -102,7 +113,7 @@ export default function Map() {
   const handleMarkerPress = (id: string, type: string) => {
     bottomSheetRef.current?.snapToIndex(3);
     const index = filteredItems.findIndex(
-      item => item.cardInfo.id === id && item.cardType === type
+      (item) => item.cardInfo.id === id && item.cardType === type,
     );
     setSelectedId(`${id}-${type}`);
     if (index === -1) return;
@@ -110,15 +121,13 @@ export default function Map() {
       flatListRef.current?.scrollToIndex({
         index,
         animated: true,
-        viewPosition: 0
+        viewPosition: 0,
       });
     }, 800);
-  }
+  };
 
   const handleCardPress = (id: string, type: string) => {
-    const marker = markers.find(
-      m => m.id === id && m.type === type
-    );
+    const marker = markers.find((m) => m.id === id && m.type === type);
 
     setSelectedId(`${id}-${type}`);
 
@@ -134,17 +143,18 @@ export default function Map() {
     }
   };
 
-  const getInteractionState = useCallback((id: string, type: string) => {
-    const match = interactionCards.find(
-      c => c.cardInfo.id === id && c.cardType === type
-    );
-    return {
-      liked: match?.liked ?? false,
-      signed_up: match && 'signed_up' in match ? match.signed_up : null,
-      completed: match?.completed ?? null,
-      clicked: match?.clicked ?? false,
-    };
-  }, [interactionCards]);
+  const getInteractionState = useCallback(
+    (id: string, type: string) => {
+      const match = interactionCards.find((c) => c.cardInfo.id === id && c.cardType === type);
+      return {
+        liked: match?.liked ?? false,
+        signed_up: match && 'signed_up' in match ? match.signed_up : null,
+        completed: match?.completed ?? null,
+        clicked: match?.clicked ?? false,
+      };
+    },
+    [interactionCards],
+  );
 
   useEffect(() => {
     const getLocation = async () => {
@@ -158,23 +168,21 @@ export default function Map() {
     };
 
     const fetchMapData = async () => {
-      const { data: event, error: eventError } = await supabase
-        .from("events")
-        .select("*");
+      const { data: event, error: eventError } = await supabase.from('events').select('*');
 
       if (eventError) {
-        console.error("Error fetching events from supabase", eventError);
+        console.error('Error fetching events from supabase', eventError);
       }
-  
+
       const { data: ecoInPerson, error: ecoInPersonError } = await supabase
-        .from("inperson_ecoactions")
-        .select("*");
+        .from('inperson_ecoactions')
+        .select('*');
 
       if (ecoInPersonError) {
-        console.error("Error fetching in-person eco-actions from supabase", ecoInPersonError);
+        console.error('Error fetching in-person eco-actions from supabase', ecoInPersonError);
       }
 
-      const processLocation = (item: any, type: "event" | "in_person") => {
+      const processLocation = (item: any, type: 'event' | 'in_person') => {
         if (!item.location_longitude || !item.location_latitude) {
           return null;
         }
@@ -192,7 +200,7 @@ export default function Map() {
         event
           ?.filter((e) => !isPastItem(e) && !e.hidden)
           .map((e) => ({
-            cardType: "event",
+            cardType: 'event',
             cardInfo: {
               id: e.id,
               title: e.title,
@@ -212,133 +220,143 @@ export default function Map() {
             feedback: null,
           })) ?? [];
 
-      const inPersonEcoItems: InPersonCardDataProps[] =
-        (ecoInPerson ?? [])
-          .filter((e) => !isPastItem(e) && !e.hidden)
-          .map((e) => ({
-            cardType: "in_person",
-            cardInfo: {
-              id: e.id,
-              created_at: e.created_at,
-              cover_photo: e.cover_photo ?? undefined,
-              title: e.title,
-              location: e.location ?? undefined,
-              start_date: e.start_date,
-              end_date: e.end_date,
-              sign_up_link: e.sign_up_link,
-              summary: e.summary ?? undefined,
-              google_calendar_link: e.google_calendar_link ?? undefined,
-              hidden: e.hidden ?? false,
-            },
-            liked: false,
-            signed_up: null,
-            completed: null,
-            clicked: false,
-            feedback: null,
-          }));
+      const inPersonEcoItems: InPersonCardDataProps[] = (ecoInPerson ?? [])
+        .filter((e) => !isPastItem(e) && !e.hidden)
+        .map((e) => ({
+          cardType: 'in_person',
+          cardInfo: {
+            id: e.id,
+            created_at: e.created_at,
+            cover_photo: e.cover_photo ?? undefined,
+            title: e.title,
+            location: e.location ?? undefined,
+            start_date: e.start_date,
+            end_date: e.end_date,
+            sign_up_link: e.sign_up_link,
+            summary: e.summary ?? undefined,
+            google_calendar_link: e.google_calendar_link ?? undefined,
+            hidden: e.hidden ?? false,
+          },
+          liked: false,
+          signed_up: null,
+          completed: null,
+          clicked: false,
+          feedback: null,
+        }));
 
       const markerResults = [
-        ...((event || [])
-          .filter((e) => !isPastItem(e))
-          .map((e) => processLocation(e, "event"))),
+        ...(event || []).filter((e) => !isPastItem(e)).map((e) => processLocation(e, 'event')),
 
-        ...((ecoInPerson || [])
+        ...(ecoInPerson || [])
           .filter((e) => !isPastItem(e))
-          .map((e) => processLocation(e, "in_person"))),
+          .map((e) => processLocation(e, 'in_person')),
       ];
 
       const markers = markerResults.filter((m) => m !== null);
 
       setItems([...events, ...inPersonEcoItems]);
       setMarkers(markers);
-    }
+    };
 
     getLocation();
     fetchMapData();
   }, []);
 
-  const filteredItems = useMemo(() => items
-    .filter(item => {
-      const matchesSearch = item.cardInfo.title.toLowerCase().includes(search.toLowerCase())
-      const matchesType = filterTypes.length === 0 || filterTypes.includes(item.cardType);
+  const filteredItems = useMemo(
+    () =>
+      items
+        .filter((item) => {
+          const matchesSearch = item.cardInfo.title.toLowerCase().includes(search.toLowerCase());
+          const matchesType = filterTypes.length === 0 || filterTypes.includes(item.cardType);
 
-      const matchesDistance =
-        !maxDistance || !userLocation
-          ? true
-          : markers.find(m => m.id === item.cardInfo.id && m.type === item.cardType)
-            ? getDistance(
+          const matchesDistance =
+            !maxDistance || !userLocation
+              ? true
+              : markers.find((m) => m.id === item.cardInfo.id && m.type === item.cardType)
+                ? getDistance(
+                    userLocation.latitude,
+                    userLocation.longitude,
+                    markers.find((m) => m.id === item.cardInfo.id && m.type === item.cardType)!
+                      .latitude,
+                    markers.find((m) => m.id === item.cardInfo.id && m.type === item.cardType)!
+                      .longitude,
+                  ) <= maxDistance
+                : true;
+
+          return matchesSearch && matchesType && matchesDistance;
+        })
+        .map((item) => ({
+          ...item,
+          ...getInteractionState(item.cardInfo.id, item.cardType),
+        })),
+    [items, search, filterTypes, maxDistance, userLocation, markers, getInteractionState],
+  );
+
+  const filteredMarkers = useMemo(
+    () =>
+      markers.filter((marker) => {
+        const matchesType = filterTypes.length === 0 || filterTypes.includes(marker.type);
+
+        const matchesDistance =
+          !maxDistance || !userLocation
+            ? true
+            : getDistance(
                 userLocation.latitude,
                 userLocation.longitude,
-                markers.find(m => m.id === item.cardInfo.id && m.type === item.cardType)!.latitude,
-                markers.find(m => m.id === item.cardInfo.id && m.type === item.cardType)!.longitude
-              ) <= maxDistance
-            : true;
+                marker.latitude,
+                marker.longitude,
+              ) <= maxDistance;
 
-      return matchesSearch && matchesType && matchesDistance;
-    })
-    .map(item => ({
-      ...item,
-      ...getInteractionState(item.cardInfo.id, item.cardType)
-    })),
-  [items, search, filterTypes, maxDistance, userLocation, markers, getInteractionState]);
-
-  const filteredMarkers = useMemo(() => markers.filter(marker => {
-    const matchesType = filterTypes.length === 0 || filterTypes.includes(marker.type);
-
-    const matchesDistance =
-      !maxDistance || !userLocation
-        ? true
-        : getDistance(
-            userLocation.latitude,
-            userLocation.longitude,
-            marker.latitude,
-            marker.longitude
-          ) <= maxDistance
-
-    return matchesType && matchesDistance;
-  }), [markers, filterTypes, maxDistance, userLocation]);
+        return matchesType && matchesDistance;
+      }),
+    [markers, filterTypes, maxDistance, userLocation],
+  );
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <Pressable onPress={() => router.replace("/(tabs)/volunteer")} style={styles.backButton}>
-        <ChevronLeft size={24} color="#000" />
+      <Pressable onPress={() => router.replace('/(tabs)/volunteer')} style={styles.backButton}>
+        <ChevronLeft size={24} color='#000' />
       </Pressable>
 
       <MapView
         ref={mapRef}
         style={styles.map}
         showsUserLocation
-        initialRegion={userLocation ? {
-          ...userLocation,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        } : undefined}
+        initialRegion={
+          userLocation
+            ? {
+                ...userLocation,
+                latitudeDelta: 0.0922,
+                longitudeDelta: 0.0421,
+              }
+            : undefined
+        }
       >
         {filteredMarkers.map((marker) => (
           <MapMarker
             key={`${marker.id}-${marker.type}`}
-            coordinate={{latitude: marker.latitude, longitude: marker.longitude}}
+            coordinate={{ latitude: marker.latitude, longitude: marker.longitude }}
             type={marker.type}
             onPress={() => handleMarkerPress(marker.id, marker.type)}
             selected={selectedId === `${marker.id}-${marker.type}`}
           />
         ))}
       </MapView>
-      
+
       <BottomSheet
         ref={bottomSheetRef}
         index={0}
         enableContentPanningGesture={false}
         snapPoints={snapPoints}
         backgroundStyle={{ backgroundColor: 'white' }}
-        handleIndicatorStyle={{ backgroundColor: "#ccc" }}
+        handleIndicatorStyle={{ backgroundColor: '#ccc' }}
       >
         <BottomSheetFlatList
           ref={flatListRef}
           data={filteredItems}
-          style={{flex: 1}}
+          style={{ flex: 1 }}
           keyExtractor={(item: MapItem) => `${item.cardInfo.id}-${item.cardType}`}
-          onScrollToIndexFailed={(info: {index: number; averageItemLength: number}) => {
+          onScrollToIndexFailed={(info: { index: number; averageItemLength: number }) => {
             flatListRef.current?.scrollToOffset({
               offset: info.averageItemLength * info.index,
               animated: true,
@@ -348,18 +366,18 @@ export default function Map() {
             <View>
               <View style={styles.searchRow}>
                 <TextInput
-                  placeholder="Search..."
-                  placeholderTextColor="#868E8B"
+                  placeholder='Search...'
+                  placeholderTextColor='#868E8B'
                   value={search}
                   onChangeText={setSearch}
                   style={styles.searchInput}
                 />
 
                 <Pressable
-                  onPress={() => setShowFilters(prev => !prev)}
+                  onPress={() => setShowFilters((prev) => !prev)}
                   style={styles.filterButton}
                 >
-                  <SlidersHorizontal size={18} color="black" />
+                  <SlidersHorizontal size={18} color='black' />
                 </Pressable>
               </View>
 
@@ -367,8 +385,8 @@ export default function Map() {
                 <View style={{ marginTop: 16 }}>
                   <EcoFeedFilterDropdown
                     typeOptions={[
-                      { label: "Eco Actions", value: "in_person" },
-                      { label: "Events", value: "event" },
+                      { label: 'Eco Actions', value: 'in_person' },
+                      { label: 'Events', value: 'event' },
                     ]}
                     selectedTypes={filterTypes}
                     selectedDistance={maxDistance}
@@ -383,26 +401,28 @@ export default function Map() {
             </View>
           }
           renderItem={({ item }: { item: MapItem }) => (
-              <View style={[
+            <View
+              style={[
                 {
                   borderRadius: 12,
                   borderWidth: 2,
-                  borderColor: 'transparent'
+                  borderColor: 'transparent',
                 },
                 `${item.cardInfo.id}-${item.cardType}` === selectedId && {
                   borderColor: item.cardType === 'event' ? '#437CA1' : '#79B128',
-                  borderRadius: 26
-                }
-              ]}>
-                { item && (
-                  <EcoFeed
-                    card={item}
-                    isSelected={`${item.cardInfo.id}-${item.cardType}` === selectedId}
-                    setSelectedId={setSelectedId}
-                    onPress={() => handleCardPress(item.cardInfo.id, item.cardType)}
-                  />
-                )}
-              </View>
+                  borderRadius: 26,
+                },
+              ]}
+            >
+              {item && (
+                <EcoFeed
+                  card={item}
+                  isSelected={`${item.cardInfo.id}-${item.cardType}` === selectedId}
+                  setSelectedId={setSelectedId}
+                  onPress={() => handleCardPress(item.cardInfo.id, item.cardType)}
+                />
+              )}
+            </View>
           )}
           contentContainerStyle={{ paddingBottom: 100, gap: 16, padding: 16 }}
         />
@@ -416,8 +436,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   backButton: {
-    position: 'absolute', 
-    top: 30, 
+    position: 'absolute',
+    top: 30,
     left: 20,
     zIndex: 5,
   },
@@ -427,7 +447,7 @@ const styles = StyleSheet.create({
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: "#EAF2F6",
+    backgroundColor: '#EAF2F6',
     borderRadius: 8,
   },
   searchInput: {
@@ -447,7 +467,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   bubbleEvent: {
-    backgroundColor: "#437CA1",
+    backgroundColor: '#437CA1',
     borderRadius: 20,
     borderWidth: 2,
     borderColor: 'transparent',
@@ -455,7 +475,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   bubbleEcoAction: {
-    backgroundColor: "#79B128",
+    backgroundColor: '#79B128',
     borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -475,7 +495,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 10,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    borderTopColor: "#437CA1",
+    borderTopColor: '#437CA1',
   },
   tailEcoAction: {
     width: 0,
@@ -485,7 +505,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 10,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    borderTopColor: "#79B128",
+    borderTopColor: '#79B128',
   },
   bubbleEventSelect: {
     backgroundColor: 'white',

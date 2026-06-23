@@ -1,26 +1,15 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  ActivityIndicator,
-  Pressable,
-} from "react-native";
-import { useState, useEffect } from "react";
-import { EcoFeed } from "@/components/EcoFeed";
-import { CardProps, useInteractions } from "@/context/InteractionsContext";
-import { SlidersHorizontal, ChevronRight, ChevronDown } from "lucide-react-native";
-import * as Location from "expo-location";
-import { EcoFeedFilterDropdown } from "@/components/EcoFeedFilterDropdown";
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator, Pressable } from 'react-native';
+import { useState, useEffect } from 'react';
+import { EcoFeed } from '@/components/EcoFeed';
+import { CardProps, useInteractions } from '@/context/InteractionsContext';
+import { SlidersHorizontal, ChevronRight, ChevronDown } from 'lucide-react-native';
+import * as Location from 'expo-location';
+import { EcoFeedFilterDropdown } from '@/components/EcoFeedFilterDropdown';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Activity() {
   const { cards, loading } = useInteractions();
-  // const [feedbackVisible, setFeedbackVisible] = useState(false);
-  // const [selectedFeedbackCard, setSelectedFeedbackCard] = useState<CardProps | null>(null);
-  const [selectedFilter, setSelectedFilter] = useState<
-    "signups" | "favorites"
-  >("signups");
+  const [selectedFilter, setSelectedFilter] = useState<'signups' | 'favorites'>('signups');
 
   // Filters
   const [filterTypes, setFilterTypes] = useState<string[]>([]);
@@ -46,7 +35,7 @@ export default function Activity() {
     const getLocation = async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
 
-      if (status !== "granted") return;
+      if (status !== 'granted') return;
 
       const location = await Location.getCurrentPositionAsync({});
 
@@ -60,12 +49,7 @@ export default function Activity() {
   }, []);
 
   // Distance helper
-  const getDistance = (
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ) => {
+  const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
     const R = 3958.8;
 
     const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -88,9 +72,7 @@ export default function Activity() {
     if (!card?.cardInfo) return null;
 
     if (
-      (card.cardType === "event" ||
-        card.cardType === "in_person" ||
-        card.cardType === "online") &&
+      (card.cardType === 'event' || card.cardType === 'in_person' || card.cardType === 'online') &&
       card.cardInfo.end_date
     ) {
       return new Date(card.cardInfo.end_date);
@@ -99,23 +81,12 @@ export default function Activity() {
     return null;
   };
 
-  // feedback handler
-  // const openFeedback = (card: CardProps) => {
-  //   setSelectedFeedbackCard(card);
-  //   setFeedbackVisible(true);
-  // };
-
   // Apply filters
   const filteredCards = cards.filter((card) => {
-    const matchesType =
-      filterTypes.length === 0 || filterTypes.includes(card.cardType);
+    const matchesType = filterTypes.length === 0 || filterTypes.includes(card.cardType);
 
     const matchesDistance = (() => {
-      if (
-        !maxDistance ||
-        !userLocation ||
-        card.cardType === "online"
-      ) {
+      if (!maxDistance || !userLocation || card.cardType === 'online') {
         return true;
       }
 
@@ -124,32 +95,22 @@ export default function Activity() {
 
       if (!lat || !lon) return true;
 
-      return (
-        getDistance(
-          userLocation.latitude,
-          userLocation.longitude,
-          lat,
-          lon
-        ) <= maxDistance
-      );
+      return getDistance(userLocation.latitude, userLocation.longitude, lat, lon) <= maxDistance;
     })();
 
     return matchesType && matchesDistance;
   });
 
   // Card groups
-  const likedCards = filteredCards.filter((c) => c.liked === true && (c.cardInfo.hidden === false));
+  const likedCards = filteredCards.filter((c) => c.liked === true && c.cardInfo.hidden === false);
 
-  const completedCards = filteredCards.filter(
-    (c) => c.completed === true
-  );
+  const completedCards = filteredCards.filter((c) => c.completed === true);
 
   const upcomingCards = filteredCards.filter((card) => {
     const date = getCardDate(card);
 
     return (
-      (card.cardType === "event" ||
-        card.cardType === "in_person") &&
+      (card.cardType === 'event' || card.cardType === 'in_person') &&
       card.signed_up === true &&
       date &&
       date > now
@@ -161,23 +122,15 @@ export default function Activity() {
 
     const isPast = date ? date < now : false;
 
-    if (card.cardType === "online") {
+    if (card.cardType === 'online') {
       return card.clicked === true && card.completed === null;
     }
 
-    if (
-      card.cardType === "event" ||
-      card.cardType === "in_person"
-    ) {
-      const notSignedUpYet =
-        card.clicked === true &&
-        card.signed_up === null;
+    if (card.cardType === 'event' || card.cardType === 'in_person') {
+      const notSignedUpYet = card.clicked === true && card.signed_up === null;
 
       const needsCompletion =
-        card.clicked === true &&
-        card.signed_up === true &&
-        isPast &&
-        card.completed === null;
+        card.clicked === true && card.signed_up === true && isPast && card.completed === null;
 
       return notSignedUpYet || needsCompletion;
     }
@@ -191,25 +144,20 @@ export default function Activity() {
     isOpen: boolean,
     setIsOpen: (value: boolean) => void,
     highlight = false,
-    showFeedback = false
+    showFeedback = false,
   ) => {
     return (
       <View style={styles.sectionContainer}>
-        <Pressable
-          style={styles.sectionHeader}
-          onPress={() => setIsOpen(!isOpen)}
-        >
+        <Pressable style={styles.sectionHeader} onPress={() => setIsOpen(!isOpen)}>
           <Text style={styles.headerText}>{title}</Text>
 
           <View style={styles.rightSection}>
-            <Text style={styles.count}>
-              {cardsToRender.length}
-            </Text>
+            <Text style={styles.count}>{cardsToRender.length}</Text>
 
             {isOpen ? (
-              <ChevronDown size={22} color="#2F4068" />
+              <ChevronDown size={22} color='#2F4068' />
             ) : (
-              <ChevronRight size={22} color="#2F4068" />
+              <ChevronRight size={22} color='#2F4068' />
             )}
           </View>
         </Pressable>
@@ -219,7 +167,7 @@ export default function Activity() {
             {cardsToRender.length === 0 ? (
               <Text style={styles.emptyText}>
                 No activity yet...
-                {"\n"}
+                {'\n'}
                 Go to the Volunteer page to discover your next opportunity!
               </Text>
             ) : (
@@ -240,15 +188,8 @@ export default function Activity() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-      >
-        {loading && (
-          <ActivityIndicator
-            size="large"
-            color="#0000ff"
-          />
-        )}
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {loading && <ActivityIndicator size='large' color='#0000ff' />}
 
         <Text style={styles.title}>Activities</Text>
 
@@ -258,19 +199,14 @@ export default function Activity() {
             <Pressable
               style={[
                 styles.activityButtons,
-                selectedFilter === "signups"
-                  ? styles.selectedButton
-                  : styles.unselectedButton,
+                selectedFilter === 'signups' ? styles.selectedButton : styles.unselectedButton,
               ]}
-              onPress={() =>
-                setSelectedFilter("signups")
-              }
+              onPress={() => setSelectedFilter('signups')}
             >
               <Text
                 style={[
                   styles.buttonText,
-                  selectedFilter !== "signups" &&
-                    styles.nonSelectedButtonText,
+                  selectedFilter !== 'signups' && styles.nonSelectedButtonText,
                 ]}
               >
                 Sign-ups
@@ -280,19 +216,14 @@ export default function Activity() {
             <Pressable
               style={[
                 styles.activityButtons,
-                selectedFilter === "favorites"
-                  ? styles.selectedButton
-                  : styles.unselectedButton,
+                selectedFilter === 'favorites' ? styles.selectedButton : styles.unselectedButton,
               ]}
-              onPress={() =>
-                setSelectedFilter("favorites")
-              }
+              onPress={() => setSelectedFilter('favorites')}
             >
               <Text
                 style={[
                   styles.buttonText,
-                  selectedFilter !== "favorites" &&
-                    styles.nonSelectedButtonText,
+                  selectedFilter !== 'favorites' && styles.nonSelectedButtonText,
                 ]}
               >
                 Favorites
@@ -302,14 +233,9 @@ export default function Activity() {
 
           <Pressable
             style={styles.filterBackground}
-            onPress={() =>
-              setShowFilters((prev) => !prev)
-            }
+            onPress={() => setShowFilters((prev) => !prev)}
           >
-            <SlidersHorizontal
-              size={18}
-              color="black"
-            />
+            <SlidersHorizontal size={18} color='black' />
           </Pressable>
         </View>
 
@@ -319,16 +245,16 @@ export default function Activity() {
             <EcoFeedFilterDropdown
               typeOptions={[
                 {
-                  label: "In-Person Eco Actions",
-                  value: "in_person",
+                  label: 'In-Person Eco Actions',
+                  value: 'in_person',
                 },
                 {
-                  label: "Online Eco Actions",
-                  value: "online",
+                  label: 'Online Eco Actions',
+                  value: 'online',
                 },
                 {
-                  label: "Events",
-                  value: "event",
+                  label: 'Events',
+                  value: 'event',
                 },
               ]}
               selectedTypes={filterTypes}
@@ -344,37 +270,27 @@ export default function Activity() {
 
         {/* Main Content */}
         {!loading &&
-          (selectedFilter === "favorites" ? (
-            renderSection(
-              "Favorites",
-              likedCards,
-              favoritesOpen,
-              setFavoritesOpen
-            )
+          (selectedFilter === 'favorites' ? (
+            renderSection('Favorites', likedCards, favoritesOpen, setFavoritesOpen)
           ) : (
             <>
               {renderSection(
-                "Requires Action",
+                'Requires Action',
                 requiresActionCards,
                 requiresActionOpen,
                 setRequiresActionOpen,
-                true
+                true,
               )}
 
-              {renderSection(
-                "Upcoming",
-                upcomingCards,
-                upcomingOpen,
-                setUpcomingOpen
-              )}
+              {renderSection('Upcoming', upcomingCards, upcomingOpen, setUpcomingOpen)}
 
               {renderSection(
-                "Completed",
+                'Completed',
                 completedCards,
                 completedOpen,
                 setCompletedOpen,
                 false,
-                true
+                true,
               )}
             </>
           ))}
@@ -388,7 +304,7 @@ export default function Activity() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: 'white',
   },
 
   scrollContainer: {
@@ -398,21 +314,21 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    color: "black",
+    color: 'black',
     fontSize: 24,
-    textAlign: "center",
+    textAlign: 'center',
     marginVertical: 10,
-    fontWeight: "600",
+    fontWeight: '600',
   },
 
   filterItemsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 
   buttonContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 20,
   },
 
@@ -423,29 +339,29 @@ const styles = StyleSheet.create({
   },
 
   selectedButton: {
-    backgroundColor: "#3A5513",
+    backgroundColor: '#3A5513',
   },
 
   unselectedButton: {
-    backgroundColor: "white",
+    backgroundColor: 'white',
     borderWidth: 2,
-    borderColor: "#3A5513",
+    borderColor: '#3A5513',
   },
 
   buttonText: {
-    color: "white",
+    color: 'white',
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: '500',
   },
 
   nonSelectedButtonText: {
-    color: "#3A5513",
+    color: '#3A5513',
   },
 
   filterBackground: {
-    backgroundColor: "#D9E0DE",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#D9E0DE',
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 5,
     borderRadius: 5,
@@ -456,34 +372,34 @@ const styles = StyleSheet.create({
   },
 
   sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: 6,
   },
 
   headerText: {
-    color: "#2F4068",
+    color: '#2F4068',
     fontSize: 20,
-    fontWeight: "600",
+    fontWeight: '600',
   },
 
   rightSection: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 10,
   },
 
   count: {
-    backgroundColor: "#FF9212",
+    backgroundColor: '#FF9212',
     borderRadius: 20,
     paddingVertical: 4,
     paddingHorizontal: 10,
-    color: "white",
-    overflow: "hidden",
-    fontWeight: "600",
+    color: 'white',
+    overflow: 'hidden',
+    fontWeight: '600',
     minWidth: 32,
-    textAlign: "center",
+    textAlign: 'center',
   },
 
   cardsContainer: {
@@ -491,13 +407,12 @@ const styles = StyleSheet.create({
   },
 
   emptyText: {
-    color: "#777",
+    color: '#777',
     fontSize: 15,
-    fontStyle: "italic",
+    fontStyle: 'italic',
     paddingVertical: 8,
     paddingHorizontal: 4,
-    textAlign: "center",
+    textAlign: 'center',
     lineHeight: 22,
   },
 });
-

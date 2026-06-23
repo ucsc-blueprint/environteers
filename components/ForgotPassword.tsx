@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/constants/supabase';
@@ -12,7 +20,10 @@ export default function ForgotPassword() {
   const [sending, setSending] = useState(false);
 
   const handleSend = async () => {
-    if (!email) { Alert.alert('Please enter your email'); return; }
+    if (!email) {
+      Alert.alert('Please enter your email');
+      return;
+    }
     setSending(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: Linking.createURL('confirm'),
@@ -21,14 +32,18 @@ export default function ForgotPassword() {
     if (error) {
       Toast.show({ type: 'error', text1: 'Failed to send reset email', text2: error.message });
     } else {
-      Toast.show({ type: 'success', text1: 'Check your email', text2: 'If an account exists for that email, a reset link has been sent.' });
+      Toast.show({
+        type: 'success',
+        text1: 'Check your email',
+        text2: 'If an account exists for that email, a reset link has been sent.',
+      });
     }
   };
 
   return (
     <View style={styles.container}>
       <Pressable style={styles.backButton} onPress={() => router.back()}>
-        <ChevronLeft size={20} color="#757575" />
+        <ChevronLeft size={20} color='#757575' />
         <Text style={styles.backText}>Back</Text>
       </Pressable>
 
@@ -40,10 +55,10 @@ export default function ForgotPassword() {
 
         <TextInput
           style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="#868E8B"
-          keyboardType="email-address"
-          autoCapitalize="none"
+          placeholder='Email'
+          placeholderTextColor='#868E8B'
+          keyboardType='email-address'
+          autoCapitalize='none'
           value={email}
           onChangeText={setEmail}
         />
@@ -58,7 +73,7 @@ export default function ForgotPassword() {
           disabled={sending}
         >
           {sending ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color='#fff' />
           ) : (
             <Text style={styles.buttonText}>Send Reset Link</Text>
           )}
