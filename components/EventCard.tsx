@@ -416,7 +416,12 @@ export const EventCard = ({
             )}
             {/* Verify If User Signed-up */}
             {shouldShowPrompt && (
-              <View style={CardStyles.confirmationContainer}>
+              <View
+                style={[
+                  CardStyles.confirmationContainer,
+                  highlight && CardStyles.confirmationContainerHighlight,
+                ]}
+              >
                 <Text style={{ color: '#3A5513' }}>Did you sign up for this event?</Text>
                 <View style={CardStyles.confirmationButtons}>
                   <Pressable
@@ -439,7 +444,12 @@ export const EventCard = ({
             )}
 
             {shouldShowCompletionPrompt && (
-              <View style={CardStyles.confirmationContainer}>
+              <View
+                style={[
+                  CardStyles.confirmationContainer,
+                  highlight && CardStyles.confirmationContainerHighlight,
+                ]}
+              >
                 <Text style={{ color: '#3A5513' }}>Did you complete this event?</Text>
 
                 <View style={CardStyles.confirmationButtons}>

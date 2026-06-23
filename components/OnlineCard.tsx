@@ -317,7 +317,12 @@ export const OnlineCard = ({
             )}
             {/* Verify If User Signed-up */}
             {shouldShowPrompt && (
-              <View style={CardStyles.confirmationContainer}>
+              <View
+                style={[
+                  CardStyles.confirmationContainer,
+                  highlight && CardStyles.confirmationContainerHighlight,
+                ]}
+              >
                 <Text style={{ color: '#3A5513' }}>Did you complete this online eco-action?</Text>
                 <View style={CardStyles.confirmationButtons}>
                   <Pressable

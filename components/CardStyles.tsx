@@ -231,7 +231,6 @@ export const CardStyles = StyleSheet.create({
   signUpButtonContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: 'white',
   },
 
   signUp: {
@@ -295,6 +294,10 @@ export const CardStyles = StyleSheet.create({
     marginTop: 20,
     paddingVertical: 5,
     gap: 10,
+  },
+
+  confirmationContainerHighlight: {
+    backgroundColor: 'transparent',
   },
 
   confirmationButtons: {

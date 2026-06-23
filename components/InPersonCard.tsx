@@ -457,7 +457,12 @@ export const InPersonCard = ({
             )}
             {/* Verify If User Signed-up */}
             {shouldShowPrompt && (
-              <View style={CardStyles.confirmationContainer}>
+              <View
+                style={[
+                  CardStyles.confirmationContainer,
+                  highlight && CardStyles.confirmationContainerHighlight,
+                ]}
+              >
                 <Text style={{ color: '#3A5513' }}>
                   Did you sign up for this in person eco action?
                 </Text>
@@ -482,7 +487,12 @@ export const InPersonCard = ({
             )}
 
             {shouldShowCompletionPrompt && (
-              <View style={CardStyles.confirmationContainer}>
+              <View
+                style={[
+                  CardStyles.confirmationContainer,
+                  highlight && CardStyles.confirmationContainerHighlight,
+                ]}
+              >
                 <Text style={{ color: '#3A5513' }}>Did you complete this eco action?</Text>
 
                 <View style={CardStyles.confirmationButtons}>
