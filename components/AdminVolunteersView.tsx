@@ -86,51 +86,51 @@ export const AdminVolunteersView = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.container}>
+      <View style={styles.searchRow}>
         <TextInput
-          placeholderTextColor='#999'
           placeholder='Search...'
-          style={styles.search}
+          placeholderTextColor='#868E8B'
           value={searchText}
           onChangeText={setSearchText}
-        />
-
-        {/* volunteer list */}
-        <FlatList
-          data={volunteers}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingBottom: 24, paddingInline: 24 }}
-          renderItem={({ item }) => (
-            <Pressable
-              style={styles.row}
-              onPress={() =>
-                router.push({
-                  pathname: '/(tabs)/admin-analytics',
-                  params: {
-                    volunteerName: item.name,
-                    membershipStatus: item.membership,
-                    volunteerID: item.id,
-                  },
-                })
-              }
-            >
-              <View style={{ marginRight: 12 }}>
-                <UserAvatar
-                  firstName={item.name.split(' ')[0]}
-                  lastName={item.name.split(' ')[1] ?? ''}
-                  photoUrl={item.profilePicture}
-                  size={40}
-                />
-              </View>
-
-              <View style={{ flex: 1 }}>
-                <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.subtext}>{item.membership}</Text>
-              </View>
-            </Pressable>
-          )}
+          style={styles.searchInput}
         />
       </View>
+
+      {/* volunteer list */}
+      <FlatList
+        data={volunteers}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{ paddingBottom: 24, paddingInline: 24 }}
+        renderItem={({ item }) => (
+          <Pressable
+            style={styles.row}
+            onPress={() =>
+              router.push({
+                pathname: '/(tabs)/admin-analytics',
+                params: {
+                  volunteerName: item.name,
+                  membershipStatus: item.membership,
+                  volunteerID: item.id,
+                },
+              })
+            }
+          >
+            <View style={{ marginRight: 12 }}>
+              <UserAvatar
+                firstName={item.name.split(' ')[0]}
+                lastName={item.name.split(' ')[1] ?? ''}
+                photoUrl={item.profilePicture}
+                size={40}
+              />
+            </View>
+
+            <View style={{ flex: 1 }}>
+              <Text style={styles.name}>{item.name}</Text>
+              <Text style={styles.subtext}>{item.membership}</Text>
+            </View>
+          </Pressable>
+        )}
+      />
     </View>
   );
 };
@@ -139,38 +139,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     width: '100%',
+    padding: 16,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '600',
-    marginBottom: 12,
-  },
-  search: {
-    borderWidth: 1,
-    width: '85%',
-    alignSelf: 'center',
-    borderColor: '#151414',
-    borderRadius: 24,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    marginBottom: 24,
-    marginTop: 24,
-  },
-  tabs: {
+  searchRow: {
     flexDirection: 'row',
-    gap: 24,
-    marginBottom: 16,
-    marginHorizontal: '20%',
     alignItems: 'center',
+    backgroundColor: '#EAF2F6',
+    borderRadius: 8,
+    marginBottom: 6,
   },
-  tabText: {
-    fontSize: 16,
-    color: '#888',
-  },
-  activeTab: {
-    color: '#000',
-    fontWeight: '600',
-    textDecorationLine: 'underline',
+  searchInput: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 8,
   },
   row: {
     flexDirection: 'row',
@@ -186,15 +167,5 @@ const styles = StyleSheet.create({
   subtext: {
     fontSize: 13,
     color: '#777',
-  },
-  badge: {
-    borderWidth: 1,
-    borderColor: '#000',
-    borderRadius: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  badgeText: {
-    fontSize: 12,
   },
 });

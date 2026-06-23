@@ -108,6 +108,7 @@ export const AdminPendingView = () => {
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 28, gap: 24 }}
+        ListEmptyComponent={<Text style={styles.emptyText}>No pending admin requests</Text>}
         renderItem={({ item }) => (
           <View style={styles.card}>
             <View style={{ flexDirection: 'column', flex: 1 }}>
@@ -177,5 +178,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginLeft: 10,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#888',
+    textAlign: 'center',
   },
 });

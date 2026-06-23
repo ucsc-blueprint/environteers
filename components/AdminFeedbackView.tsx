@@ -21,81 +21,72 @@ export default function AdminFeedbackView() {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.log('Error fetching feedback:', error);
+      if (error || !data || data.length === 0) {
+        if (error) console.log('Error fetching feedback:', error);
         setFeedback([]);
         setLoadingFeedback(false);
         return;
       }
 
-      if (!data || data.length === 0) {
-        setFeedback([]);
-        setLoadingFeedback(false);
-        return;
-      }
+      // Collect unique IDs to batch-fetch
+      const userIds = [...new Set(data.filter((i) => i.user_id).map((i) => i.user_id))];
+      const eventIds = [...new Set(data.filter((i) => i.event_id).map((i) => i.event_id))];
+      const inPersonIds = [
+        ...new Set(data.filter((i) => i.inperson_ecoaction_id).map((i) => i.inperson_ecoaction_id)),
+      ];
+      const onlineIds = [
+        ...new Set(data.filter((i) => i.online_ecoaction_id).map((i) => i.online_ecoaction_id)),
+      ];
 
-      const formatted: any[] = [];
+      const [usersRes, eventsRes, inPersonRes, onlineRes] = await Promise.all([
+        userIds.length > 0
+          ? supabase
+              .from('users')
+              .select('user_id, first_name, last_name, created_at')
+              .in('user_id', userIds)
+          : Promise.resolve({ data: [] }),
+        eventIds.length > 0
+          ? supabase.from('events').select('id, title').in('id', eventIds)
+          : Promise.resolve({ data: [] }),
+        inPersonIds.length > 0
+          ? supabase.from('inperson_ecoactions').select('id, title').in('id', inPersonIds)
+          : Promise.resolve({ data: [] }),
+        onlineIds.length > 0
+          ? supabase.from('online_ecoactions').select('id, title').in('id', onlineIds)
+          : Promise.resolve({ data: [] }),
+      ]);
 
-      for (const item of data) {
+      const userMap = Object.fromEntries(
+        (usersRes.data ?? []).map((u: any) => [
+          u.user_id,
+          { name: `${u.first_name} ${u.last_name}`, membership: formatMembership(u.created_at) },
+        ]),
+      );
+      const eventMap = Object.fromEntries((eventsRes.data ?? []).map((r: any) => [r.id, r.title]));
+      const inPersonMap = Object.fromEntries(
+        (inPersonRes.data ?? []).map((r: any) => [r.id, r.title]),
+      );
+      const onlineMap = Object.fromEntries((onlineRes.data ?? []).map((r: any) => [r.id, r.title]));
+
+      const formatted = data.map((item) => {
         let eventName = '';
-        let userName = '';
-        let membership = '';
+        if (item.event_id) eventName = eventMap[item.event_id] ?? '';
+        else if (item.inperson_ecoaction_id)
+          eventName = inPersonMap[item.inperson_ecoaction_id] ?? '';
+        else if (item.online_ecoaction_id) eventName = onlineMap[item.online_ecoaction_id] ?? '';
 
-        if (item.user_id) {
-          const { data: user } = await supabase
-            .from('users')
-            .select('first_name, last_name, created_at')
-            .eq('user_id', item.user_id)
-            .single();
+        const user = userMap[item.user_id];
 
-          if (user) {
-            userName = `${user.first_name} ${user.last_name}`;
-            membership = formatMembership(user.created_at);
-          }
-        }
-
-        if (item.event_id) {
-          const { data: event } = await supabase
-            .from('events')
-            .select('title')
-            .eq('id', item.event_id)
-            .single();
-
-          if (event) {
-            eventName = event.title;
-          }
-        } else if (item.inperson_ecoaction_id) {
-          const { data: inperson } = await supabase
-            .from('inperson_ecoactions')
-            .select('title')
-            .eq('id', item.inperson_ecoaction_id)
-            .single();
-
-          if (inperson) {
-            eventName = inperson.title;
-          }
-        } else if (item.online_ecoaction_id) {
-          const { data: online } = await supabase
-            .from('online_ecoactions')
-            .select('title')
-            .eq('id', item.online_ecoaction_id)
-            .single();
-
-          if (online) {
-            eventName = online.title;
-          }
-        }
-
-        formatted.push({
+        return {
           event_name: eventName,
-          user_name: userName || 'Unknown User',
+          user_name: user?.name || 'Unknown User',
           feedback_content: item.content,
           date: new Date(item.created_at),
           is_specific: false,
-          membership: membership,
+          membership: user?.membership || '',
           user_id: item.user_id,
-        });
-      }
+        };
+      });
 
       setFeedback(formatted);
       setLoadingFeedback(false);

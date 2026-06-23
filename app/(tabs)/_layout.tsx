@@ -65,9 +65,7 @@ export default function TabsLayout() {
         options={{
           title: 'Home',
           href: adminHref,
-          tabBarIcon: ({ color, size }) => (
-            <Feather name='home' size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Feather name='home' size={size} color={color} />,
         }}
       />
 

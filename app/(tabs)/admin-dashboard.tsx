@@ -345,24 +345,24 @@ const styles = {
     backgroundColor: '#fff',
   },
 
-headerContainer: {
-  backgroundColor: '#fff',
-  paddingHorizontal: 20,
-  paddingTop: 16,
-  paddingBottom: 10,
-},
-adminHeaderTitle: {
-  fontFamily: 'Mulish',
-  fontSize: 24,
-  fontWeight: '600',
-  color: '#000',
-},
-adminHeaderSubtitle: {
-  fontFamily: 'Mulish',
-  fontSize: 18,
-  color: '#79B128',
-  marginTop: 4,
-},
+  headerContainer: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 10,
+  },
+  adminHeaderTitle: {
+    fontFamily: 'Mulish',
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#000',
+  },
+  adminHeaderSubtitle: {
+    fontFamily: 'Mulish',
+    fontSize: 18,
+    color: '#79B128',
+    marginTop: 4,
+  },
 
   dashboardContainer: {
     flex: 1,

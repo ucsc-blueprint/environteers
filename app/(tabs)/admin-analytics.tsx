@@ -265,13 +265,13 @@ export default function AdminAnalytics() {
         }}
         volunteerName={name}
       />
-  
+
       <View style={styles.headerContainer}>
         <Pressable style={styles.backRow} onPress={() => router.push('/(tabs)/VolunteerView')}>
           <Ionicons name='chevron-back' size={16} color='#172A36' />
           <Text style={styles.backText}>All Users</Text>
         </Pressable>
-  
+
         <View style={styles.avatarRow}>
           <View style={{ marginRight: 6 }}>
             <UserAvatar
@@ -287,7 +287,7 @@ export default function AdminAnalytics() {
           </View>
         </View>
       </View>
-  
+
       <ScrollView style={styles.container}>
         <View style={styles.statsCard}>
           <View style={styles.statsRow}>
@@ -307,7 +307,7 @@ export default function AdminAnalytics() {
             <View style={{ flex: Math.max(1 - progress, 0) }} />
           </View>
         </View>
-  
+
         <View style={styles.tabBar}>
           <Pressable
             style={[styles.tabBtn, tab === 'achievements' && styles.tabBtnActive]}
@@ -326,7 +326,7 @@ export default function AdminAnalytics() {
             </Text>
           </Pressable>
         </View>
-  
+
         {tab === 'achievements' && (
           <>
             <Text style={styles.sectionHeader}>Achievements</Text>
@@ -365,7 +365,7 @@ export default function AdminAnalytics() {
                 }}
               />
             </View>
-  
+
             <Text style={styles.sectionHeader}>Events + Eco-actions completed</Text>
             <View style={styles.completedCard}>
               {completedItems.length === 0 ? (
@@ -387,7 +387,7 @@ export default function AdminAnalytics() {
             </View>
           </>
         )}
-  
+
         {tab === 'manage' && (
           <View>
             <View style={styles.moderationButtons}>
@@ -404,7 +404,7 @@ export default function AdminAnalytics() {
                   {isBanned ? `User temporarily banned` : `Ban user temporarily`}
                 </Text>
               </Pressable>
-  
+
               <Pressable
                 style={styles.deleteButton}
                 onPress={() => {
@@ -415,7 +415,7 @@ export default function AdminAnalytics() {
                 <Text style={styles.deleteButtonText}>Delete user</Text>
               </Pressable>
             </View>
-  
+
             <Text style={styles.sectionHeader}>Event feedback sent</Text>
             {feedback.length > 0 ? (
               <AdminFeedbackList data={feedback} />
