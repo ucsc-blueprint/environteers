@@ -254,36 +254,41 @@ export default function AdminAnalytics() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <ScrollView style={styles.container}>
-        <BanDeleteModal
-          visible={modalVisible}
-          type={modalType}
-          onCancel={() => setModalVisible(false)}
-          onConfirm={(type) => {
-            onBanDeleteConfirm(type);
-            setModalType(null);
-          }}
-          volunteerName={name}
-        />
-
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }} edges={['top']}>
+      <BanDeleteModal
+        visible={modalVisible}
+        type={modalType}
+        onCancel={() => setModalVisible(false)}
+        onConfirm={(type) => {
+          onBanDeleteConfirm(type);
+          setModalType(null);
+        }}
+        volunteerName={name}
+      />
+  
+      <View style={styles.headerContainer}>
         <Pressable style={styles.backRow} onPress={() => router.push('/(tabs)/VolunteerView')}>
           <Ionicons name='chevron-back' size={16} color='#172A36' />
           <Text style={styles.backText}>All Users</Text>
         </Pressable>
-
-        <View style={styles.avatarSection}>
-          <UserAvatar
-            firstName={name.split(' ')[0]}
-            lastName={name.split(' ')[1] ?? ''}
-            photoUrl={viewedUserPhoto}
-            size={90}
-          />
-          <View style={{ marginBottom: 10 }} />
-          <Text style={styles.name}>{name}</Text>
-          <Text style={styles.memberSince}>{membership}</Text>
+  
+        <View style={styles.avatarRow}>
+          <View style={{ marginRight: 6 }}>
+            <UserAvatar
+              firstName={name.split(' ')[0]}
+              lastName={name.split(' ')[1] ?? ''}
+              photoUrl={viewedUserPhoto}
+              size={85}
+            />
+          </View>
+          <View style={styles.names}>
+            <Text style={styles.name}>{name}</Text>
+            <Text style={styles.membership}>{membership}</Text>
+          </View>
         </View>
-
+      </View>
+  
+      <ScrollView style={styles.container}>
         <View style={styles.statsCard}>
           <View style={styles.statsRow}>
             <Ionicons name='leaf' size={32} color='#618E20' />
@@ -302,7 +307,7 @@ export default function AdminAnalytics() {
             <View style={{ flex: Math.max(1 - progress, 0) }} />
           </View>
         </View>
-
+  
         <View style={styles.tabBar}>
           <Pressable
             style={[styles.tabBtn, tab === 'achievements' && styles.tabBtnActive]}
@@ -321,7 +326,7 @@ export default function AdminAnalytics() {
             </Text>
           </Pressable>
         </View>
-
+  
         {tab === 'achievements' && (
           <>
             <Text style={styles.sectionHeader}>Achievements</Text>
@@ -360,7 +365,7 @@ export default function AdminAnalytics() {
                 }}
               />
             </View>
-
+  
             <Text style={styles.sectionHeader}>Events + Eco-actions completed</Text>
             <View style={styles.completedCard}>
               {completedItems.length === 0 ? (
@@ -382,7 +387,7 @@ export default function AdminAnalytics() {
             </View>
           </>
         )}
-
+  
         {tab === 'manage' && (
           <View>
             <View style={styles.moderationButtons}>
@@ -399,7 +404,7 @@ export default function AdminAnalytics() {
                   {isBanned ? `User temporarily banned` : `Ban user temporarily`}
                 </Text>
               </Pressable>
-
+  
               <Pressable
                 style={styles.deleteButton}
                 onPress={() => {
@@ -410,7 +415,7 @@ export default function AdminAnalytics() {
                 <Text style={styles.deleteButtonText}>Delete user</Text>
               </Pressable>
             </View>
-
+  
             <Text style={styles.sectionHeader}>Event feedback sent</Text>
             {feedback.length > 0 ? (
               <AdminFeedbackList data={feedback} />
@@ -430,36 +435,41 @@ const styles = StyleSheet.create({
     backgroundColor: '#EAF2F6',
     padding: 20,
   },
+  headerContainer: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingTop: 40,
+    paddingBottom: 16,
+  },
   backRow: {
+    position: 'absolute',
+    top: 8,
+    left: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
     gap: 2,
   },
   backText: {
     fontSize: 14,
     color: '#172A36',
   },
-  avatarSection: {
+  avatarRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
   },
-  avatar: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: '#ccc',
-    marginBottom: 12,
+  names: {
+    flexDirection: 'column',
+    margin: 10,
   },
   name: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#618E20',
+    fontWeight: '700',
+    fontSize: 24,
+    color: '#57811D',
   },
-  memberSince: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 4,
+  membership: {
+    fontWeight: '500',
+    fontSize: 16,
+    color: '#929292',
   },
   statsCard: {
     backgroundColor: '#fff',

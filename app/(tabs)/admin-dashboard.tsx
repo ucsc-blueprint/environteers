@@ -4,14 +4,7 @@ import { supabase } from '@/constants/supabase';
 import { useRouter } from 'expo-router';
 import { ChevronRight } from 'lucide-react-native';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-
-// supabase query
-// total number of users (rows) from users table
-// all completion timestamps from interactions_eco_online
-// all completion timestamps from interactions_eco_inperson
-// all completion timestamps from interactions_events
-// total number of clicks (rows) from interaction_news
-// total number of subscriptions (rows) from newsletter_subscription_clicks
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -158,182 +151,191 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size='large' />
-      </View>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }} edges={['top']}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size='large' />
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ flexGrow: 1 }}>
-      <View style={styles.dateColumnContainer}>
-        <View style={styles.dateColumn}>
-          <Text style={styles.dateHeader}>
-            Start Date
-            <Text style={{ color: '#ef4444' }}>*</Text>
-          </Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }} edges={['top']}>
+      <ScrollView style={styles.container} contentContainerStyle={{ flexGrow: 1 }}>
+        <View style={styles.headerContainer}>
+          <Text style={styles.adminHeaderTitle}>Admin Dashboard</Text>
+          <Text style={styles.adminHeaderSubtitle}>View stats and activity</Text>
+        </View>
 
-          <Pressable
-            style={styles.dateBoxFull}
-            onPress={() => {
-              setPickerMode('start');
-              setShowPicker(true);
-            }}
-          >
-            <Text style={startDate ? styles.dateText : styles.emptyDateText}>
-              {startDate ? startDate.toLocaleDateString() : 'Set date'}
+        <View style={styles.dateColumnContainer}>
+          <View style={styles.dateColumn}>
+            <Text style={styles.dateHeader}>
+              Start Date
+              <Text style={{ color: '#ef4444' }}>*</Text>
             </Text>
-          </Pressable>
-        </View>
 
-        <View style={styles.dateColumn}>
-          <Text style={styles.dateHeader}>
-            End Date
-            <Text style={{ color: '#ef4444' }}>*</Text>
-          </Text>
+            <Pressable
+              style={styles.dateBoxFull}
+              onPress={() => {
+                setPickerMode('start');
+                setShowPicker(true);
+              }}
+            >
+              <Text style={startDate ? styles.dateText : styles.emptyDateText}>
+                {startDate ? startDate.toLocaleDateString() : 'Set date'}
+              </Text>
+            </Pressable>
+          </View>
 
-          <Pressable
-            style={styles.dateBoxFull}
-            onPress={() => {
-              setPickerMode('end');
-              setShowPicker(true);
-            }}
-          >
-            <Text style={endDate ? styles.dateText : styles.emptyDateText}>
-              {endDate ? endDate.toLocaleDateString() : 'Set date'}
+          <View style={styles.dateColumn}>
+            <Text style={styles.dateHeader}>
+              End Date
+              <Text style={{ color: '#ef4444' }}>*</Text>
             </Text>
-          </Pressable>
-        </View>
-      </View>
-
-      {showPicker && (
-        <DateTimePicker
-          style={{ alignSelf: 'center' }}
-          value={pickerMode === 'start' ? startDate || new Date() : endDate || new Date()}
-          textColor='black'
-          mode='date'
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={changeDate}
-        />
-      )}
-      <View style={styles.dashboardContainer}>
-        <View style={styles.gridContainer}>
-          {/* Active Users */}
-          <View style={styles.gridBox}>
-            <View style={styles.titleContainer}>
-              <Text style={styles.titleText}>Active users</Text>
-            </View>
-
-            <View style={styles.numberContainer}>
-              <Text style={styles.numberText}>{filtered.users.length}</Text>
-            </View>
 
             <Pressable
-              style={styles.subtitleContainer}
-              onPress={() => router.push('/(tabs)/VolunteerView')}
+              style={styles.dateBoxFull}
+              onPress={() => {
+                setPickerMode('end');
+                setShowPicker(true);
+              }}
             >
-              <Text style={styles.subtitleText}>View</Text>
-              <ChevronRight color='#0282D3' />
-            </Pressable>
-          </View>
-
-          {/* Events */}
-          <View style={styles.gridBox}>
-            <View style={styles.titleContainer}>
-              <Text style={styles.titleText}>Events</Text>
-            </View>
-
-            <View style={styles.numberContainer}>
-              <Text style={styles.numberText}>{filtered.events.length}</Text>
-            </View>
-
-            <Pressable
-              style={styles.subtitleContainer}
-              onPress={() => router.push('/(tabs)/volunteer')}
-            >
-              <Text style={styles.subtitleText}>See all events</Text>
-              <ChevronRight color='#0282D3' />
-            </Pressable>
-          </View>
-
-          {/* Online Eco-Actions */}
-          <View style={styles.gridBox}>
-            <View style={styles.titleContainer}>
-              <Text style={styles.titleText}>Online eco-actions</Text>
-            </View>
-
-            <View style={styles.numberContainer}>
-              <Text style={styles.numberText}>{filtered.onlineEcoActions.length}</Text>
-            </View>
-
-            <Pressable
-              style={styles.subtitleContainer}
-              onPress={() => router.push('/(tabs)/volunteer')}
-            >
-              <Text style={styles.subtitleText}>See all eco-actions</Text>
-              <ChevronRight color='#0282D3' />
-            </Pressable>
-          </View>
-
-          {/* In-Person Eco-Actions */}
-          <View style={styles.gridBox}>
-            <View style={styles.titleContainer}>
-              <Text style={styles.titleText}>In-person eco-actions</Text>
-            </View>
-
-            <View style={styles.numberContainer}>
-              <Text style={styles.numberText}>{filtered.inPersonEcoActions.length}</Text>
-            </View>
-
-            <Pressable
-              style={styles.subtitleContainer}
-              onPress={() => router.push('/(tabs)/volunteer')}
-            >
-              <Text style={styles.subtitleText}>See all eco-actions</Text>
-              <ChevronRight color='#0282D3' />
-            </Pressable>
-          </View>
-
-          {/* Newsletter Subscriptions */}
-          <View style={styles.gridBox}>
-            <View style={styles.titleContainer}>
-              <Text style={styles.titleText}>Subscriptions</Text>
-            </View>
-
-            <View style={styles.numberContainer}>
-              <Text style={styles.numberText}>{filtered.subscriptions.length}</Text>
-            </View>
-
-            <Pressable
-              style={styles.subtitleContainer}
-              onPress={() => router.push('/(tabs)/newsletter')}
-            >
-              <Text style={styles.subtitleText}>See newsletters</Text>
-              <ChevronRight color='#0282D3' style={{ margin: 0 }} />
-            </Pressable>
-          </View>
-
-          {/* Newsletter Reads */}
-          <View style={styles.gridBox}>
-            <View style={styles.titleContainer}>
-              <Text style={styles.titleText}>Newsletter reads</Text>
-            </View>
-
-            <View style={styles.numberContainer}>
-              <Text style={styles.numberText}>{filtered.news.length}</Text>
-            </View>
-
-            <Pressable
-              style={styles.subtitleContainer}
-              onPress={() => router.push('/(tabs)/newsletter')}
-            >
-              <Text style={styles.subtitleText}>See newsletters</Text>
-              <ChevronRight color='#0282D3' />
+              <Text style={endDate ? styles.dateText : styles.emptyDateText}>
+                {endDate ? endDate.toLocaleDateString() : 'Set date'}
+              </Text>
             </Pressable>
           </View>
         </View>
-      </View>
-    </ScrollView>
+
+        {showPicker && (
+          <DateTimePicker
+            style={{ alignSelf: 'center' }}
+            value={pickerMode === 'start' ? startDate || new Date() : endDate || new Date()}
+            textColor='black'
+            mode='date'
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={changeDate}
+          />
+        )}
+        <View style={styles.dashboardContainer}>
+          <View style={styles.gridContainer}>
+            {/* Active Users */}
+            <View style={styles.gridBox}>
+              <View style={styles.titleContainer}>
+                <Text style={styles.titleText}>Active users</Text>
+              </View>
+
+              <View style={styles.numberContainer}>
+                <Text style={styles.numberText}>{filtered.users.length}</Text>
+              </View>
+
+              <Pressable
+                style={styles.subtitleContainer}
+                onPress={() => router.push('/(tabs)/VolunteerView')}
+              >
+                <Text style={styles.subtitleText}>View</Text>
+                <ChevronRight color='#0282D3' />
+              </Pressable>
+            </View>
+
+            {/* Events */}
+            <View style={styles.gridBox}>
+              <View style={styles.titleContainer}>
+                <Text style={styles.titleText}>Events</Text>
+              </View>
+
+              <View style={styles.numberContainer}>
+                <Text style={styles.numberText}>{filtered.events.length}</Text>
+              </View>
+
+              <Pressable
+                style={styles.subtitleContainer}
+                onPress={() => router.push('/(tabs)/volunteer')}
+              >
+                <Text style={styles.subtitleText}>See all events</Text>
+                <ChevronRight color='#0282D3' />
+              </Pressable>
+            </View>
+
+            {/* Online Eco-Actions */}
+            <View style={styles.gridBox}>
+              <View style={styles.titleContainer}>
+                <Text style={styles.titleText}>Online eco-actions</Text>
+              </View>
+
+              <View style={styles.numberContainer}>
+                <Text style={styles.numberText}>{filtered.onlineEcoActions.length}</Text>
+              </View>
+
+              <Pressable
+                style={styles.subtitleContainer}
+                onPress={() => router.push('/(tabs)/volunteer')}
+              >
+                <Text style={styles.subtitleText}>See all eco-actions</Text>
+                <ChevronRight color='#0282D3' />
+              </Pressable>
+            </View>
+
+            {/* In-Person Eco-Actions */}
+            <View style={styles.gridBox}>
+              <View style={styles.titleContainer}>
+                <Text style={styles.titleText}>In-person eco-actions</Text>
+              </View>
+
+              <View style={styles.numberContainer}>
+                <Text style={styles.numberText}>{filtered.inPersonEcoActions.length}</Text>
+              </View>
+
+              <Pressable
+                style={styles.subtitleContainer}
+                onPress={() => router.push('/(tabs)/volunteer')}
+              >
+                <Text style={styles.subtitleText}>See all eco-actions</Text>
+                <ChevronRight color='#0282D3' />
+              </Pressable>
+            </View>
+
+            {/* Newsletter Subscriptions */}
+            <View style={styles.gridBox}>
+              <View style={styles.titleContainer}>
+                <Text style={styles.titleText}>Subscriptions</Text>
+              </View>
+
+              <View style={styles.numberContainer}>
+                <Text style={styles.numberText}>{filtered.subscriptions.length}</Text>
+              </View>
+
+              <Pressable
+                style={styles.subtitleContainer}
+                onPress={() => router.push('/(tabs)/newsletter')}
+              >
+                <Text style={styles.subtitleText}>See newsletters</Text>
+                <ChevronRight color='#0282D3' style={{ margin: 0 }} />
+              </Pressable>
+            </View>
+
+            {/* Newsletter Reads */}
+            <View style={styles.gridBox}>
+              <View style={styles.titleContainer}>
+                <Text style={styles.titleText}>Newsletter reads</Text>
+              </View>
+
+              <View style={styles.numberContainer}>
+                <Text style={styles.numberText}>{filtered.news.length}</Text>
+              </View>
+
+              <Pressable
+                style={styles.subtitleContainer}
+                onPress={() => router.push('/(tabs)/newsletter')}
+              >
+                <Text style={styles.subtitleText}>See newsletters</Text>
+                <ChevronRight color='#0282D3' />
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -342,6 +344,25 @@ const styles = {
     flex: 1,
     backgroundColor: '#fff',
   },
+
+headerContainer: {
+  backgroundColor: '#fff',
+  paddingHorizontal: 20,
+  paddingTop: 16,
+  paddingBottom: 10,
+},
+adminHeaderTitle: {
+  fontFamily: 'Mulish',
+  fontSize: 24,
+  fontWeight: '600',
+  color: '#000',
+},
+adminHeaderSubtitle: {
+  fontFamily: 'Mulish',
+  fontSize: 18,
+  color: '#79B128',
+  marginTop: 4,
+},
 
   dashboardContainer: {
     flex: 1,
@@ -452,9 +473,9 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     backgroundColor: '#fff',
-    marginTop: 20,
+    marginTop: 10,
     borderRadius: 16,
-    paddingTop: 40,
+    paddingTop: 10,
     paddingLeft: 20,
     paddingRight: 20,
   },
