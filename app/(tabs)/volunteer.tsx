@@ -13,6 +13,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/constants/supabase';
 import { LinearGradient } from 'expo-linear-gradient';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import Feather from '@expo/vector-icons/Feather';
 import { useAuth } from '@/context/AuthContext';
 import { useInteractions } from '@/context/InteractionsContext';
 import { InPersonCardDataProps } from '@/components/InPersonCard';
@@ -362,7 +363,7 @@ export default function Volunteer() {
                 ))}
             </ScrollView>
             <Pressable style={styles.addButton} onPress={() => setShowAddMenu(true)}>
-              <Text style={styles.addButtonText}>+ Add</Text>
+              <Feather name='plus' size={36} color='white' />
             </Pressable>
 
             <Modal
@@ -418,7 +419,7 @@ export default function Volunteer() {
           </ScrollView>
           <View style={styles.mapBackground}>
             <Pressable onPress={() => router.push('/(tabs)/map')}>
-              <MaterialCommunityIcons name='map' size={30} color={'#0282D3'} />
+              <MaterialCommunityIcons name='map' size={30} color='white' />
             </Pressable>
           </View>
         </LinearGradient>
@@ -462,28 +463,34 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   mapBackground: {
-    backgroundColor: 'white',
+    backgroundColor: '#437CA1',
     borderRadius: 50,
     padding: 15,
     maxWidth: 80,
     position: 'absolute',
     bottom: 10,
     right: 20,
-    boxShadow: '0px 0px 10px 0px #0282D333',
+    shadowColor: 'rgba(2, 130, 211, 0.20)',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    elevation: 5,
   },
-
   addButton: {
     position: 'absolute',
-    bottom: 15,
+    bottom: 20,
     right: 20,
-    flexDirection: 'column',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#57811D',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 12,
-    zIndex: 10,
-    backgroundColor: '#94C153',
-    height: 45,
-    width: 80,
+    shadowColor: '#79B128',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 8,
   },
   backdrop: {
     flex: 1,
@@ -506,12 +513,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 12,
     backgroundColor: '#F2F2F2',
-  },
-
-  addButtonText: {
-    color: 'white',
-    fontWeight: '600',
-    fontSize: 16,
   },
 
   tabContainer: {

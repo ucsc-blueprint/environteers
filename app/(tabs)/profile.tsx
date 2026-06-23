@@ -9,7 +9,6 @@ import {
   Pressable,
   Modal,
 } from 'react-native';
-import { LogoutButton } from '@/components/LogoutButton';
 import { formatMembership } from '@/components/AdminVolunteersView';
 import { useAuth } from '@/context/AuthContext';
 import { useInteractions } from '@/context/InteractionsContext';
@@ -71,8 +70,29 @@ export default function Profile() {
   if (!profile) return <Redirect href='/' />;
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <ScrollView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.headerContainer}>
+        <Pressable style={styles.settingsIcon} onPress={() => router.push('/SettingsHub')}>
+          <Ionicons name='settings-outline' size={24} color='#333' />
+        </Pressable>
+
+        <View style={{ marginRight: 6 }}>
+          <UserAvatar
+            firstName={profile.first_name}
+            lastName={profile.last_name}
+            photoUrl={profile.profile_picture}
+            size={85}
+          />
+        </View>
+        <View style={styles.names}>
+          <Text style={styles.name}>
+            {profile.first_name} {profile.last_name}
+          </Text>
+          <Text style={styles.membership}>{formatMembership(profile.created_at)}</Text>
+        </View>
+      </View>
+
+      <ScrollView style={styles.content}>
         {/* Achievement popup modal */}
         <Modal visible={showModal} transparent animationType='fade'>
           <View style={styles.modalOverlay}>
@@ -106,29 +126,6 @@ export default function Profile() {
             />
           </View>
         </Modal>
-
-        {/* Settings button */}
-        <Pressable style={styles.settingsIcon} onPress={() => router.push('/SettingsHub')}>
-          <Ionicons name='settings-outline' size={24} color='#333' />
-        </Pressable>
-        {/* <Pressable style={styles.settingsIcon} onPress={() => router.push('/profilesettings')}>
-          <Ionicons name="settings-outline" size={24} color="#333" />
-        </Pressable> */}
-
-        {/* Avatar + name */}
-        <View style={styles.avatarSection}>
-          <UserAvatar
-            firstName={profile.first_name}
-            lastName={profile.last_name}
-            photoUrl={profile.profile_picture}
-            size={90}
-          />
-          <View style={{ marginBottom: 10 }} />
-          <Text style={styles.name}>
-            {profile.first_name} {profile.last_name}
-          </Text>
-          <Text style={styles.memberSince}>{formatMembership(profile.created_at)}</Text>
-        </View>
 
         {/* Stats card */}
         <View style={styles.statsCard}>
@@ -181,21 +178,49 @@ export default function Profile() {
             }}
           />
         </View>
-
-        <LogoutButton />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#EAF2F6' },
-  container: { flex: 1, backgroundColor: '#EAF2F6', padding: 20 },
-  settingsIcon: { alignSelf: 'flex-end', marginTop: 10, marginBottom: 10 },
-  avatarSection: { alignItems: 'center', marginBottom: 24 },
-  avatar: { width: 90, height: 90, borderRadius: 45, backgroundColor: '#ccc', marginBottom: 12 },
-  name: { fontSize: 22, fontWeight: 'bold', color: '#618E20' },
-  memberSince: { fontSize: 14, color: '#666', marginTop: 4 },
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  headerContainer: {
+    backgroundColor: '#fff',
+    marginTop: '15%',
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  names: {
+    flexDirection: 'column',
+    margin: 10,
+  },
+  name: {
+    fontWeight: '700',
+    fontSize: 24,
+    color: '#57811D',
+  },
+  membership: {
+    fontWeight: '500',
+    fontSize: 16,
+    color: '#929292',
+  },
+  settingsIcon: {
+    position: 'absolute',
+    top: 0,
+    right: 20,
+  },
+  content: {
+    flex: 1,
+    backgroundColor: '#EAF2F6',
+    padding: 20,
+  },
   statsCard: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 20 },
   statsRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   ecoCount: { fontSize: 28, fontWeight: 'bold', color: '#172A36' },
@@ -267,21 +292,4 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   congratsText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-
-  contactButton: {
-    backgroundColor: '#3A6EA5',
-    borderRadius: 14,
-    paddingVertical: 14,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-    gap: 8,
-  },
-
-  contactButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
 });

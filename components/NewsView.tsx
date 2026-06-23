@@ -14,6 +14,7 @@ import { DeleteNewsConfirmationModal } from '@/components/DeleteNewsConfirmation
 import { WebView } from 'react-native-webview';
 import { supabase } from '@/constants/supabase';
 import { Ionicons } from '@expo/vector-icons';
+import Feather from '@expo/vector-icons/Feather';
 import Toast from 'react-native-toast-message';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -243,7 +244,7 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
                 })
               }
             >
-              <Text style={styles.addNewsletterButtonText}>+ Add</Text>
+              <Feather name='plus' size={36} color='white' />
             </Pressable>
 
             <DeleteNewsConfirmationModal
@@ -286,7 +287,7 @@ export const NewsView = ({ isAdmin = false }: { isAdmin?: boolean }) => {
               setSignupModalVisible(true);
             }}
           >
-            <Ionicons name='mail' size={24} color='#fff' />
+            <Feather name='mail' size={33} color='#fff' />
           </Pressable>
         </View>
       )}
@@ -371,20 +372,19 @@ const styles = StyleSheet.create({
   },
   addNewsletterButton: {
     position: 'absolute',
-    bottom: 15,
-    right: 30,
-    flexDirection: 'column',
+    bottom: 20,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#57811D',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 12,
-    backgroundColor: '#94C153',
-    height: 35,
-    width: 80,
-  },
-  addNewsletterButtonText: {
-    color: 'white',
-    fontWeight: '600',
-    fontSize: 16,
+    shadowColor: '#79B128',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 8,
   },
   subscribeFab: {
     position: 'absolute',
@@ -393,13 +393,13 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#57801d',
+    backgroundColor: '#57811D',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
+    shadowColor: '#79B128',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
     elevation: 8,
   },
   modalContainer: {
