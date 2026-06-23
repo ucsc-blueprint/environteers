@@ -2,14 +2,34 @@ import { Tabs, useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import Octicons from '@expo/vector-icons/Octicons';
+import Feather from '@expo/vector-icons/Feather';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useAuth } from '@/context/AuthContext';
-import { Text } from 'react-native';
+import { useInteractions } from '@/context/InteractionsContext';
+import { Text, View, StyleSheet } from 'react-native';
 import { supabase } from '@/constants/supabase';
+import { cardRequiresAction } from '@/utils/activityHelpers';
+
+function TabBarIconWithBadge({
+  children,
+  showBadge,
+}: {
+  children: React.ReactNode;
+  showBadge: boolean;
+}) {
+  return (
+    <View style={styles.iconContainer}>
+      {children}
+      {showBadge && <View style={styles.badge} />}
+    </View>
+  );
+}
 
 export default function TabsLayout() {
   const router = useRouter();
   const { user, loading, profile, isBanned } = useAuth();
+  const { cards } = useInteractions();
+  const hasRequiresAction = cards.some((card) => cardRequiresAction(card));
 
   useEffect(() => {
     if (loading) return;
@@ -45,7 +65,9 @@ export default function TabsLayout() {
           title: 'Activity',
           href: adminHref,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name='analytics-outline' size={size} color={color} />
+            <TabBarIconWithBadge showBadge={hasRequiresAction}>
+              <Feather name='activity' size={size} color={color} />
+            </TabBarIconWithBadge>
           ),
         }}
       />
@@ -177,3 +199,20 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  iconContainer: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badge: {
+    position: 'absolute',
+    top: -2,
+    right: -6,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FF9212',
+  },
+});

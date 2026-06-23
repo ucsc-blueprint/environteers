@@ -8,7 +8,7 @@ export const CardStyles = StyleSheet.create({
   },
 
   userText: {
-    fontSize: 38,
+    fontSize: 24,
     paddingVertical: 20,
     marginLeft: 9,
     fontStyle: 'italic',

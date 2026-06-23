@@ -4,14 +4,8 @@ import { useState } from 'react';
 import { mdiListBoxOutline, mdiOpenInNew } from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { MaterialIcons } from '@expo/vector-icons';
-import { CardStyles } from '@/components/CardStyles';
-import {
-  renderIcon,
-  renderCoverPhoto,
-  toggleLike,
-  addClick,
-  addCompletion,
-} from '@/components/cards';
+import { CardStyles } from '@/utils/CardStyles';
+import { renderIcon, renderCoverPhoto, toggleLike, addClick, addCompletion } from '@/utils/cards';
 import { useInteractions } from '@/context/InteractionsContext';
 import { ActivityFeedback } from '@/components/ActivityFeedback';
 import { supabase } from '@/constants/supabase';

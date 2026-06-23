@@ -13,7 +13,7 @@ import { useState } from 'react';
 import { mdiOpenInNew } from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { MaterialIcons } from '@expo/vector-icons';
-import { CardStyles } from '@/components/CardStyles';
+import { CardStyles } from '@/utils/CardStyles';
 import {
   renderIcon,
   renderCoverPhoto,
@@ -21,7 +21,7 @@ import {
   toggleLike,
   addClick,
   addCompletion,
-} from '@/components/cards';
+} from '@/utils/cards';
 import { useInteractions } from '@/context/InteractionsContext';
 import { supabase } from '@/constants/supabase';
 import { ActivityFeedback } from '@/components/ActivityFeedback';

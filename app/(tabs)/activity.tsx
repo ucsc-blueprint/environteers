@@ -6,6 +6,7 @@ import { SlidersHorizontal, ChevronRight, ChevronDown } from 'lucide-react-nativ
 import * as Location from 'expo-location';
 import { EcoFeedFilterDropdown } from '@/components/EcoFeedFilterDropdown';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { cardRequiresAction, getCardDate } from '@/utils/activityHelpers';
 
 export default function Activity() {
   const { cards, loading } = useInteractions();
@@ -67,20 +68,6 @@ export default function Activity() {
     return R * c;
   };
 
-  // Date helper
-  const getCardDate = (card: CardProps) => {
-    if (!card?.cardInfo) return null;
-
-    if (
-      (card.cardType === 'event' || card.cardType === 'in_person' || card.cardType === 'online') &&
-      card.cardInfo.end_date
-    ) {
-      return new Date(card.cardInfo.end_date);
-    }
-
-    return null;
-  };
-
   // Apply filters
   const filteredCards = cards.filter((card) => {
     const matchesType = filterTypes.length === 0 || filterTypes.includes(card.cardType);
@@ -117,26 +104,7 @@ export default function Activity() {
     );
   });
 
-  const requiresActionCards = filteredCards.filter((card) => {
-    const date = getCardDate(card);
-
-    const isPast = date ? date < now : false;
-
-    if (card.cardType === 'online') {
-      return card.clicked === true && card.completed === null;
-    }
-
-    if (card.cardType === 'event' || card.cardType === 'in_person') {
-      const notSignedUpYet = card.clicked === true && card.signed_up === null;
-
-      const needsCompletion =
-        card.clicked === true && card.signed_up === true && isPast && card.completed === null;
-
-      return notSignedUpYet || needsCompletion;
-    }
-
-    return false;
-  });
+  const requiresActionCards = filteredCards.filter((card) => cardRequiresAction(card, now));
 
   const renderSection = (
     title: string,
@@ -145,6 +113,7 @@ export default function Activity() {
     setIsOpen: (value: boolean) => void,
     highlight = false,
     showFeedback = false,
+    showCountBadge = false,
   ) => {
     return (
       <View style={styles.sectionContainer}>
@@ -152,7 +121,7 @@ export default function Activity() {
           <Text style={styles.headerText}>{title}</Text>
 
           <View style={styles.rightSection}>
-            <Text style={styles.count}>{cardsToRender.length}</Text>
+            {showCountBadge && <Text style={styles.count}>{cardsToRender.length}</Text>}
 
             {isOpen ? (
               <ChevronDown size={22} color='#2F4068' />
@@ -279,6 +248,8 @@ export default function Activity() {
                 requiresActionCards,
                 requiresActionOpen,
                 setRequiresActionOpen,
+                true,
+                false,
                 true,
               )}
 

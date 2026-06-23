@@ -21,7 +21,7 @@ import { EventCardDataProps } from '@/components/EventCard';
 import { DeleteToast } from '@/components/DeleteToast';
 import { router, useFocusEffect } from 'expo-router';
 import * as Location from 'expo-location';
-import { getVisibleEcoActions } from '@/components/cards';
+import { getVisibleEcoActions } from '@/utils/cards';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export type CardProps = InPersonCardDataProps | OnlineCardDataProps | EventCardDataProps;
@@ -300,70 +300,67 @@ export default function Volunteer() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }} edges={['top']}>
-      <LinearGradient
-        colors={['white', '#EDF3F7', '#EAF2F6']}
-        locations={[0.8, 0.9, 1]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 0.5 }}
-        style={styles.gradient}
-      >
-        {toast && (
-          <DeleteToast
-            visible={!!toast}
-            message={toast.message}
-            description={toast.description}
-            onClose={() => setToast(null)}
-          />
-        )}
-        <ScrollView
-          contentContainerStyle={{ padding: 16, gap: 16 }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        >
-          <Header
-            resultsCount={filteredItems.length}
-            search={search}
-            setSearch={setSearch}
-            filterTypes={filterTypes}
-            setFilterTypes={setFilterTypes}
-            maxDistance={maxDistance}
-            setMaxDistance={setMaxDistance}
-          />
-
-          {isAdmin && (
-            <View style={styles.tabContainer}>
-              <Pressable
-                onPress={() => setTab('active')}
-                style={[styles.tab, tab === 'active' && styles.tabActive]}
-              >
-                <Text style={[styles.tabText, tab === 'active' && styles.tabTextActive]}>
-                  Active
-                </Text>
-              </Pressable>
-
-              <Pressable
-                onPress={() => setTab('hidden')}
-                style={[styles.tab, tab === 'hidden' && styles.tabActive]}
-              >
-                <Text style={[styles.tabText, tab === 'hidden' && styles.tabTextActive]}>
-                  Hidden
-                </Text>
-              </Pressable>
-            </View>
-          )}
-
-          {loading && <ActivityIndicator size='large' color='#0000ff' />}
-          {!loading &&
-            filteredItems.map((card) => (
-              <EcoFeed
-                key={`${card.cardType}-${card.cardInfo.id}`}
-                card={card}
-                onDelete={() => handleFullDelete(card.cardInfo.id, card.cardType)}
-                onHide={() => handleHide(card.cardInfo.id, card.cardType)}
+      {isAdmin ? (
+        <View style={styles.adminContainer}>
+          <View style={styles.adminHeaderContainer}>
+            <Text style={styles.adminHeaderTitle}>Manage events + eco actions</Text>
+            <Text style={styles.adminHeaderSubtitle}>Add, edit, and delete</Text>
+          </View>
+          <View style={styles.adminContentContainer}>
+            {toast && (
+              <DeleteToast
+                visible={!!toast}
+                message={toast.message}
+                description={toast.description}
+                onClose={() => setToast(null)}
               />
-            ))}
-        </ScrollView>
-        {isAdmin ? (
-          <>
+            )}
+            <ScrollView
+              contentContainerStyle={{ padding: 16, gap: 16 }}
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+            >
+              <Header
+                resultsCount={filteredItems.length}
+                search={search}
+                setSearch={setSearch}
+                filterTypes={filterTypes}
+                setFilterTypes={setFilterTypes}
+                maxDistance={maxDistance}
+                setMaxDistance={setMaxDistance}
+                hideTitle
+              />
+
+              <View style={styles.tabContainer}>
+                <Pressable
+                  onPress={() => setTab('active')}
+                  style={[styles.tab, tab === 'active' && styles.tabActive]}
+                >
+                  <Text style={[styles.tabText, tab === 'active' && styles.tabTextActive]}>
+                    Active
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={() => setTab('hidden')}
+                  style={[styles.tab, tab === 'hidden' && styles.tabActive]}
+                >
+                  <Text style={[styles.tabText, tab === 'hidden' && styles.tabTextActive]}>
+                    Hidden
+                  </Text>
+                </Pressable>
+              </View>
+
+              {loading && <ActivityIndicator size='large' color='#0000ff' />}
+              {!loading &&
+                filteredItems.map((card) => (
+                  <EcoFeed
+                    key={`${card.cardType}-${card.cardInfo.id}`}
+                    card={card}
+                    onDelete={() => handleFullDelete(card.cardInfo.id, card.cardType)}
+                    onHide={() => handleHide(card.cardInfo.id, card.cardType)}
+                  />
+                ))}
+            </ScrollView>
             <Pressable style={styles.addButton} onPress={() => setShowAddMenu(true)}>
               <Text style={styles.addButtonText}>+ Add</Text>
             </Pressable>
@@ -389,15 +386,43 @@ export default function Volunteer() {
                 </Pressable>
               </Pressable>
             </Modal>
-          </>
-        ) : (
+          </View>
+        </View>
+      ) : (
+        <LinearGradient
+          colors={['white', '#EDF3F7', '#EAF2F6']}
+          locations={[0.8, 0.9, 1]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 0.5 }}
+          style={styles.gradient}
+        >
+          <ScrollView
+            contentContainerStyle={{ padding: 16, gap: 16 }}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          >
+            <Header
+              resultsCount={filteredItems.length}
+              search={search}
+              setSearch={setSearch}
+              filterTypes={filterTypes}
+              setFilterTypes={setFilterTypes}
+              maxDistance={maxDistance}
+              setMaxDistance={setMaxDistance}
+            />
+
+            {loading && <ActivityIndicator size='large' color='#0000ff' />}
+            {!loading &&
+              filteredItems.map((card) => (
+                <EcoFeed key={`${card.cardType}-${card.cardInfo.id}`} card={card} />
+              ))}
+          </ScrollView>
           <View style={styles.mapBackground}>
             <Pressable onPress={() => router.push('/(tabs)/map')}>
               <MaterialCommunityIcons name='map' size={30} color={'#0282D3'} />
             </Pressable>
           </View>
-        )}
-      </LinearGradient>
+        </LinearGradient>
+      )}
     </SafeAreaView>
   );
 }
@@ -405,6 +430,32 @@ export default function Volunteer() {
 const styles = StyleSheet.create({
   gradient: {
     flex: 1,
+  },
+  adminContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  adminHeaderContainer: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 10,
+  },
+  adminHeaderTitle: {
+    fontFamily: 'Mulish',
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#000',
+  },
+  adminHeaderSubtitle: {
+    fontFamily: 'Mulish',
+    fontSize: 18,
+    color: '#79B128',
+    marginTop: 4,
+  },
+  adminContentContainer: {
+    flex: 1,
+    backgroundColor: '#EAF2F6',
   },
   scrollContent: {
     padding: 16,

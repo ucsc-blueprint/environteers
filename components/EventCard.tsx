@@ -13,7 +13,7 @@ import { useState } from 'react';
 import { mdiOpenInNew } from '@mdi/js';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { MaterialIcons } from '@expo/vector-icons';
-import { CardStyles } from '@/components/CardStyles';
+import { CardStyles } from '@/utils/CardStyles';
 import {
   renderIcon,
   renderCoverPhoto,
@@ -21,7 +21,7 @@ import {
   toggleLike,
   addClick,
   isPast,
-} from '@/components/cards';
+} from '@/utils/cards';
 import { router } from 'expo-router';
 import { supabase } from '@/constants/supabase';
 import { useInteractions } from '@/context/InteractionsContext';
