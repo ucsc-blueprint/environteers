@@ -11,9 +11,10 @@ module.exports = ({ config }) => ({
     newArchEnabled: true,
     ios: {
       supportsTablet: true,
-      bundleIdentifier: 'com.anonymous.environteers',
+      bundleIdentifier: 'org.environteers.app',
     },
     android: {
+      package: 'org.environteers.app',
       config: {
         googleMaps: {
           apiKey: process.env.GOOGLE_MAPS_API_KEY,
@@ -48,10 +49,16 @@ module.exports = ({ config }) => ({
       ],
       'expo-secure-store',
       'expo-mail-composer',
+      "@react-native-community/datetimepicker",
     ],
     experiments: {
       typedRoutes: true,
       reactCompiler: true,
+    },
+    extra: {
+      eas: {
+        projectId: 'fed6e5e8-8ffc-4169-9f90-ca4f2cb80913',
+      },
     },
   },
 });

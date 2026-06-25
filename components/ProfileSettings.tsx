@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, TextInput, GestureResponderEvent } from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  GestureResponderEvent,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -16,7 +26,7 @@ export interface ProfileSettingsProps {
     currentPassword: string,
     password: string,
     profilePicture: string,
-  ) => Promise<string | null>; //thanks to this, we can return an error message if the update fails, or null if it succeeds
+  ) => Promise<string | null>;
   initialFirstName?: string;
   initialLastName?: string;
   initialEmail?: string;
@@ -39,7 +49,6 @@ const ProfileSettings = ({
   );
   const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
 
-  // Update initial info once it finishes fetching
   useEffect(() => {
     setFirstName(initialFirstName);
     setLastName(initialLastName);
@@ -51,7 +60,6 @@ const ProfileSettings = ({
   const [newPassword, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Only enable save changes button if user has made updates
   const hasChanges =
     firstName !== initialFirstName ||
     lastName !== initialLastName ||
@@ -146,8 +154,14 @@ const ProfileSettings = ({
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps='handled'
+      >
         <View style={styles.backContainer}>
           <Pressable style={styles.backButton} onPress={() => router.back()}>
             <ChevronLeft size={24} />
@@ -262,13 +276,12 @@ const ProfileSettings = ({
         >
           <Text style={styles.customButtonText}>Save Changes</Text>
         </Pressable>
-      </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 export default ProfileSettings;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -276,7 +289,7 @@ const styles = StyleSheet.create({
   },
 
   content: {
-    flex: 1,
+    flexGrow: 1,
     paddingHorizontal: 22,
     paddingBottom: 16,
   },

@@ -7,6 +7,9 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
 } from 'react-native';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -66,65 +69,74 @@ export default function ResetPassword() {
   };
 
   return (
-    <View style={styles.container}>
-      <Pressable style={styles.backButton} onPress={() => router.back()}>
-        <ChevronLeft size={20} color='#757575' />
-        <Text style={styles.backText}>Back</Text>
-      </Pressable>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps='handled'>
+        <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <ChevronLeft size={20} color='#757575' />
+          <Text style={styles.backText}>Back</Text>
+        </Pressable>
 
-      <View style={styles.body}>
-        <Text style={styles.title}>Reset Password</Text>
-        <Text style={styles.paragraph}>Please enter a new password for your account.</Text>
+        <View style={styles.body}>
+          <Text style={styles.title}>Reset Password</Text>
+          <Text style={styles.paragraph}>Please enter a new password for your account.</Text>
 
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder='Enter new password'
-            placeholderTextColor='#868E8B'
-            secureTextEntry={!showPassword}
-            value={password}
-            onChangeText={setPassword}
-          />
-          <Pressable style={styles.eyeIcon} onPress={() => setShowPassword((prev) => !prev)}>
-            {showPassword ? (
-              <EyeOff size={18} color='#868E8B' />
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder='Enter new password'
+              placeholderTextColor='#868E8B'
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
+            />
+            <Pressable style={styles.eyeIcon} onPress={() => setShowPassword((prev) => !prev)}>
+              {showPassword ? (
+                <EyeOff size={18} color='#868E8B' />
+              ) : (
+                <Eye size={18} color='#868E8B' />
+              )}
+            </Pressable>
+          </View>
+
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder='Confirm new password'
+              placeholderTextColor='#868E8B'
+              secureTextEntry={!showConfirm}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+            />
+            <Pressable style={styles.eyeIcon} onPress={() => setShowConfirm((prev) => !prev)}>
+              {showConfirm ? (
+                <EyeOff size={18} color='#868E8B' />
+              ) : (
+                <Eye size={18} color='#868E8B' />
+              )}
+            </Pressable>
+          </View>
+
+          <Pressable
+            style={({ pressed }) => [
+              styles.button,
+              pressed && styles.buttonPressed,
+              submitting && styles.buttonDisabled,
+            ]}
+            onPress={handleReset}
+            disabled={submitting}
+          >
+            {submitting ? (
+              <ActivityIndicator color='#fff' />
             ) : (
-              <Eye size={18} color='#868E8B' />
+              <Text style={styles.buttonText}>Confirm Password Reset</Text>
             )}
           </Pressable>
         </View>
-
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder='Confirm new password'
-            placeholderTextColor='#868E8B'
-            secureTextEntry={!showConfirm}
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-          />
-          <Pressable style={styles.eyeIcon} onPress={() => setShowConfirm((prev) => !prev)}>
-            {showConfirm ? <EyeOff size={18} color='#868E8B' /> : <Eye size={18} color='#868E8B' />}
-          </Pressable>
-        </View>
-
-        <Pressable
-          style={({ pressed }) => [
-            styles.button,
-            pressed && styles.buttonPressed,
-            submitting && styles.buttonDisabled,
-          ]}
-          onPress={handleReset}
-          disabled={submitting}
-        >
-          {submitting ? (
-            <ActivityIndicator color='#fff' />
-          ) : (
-            <Text style={styles.buttonText}>Confirm Password Reset</Text>
-          )}
-        </Pressable>
-      </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -132,6 +144,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F6FBF2',
+  },
+
+  scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: 40,
   },
 
@@ -151,7 +167,6 @@ const styles = StyleSheet.create({
   },
 
   body: {
-    flex: 1,
     marginTop: 125,
   },
 

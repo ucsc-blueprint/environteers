@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text, Pressable, StyleSheet } from 'react-native';
+import {
+  View,
+  TextInput,
+  Text,
+  Pressable,
+  StyleSheet,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
 
@@ -25,8 +34,14 @@ const LoginForm = ({ onSubmit, isAdmin = false }: LoginFormProps) => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps='handled'
+      >
         <Pressable style={styles.backButton} onPress={() => router.push('/')}>
           <ChevronLeft size={20} color='#757575' />
           <Text style={styles.backText}>
@@ -85,8 +100,8 @@ const LoginForm = ({ onSubmit, isAdmin = false }: LoginFormProps) => {
         <Pressable onPress={() => router.push('/forgotPassword')}>
           <Text style={styles.forgotPassword}>Forgot password?</Text>
         </Pressable>
-      </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -99,6 +114,7 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 40,
     paddingBottom: 40,
+    flexGrow: 1,
   },
 
   backButton: {

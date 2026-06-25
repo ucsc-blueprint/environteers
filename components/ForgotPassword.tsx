@@ -7,6 +7,9 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
 } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -41,45 +44,50 @@ export default function ForgotPassword() {
   };
 
   return (
-    <View style={styles.container}>
-      <Pressable style={styles.backButton} onPress={() => router.back()}>
-        <ChevronLeft size={20} color='#757575' />
-        <Text style={styles.backText}>Back</Text>
-      </Pressable>
-
-      <View style={styles.body}>
-        <Text style={styles.title}>Forgot Password?</Text>
-        <Text style={styles.paragraph}>
-          {`No worries, we'll send a reset link to the account email.`}
-        </Text>
-
-        <TextInput
-          style={styles.input}
-          placeholder='Email'
-          placeholderTextColor='#868E8B'
-          keyboardType='email-address'
-          autoCapitalize='none'
-          value={email}
-          onChangeText={setEmail}
-        />
-
-        <Pressable
-          style={({ pressed }) => [
-            styles.button,
-            pressed && styles.buttonPressed,
-            sending && styles.buttonDisabled,
-          ]}
-          onPress={handleSend}
-          disabled={sending}
-        >
-          {sending ? (
-            <ActivityIndicator color='#fff' />
-          ) : (
-            <Text style={styles.buttonText}>Send Reset Link</Text>
-          )}
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps='handled'>
+        <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <ChevronLeft size={20} color='#757575' />
+          <Text style={styles.backText}>Back</Text>
         </Pressable>
-      </View>
-    </View>
+
+        <View style={styles.body}>
+          <Text style={styles.title}>Forgot Password?</Text>
+          <Text style={styles.paragraph}>
+            {`No worries, we'll send a reset link to the account email.`}
+          </Text>
+
+          <TextInput
+            style={styles.input}
+            placeholder='Email'
+            placeholderTextColor='#868E8B'
+            keyboardType='email-address'
+            autoCapitalize='none'
+            value={email}
+            onChangeText={setEmail}
+          />
+
+          <Pressable
+            style={({ pressed }) => [
+              styles.button,
+              pressed && styles.buttonPressed,
+              sending && styles.buttonDisabled,
+            ]}
+            onPress={handleSend}
+            disabled={sending}
+          >
+            {sending ? (
+              <ActivityIndicator color='#fff' />
+            ) : (
+              <Text style={styles.buttonText}>Send Reset Link</Text>
+            )}
+          </Pressable>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -87,6 +95,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F6FBF2',
+  },
+
+  scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: 40,
   },
 
@@ -106,7 +118,6 @@ const styles = StyleSheet.create({
   },
 
   body: {
-    flex: 1,
     marginTop: 125,
   },
 

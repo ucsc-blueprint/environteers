@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Pressable, Alert, ActivityIndicator } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Pressable,
+  Alert,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+} from 'react-native';
 import { AdminNewsForm } from '@/components/AdminNewsForm';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/constants/supabase';
@@ -68,25 +78,30 @@ export const AdminNewsEditForm = ({ id }: { id: string }) => {
   }
 
   return (
-    <View style={styles.container}>
-      <AdminNewsForm
-        editionNumber={editionNumber}
-        setEditionNumber={setEditionNumber}
-        link={link}
-        setLink={setLink}
-        previewImage={previewImage}
-        setPreviewImage={setPreviewImage}
-      />
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps='handled'>
+        <AdminNewsForm
+          editionNumber={editionNumber}
+          setEditionNumber={setEditionNumber}
+          link={link}
+          setLink={setLink}
+          previewImage={previewImage}
+          setPreviewImage={setPreviewImage}
+        />
 
-      <View style={styles.buttonRow}>
-        <Pressable style={styles.cancelButton} onPress={handleCancel}>
-          <Text style={styles.cancelText}>Cancel</Text>
-        </Pressable>
-        <Pressable style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveText}>Save</Text>
-        </Pressable>
-      </View>
-    </View>
+        <View style={styles.buttonRow}>
+          <Pressable style={styles.cancelButton} onPress={handleCancel}>
+            <Text style={styles.cancelText}>Cancel</Text>
+          </Pressable>
+          <Pressable style={styles.saveButton} onPress={handleSave}>
+            <Text style={styles.saveText}>Save</Text>
+          </Pressable>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -94,6 +109,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#DCE3E8',
+  },
+
+  scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: 24,
   },
 
@@ -101,6 +120,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 30,
+    marginBottom: 24,
   },
 
   cancelButton: {

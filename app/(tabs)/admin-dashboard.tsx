@@ -177,6 +177,7 @@ export default function AdminDashboard() {
             <Pressable
               style={styles.dateBoxFull}
               onPress={() => {
+                console.log('opening picker', pickerMode);
                 setPickerMode('start');
                 setShowPicker(true);
               }}

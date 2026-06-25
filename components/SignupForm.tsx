@@ -1,6 +1,16 @@
 // src/components/SignupForm.tsx
 import React, { useState } from 'react';
-import { View, TextInput, Text, Pressable, GestureResponderEvent, StyleSheet } from 'react-native';
+import {
+  View,
+  TextInput,
+  Text,
+  Pressable,
+  GestureResponderEvent,
+  StyleSheet,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
 
@@ -51,8 +61,14 @@ const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps='handled'
+      >
         <Pressable style={styles.backButton} onPress={() => router.push('/')}>
           <ChevronLeft size={20} color='#757575' />
           <Text style={styles.backText}>{isAdmin ? 'Not an admin? Click to go back' : 'Back'}</Text>
@@ -149,8 +165,8 @@ const SignupForm = ({ onSubmit, isAdmin = false }: SignupFormProps) => {
             Already have an account? <Text style={styles.loginLink}>Login</Text>
           </Text>
         </Pressable>
-      </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -163,6 +179,7 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 40,
     paddingBottom: 40,
+    flexGrow: 1,
   },
 
   backButton: {

@@ -9,9 +9,10 @@ import { InPersonCardDataProps } from '@/components/InPersonCard';
 import { EventCardDataProps } from '@/components/EventCard';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useRouter } from 'expo-router';
-import { ChevronLeft, SlidersHorizontal } from 'lucide-react-native';
+import { ChevronLeft, SlidersHorizontal, Locate } from 'lucide-react-native';
 import { EcoFeedFilterDropdown } from '@/components/EcoFeedFilterDropdown';
 import { useInteractions } from '@/context/InteractionsContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type MapItem = InPersonCardDataProps | EventCardDataProps;
 
@@ -92,6 +93,8 @@ const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => 
 export default function Map() {
   const router = useRouter();
 
+  const insets = useSafeAreaInsets();
+
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(
     null,
   );
@@ -141,6 +144,15 @@ export default function Map() {
 
       bottomSheetRef.current?.snapToIndex(1);
     }
+  };
+
+  const handleRecenter = () => {
+    if (!userLocation) return;
+    mapRef.current?.animateToRegion({
+      ...userLocation,
+      latitudeDelta: 0.0922,
+      longitudeDelta: 0.0421,
+    });
   };
 
   const getInteractionState = useCallback(
@@ -314,14 +326,25 @@ export default function Map() {
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <Pressable onPress={() => router.replace('/(tabs)/volunteer')} style={styles.backButton}>
+      <Pressable
+        onPress={() => router.replace('/(tabs)/volunteer')}
+        style={[styles.backButton, { top: insets.top + 10 }]}
+      >
         <ChevronLeft size={24} color='#000' />
+      </Pressable>
+
+      <Pressable
+        onPress={handleRecenter}
+        style={[styles.recenterButton, { top: insets.top + 10 }]}
+      >
+        <Locate size={22} color='#0282D3' />
       </Pressable>
 
       <MapView
         ref={mapRef}
         style={styles.map}
         showsUserLocation
+        showsMyLocationButton={false}
         initialRegion={
           userLocation
             ? {
@@ -437,9 +460,21 @@ const styles = StyleSheet.create({
   },
   backButton: {
     position: 'absolute',
-    top: 30,
     left: 20,
     zIndex: 5,
+  },
+  recenterButton: {
+    position: 'absolute',
+    right: 20,
+    zIndex: 5,
+    backgroundColor: 'white',
+    borderRadius: 50,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
   map: {
     flex: 1,
