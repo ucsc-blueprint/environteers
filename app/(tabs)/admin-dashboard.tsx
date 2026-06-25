@@ -177,9 +177,12 @@ export default function AdminDashboard() {
             <Pressable
               style={styles.dateBoxFull}
               onPress={() => {
-                console.log('opening picker', pickerMode);
-                setPickerMode('start');
-                setShowPicker(true);
+                if (showPicker && pickerMode === 'start') {
+                  setShowPicker(false);
+                } else {
+                  setPickerMode('start');
+                  setShowPicker(true);
+                }
               }}
             >
               <Text style={startDate ? styles.dateText : styles.emptyDateText}>
@@ -197,8 +200,12 @@ export default function AdminDashboard() {
             <Pressable
               style={styles.dateBoxFull}
               onPress={() => {
-                setPickerMode('end');
-                setShowPicker(true);
+                if (showPicker && pickerMode === 'end') {
+                  setShowPicker(false);
+                } else {
+                  setPickerMode('end');
+                  setShowPicker(true);
+                }
               }}
             >
               <Text style={endDate ? styles.dateText : styles.emptyDateText}>
