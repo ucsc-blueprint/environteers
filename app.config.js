@@ -1,7 +1,7 @@
 module.exports = ({ config }) => ({
   ...config,
   expo: {
-    name: 'environteers',
+    name: 'Environteers',
     slug: 'environteers',
     version: '1.0.0',
     orientation: 'portrait',
