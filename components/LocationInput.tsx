@@ -36,6 +36,9 @@ export const LocationInput = ({
             );
           }
         }}
+        onFail={(error) => {
+          console.error('Google Places Autocomplete Error:', error);
+        }}
         query={{
           key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
           language: 'en',
