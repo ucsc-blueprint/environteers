@@ -34,7 +34,7 @@ export const NewsCard = ({
   const { user } = useAuth();
 
   const handlePress = async () => {
-    if (user) {
+    if (user && !adminView) {
       const { error } = await supabase.from('interaction_news').insert({
         user_id: user.id,
         news_id: newsId,
