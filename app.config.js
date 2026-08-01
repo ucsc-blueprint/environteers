@@ -47,7 +47,7 @@ module.exports = ({ config }) => ({
       ],
       'expo-secure-store',
       'expo-mail-composer',
-      "@react-native-community/datetimepicker",
+      '@react-native-community/datetimepicker',
     ],
     experiments: {
       typedRoutes: true,

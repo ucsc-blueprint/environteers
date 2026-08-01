@@ -1,9 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Linking } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { LogoutButton } from '@/components/LogoutButton';
+
+const LEGAL_URL = 'https://environteers.org/app-policies';
 
 export default function SettingsHub() {
   const router = useRouter();
@@ -61,6 +63,13 @@ export default function SettingsHub() {
           </View>
         </Pressable>
       </View>
+
+      <View style={styles.legalContainer}>
+        <Pressable onPress={() => Linking.openURL(LEGAL_URL)}>
+          <Text style={styles.legalLink}>Privacy Policy & Legal</Text>
+        </Pressable>
+      </View>
+
       <LogoutButton />
     </ScrollView>
   );
@@ -144,5 +153,17 @@ const styles = StyleSheet.create({
   divider: {
     height: 2,
     backgroundColor: '#D2E5F1',
+  },
+
+  legalContainer: {
+    alignItems: 'center',
+    marginTop: 24,
+    marginBottom: 8,
+  },
+
+  legalLink: {
+    fontSize: 13,
+    color: '#6C93B0',
+    textDecorationLine: 'underline',
   },
 });

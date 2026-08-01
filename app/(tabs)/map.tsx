@@ -333,10 +333,7 @@ export default function Map() {
         <ChevronLeft size={24} color='#000' />
       </Pressable>
 
-      <Pressable
-        onPress={handleRecenter}
-        style={[styles.recenterButton, { top: insets.top + 10 }]}
-      >
+      <Pressable onPress={handleRecenter} style={[styles.recenterButton, { top: insets.top + 10 }]}>
         <Locate size={22} color='#0282D3' />
       </Pressable>
 

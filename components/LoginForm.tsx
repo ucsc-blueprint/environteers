@@ -38,10 +38,7 @@ const LoginForm = ({ onSubmit, isAdmin = false }: LoginFormProps) => {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps='handled'
-      >
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps='handled'>
         <Pressable style={styles.backButton} onPress={() => router.push('/')}>
           <ChevronLeft size={20} color='#757575' />
           <Text style={styles.backText}>

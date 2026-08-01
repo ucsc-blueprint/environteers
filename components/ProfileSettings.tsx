@@ -158,10 +158,7 @@ const ProfileSettings = ({
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps='handled'
-      >
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps='handled'>
         <View style={styles.backContainer}>
           <Pressable style={styles.backButton} onPress={() => router.back()}>
             <ChevronLeft size={24} />
