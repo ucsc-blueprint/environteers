@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import {View, Text, FlatList, StyleSheet, Pressable,
-} from 'react-native';
-import { supabase } from "@/constants/supabase";
-import { ChevronRight } from "lucide-react-native";
-import { AdminApprove } from "@/components/AdminApprove";
+import { View, Text, FlatList, StyleSheet, Pressable } from 'react-native';
+import { supabase } from '@/constants/supabase';
+import { ChevronRight } from 'lucide-react-native';
+import { AdminApprove } from '@/components/AdminApprove';
+import Toast from 'react-native-toast-message';
 
 type Admin = {
   id: string;
@@ -22,14 +22,15 @@ export const AdminPendingView = () => {
         const { data, error } = await supabase
           .from('users')
           .select('user_id, first_name, last_name, email')
-          .eq("is_admin", true);
-        
+          .eq('is_admin', false)
+          .eq('pending_admin', true);
+
         if (error) {
-          console.error("Error fetching admins:", error);
+          console.error('Error fetching admins:', error);
           return;
         }
 
-        const admins: Admin[] = (data ?? []).map(admin => {
+        const admins: Admin[] = (data ?? []).map((admin) => {
           return {
             id: admin.user_id,
             name: `${admin.first_name} ${admin.last_name}`,
@@ -39,36 +40,78 @@ export const AdminPendingView = () => {
 
         setAllAdmins(admins);
       } catch (error) {
-        console.error("Unexpected error:", error);
+        console.error('Unexpected error:', error);
       }
     };
 
     fetchAdmins();
-  }, [])
+  }, []);
 
-  const handleApproval = () => {
-    setApproveVisible(false)
-  }
+  const handleApproval = async () => {
+    if (selectedAdmin) {
+      try {
+        // Set is_admin to true for selected admin
+        const { error } = await supabase
+          .from('users')
+          .update({
+            is_admin: true,
+            pending_admin: false,
+          })
+          .eq('user_id', selectedAdmin?.id);
 
-  const handleDelete = () => {
-    setApproveVisible(false)
-  }
+        if (error) {
+          Toast.show({
+            type: 'error',
+            text1: 'Failed to assign admin',
+          });
+          return;
+        }
+
+        // Remove from UI, close modal
+        setAllAdmins((prev) => prev.filter((admin) => admin.id !== selectedAdmin.id));
+        setApproveVisible(false);
+      } catch (err) {
+        console.error('Error:', err);
+      }
+    } else {
+      console.log('Select an admin before proceeding.');
+      return;
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedAdmin) return;
+
+    const { error } = await supabase
+      .from('users')
+      .update({ pending_admin: false })
+      .eq('user_id', selectedAdmin.id);
+
+    if (error) {
+      Toast.show({ type: 'error', text1: 'Failed to reject request' });
+      return;
+    }
+
+    setAllAdmins((prev) => prev.filter((admin) => admin.id !== selectedAdmin.id));
+    setApproveVisible(false);
+  };
 
   const handleCancel = () => {
-    setApproveVisible(false)
-  }
+    setApproveVisible(false);
+  };
 
   return (
-    <View style = {styles.container}>
+    <View style={styles.container}>
       {/* pending list */}
       <FlatList
         data={allAdmins}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ padding: 28, gap: 24}}
+        contentContainerStyle={{ padding: 28, gap: 24 }}
+        ListEmptyComponent={<Text style={styles.emptyText}>No pending admin requests</Text>}
         renderItem={({ item }) => (
           <View style={styles.card}>
-            <View style={{flexDirection: 'column', flex: 1}}>
+            <View style={{ flexDirection: 'column', flex: 1 }}>
               <View style={styles.title}>
                 <Text style={styles.header}>Admin account request</Text>
                 <Text>
@@ -76,22 +119,22 @@ export const AdminPendingView = () => {
                 </Text>
               </View>
             </View>
-            
+
             <Pressable
               style={styles.profileButton}
               onPress={() => {
                 setSelectedAdmin(item);
-                setApproveVisible(true)
+                setApproveVisible(true);
               }}
             >
-                <Text style={{color: '#0282d3'}}>See more</Text>
-                <ChevronRight color={'#0282d3'} />
+              <Text style={{ color: '#0282d3' }}>See more</Text>
+              <ChevronRight color={'#0282d3'} />
             </Pressable>
           </View>
         )}
       />
 
-      <AdminApprove 
+      <AdminApprove
         visible={approveVisible}
         name={selectedAdmin?.name}
         onApprove={handleApproval}
@@ -118,7 +161,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   title: {
-    justifyContent: 'flex-start'
+    justifyContent: 'flex-start',
   },
   name: {
     color: '#000000',
@@ -134,7 +177,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 10
-  }
+    marginLeft: 10,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#888',
+    textAlign: 'center',
+  },
 });
-

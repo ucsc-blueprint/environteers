@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-native-web-vite';
 import React from 'react';
-import {AdminVolunteersView} from '@/components/AdminVolunteersView';
+import { AdminVolunteersView } from '@/components/AdminVolunteersView';
 
 const meta: Meta<typeof AdminVolunteersView> = {
   title: 'Admin/View Volunteers',

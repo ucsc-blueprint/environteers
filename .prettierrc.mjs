@@ -17,7 +17,6 @@ export default {
   bracketSpacing: true,
 
   // Format JSX with 2 spaces indentation
-  jsxBracketSameLine: false,
   jsxSingleQuote: true,
 
   // Wrap lines at 100 characters
@@ -26,6 +25,6 @@ export default {
   // Ensure consistent line endings
   endOfLine: 'lf',
 
-  // Optional: put > of multi-line JSX on its own line
+  // Put > of multi-line JSX on its own line
   bracketSameLine: false,
 };

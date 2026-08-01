@@ -1,172 +1,195 @@
-import { Tabs, useRouter } from 'expo-router'
-import React, { useEffect } from 'react'
-import { Ionicons } from '@expo/vector-icons'
-import Octicons from '@expo/vector-icons/Octicons'
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
-import { useAuth } from '@/context/AuthContext'
-import { Text } from 'react-native'
+import { Tabs, useRouter } from 'expo-router';
+import React, { useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import Octicons from '@expo/vector-icons/Octicons';
+import Feather from '@expo/vector-icons/Feather';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useAuth } from '@/context/AuthContext';
+import { useInteractions } from '@/context/InteractionsContext';
+import { Text, View, StyleSheet } from 'react-native';
+import { supabase } from '@/constants/supabase';
+import { cardRequiresAction } from '@/utils/activityHelpers';
+
+function TabBarIconWithBadge({
+  children,
+  showBadge,
+}: {
+  children: React.ReactNode;
+  showBadge: boolean;
+}) {
+  return (
+    <View style={styles.iconContainer}>
+      {children}
+      {showBadge && <View style={styles.badge} />}
+    </View>
+  );
+}
 
 export default function TabsLayout() {
   const router = useRouter();
-  const { user, loading, profile } = useAuth()
+  const { user, loading, profile, isBanned } = useAuth();
+  const { cards } = useInteractions();
+  const hasRequiresAction = cards.some((card) => cardRequiresAction(card));
 
   useEffect(() => {
-    if (!loading && !user && !profile) {
-      router.replace('/')
+    if (loading) return;
+
+    if (!user) {
+      router.replace('/');
+      return;
     }
-  }, [user, loading, profile, router])
-  
-  if (loading) {
-    return <Text>Loading...</Text>
+
+    if (isBanned) {
+      supabase.auth.signOut();
+      router.replace('/');
+    }
+  }, [user, loading, isBanned, router]);
+
+  if (loading || !profile) {
+    return <Text>Loading...</Text>;
   }
-  
-  const adminHref = profile?.is_admin ? null : undefined
-  const userHref = profile?.is_admin ? undefined : null
+
+  const adminHref = profile?.is_admin === true ? null : undefined;
+  const userHref = profile?.is_admin === true ? undefined : null;
 
   return (
-    <Tabs>
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: '#57811D',
+      }}
+    >
+      {/* User Tabs */}
       <Tabs.Screen
-        name="home"
+        name='volunteer'
         options={{
           title: 'Home',
           href: adminHref,
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Feather name='home' size={size} color={color} />,
         }}
       />
+
       <Tabs.Screen
-        name="activity"
+        name='activity'
         options={{
           title: 'Activity',
           href: adminHref,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="analytics-outline" size={size} color={color} />
+            <TabBarIconWithBadge showBadge={hasRequiresAction}>
+              <Feather name='activity' size={size} color={color} />
+            </TabBarIconWithBadge>
           ),
         }}
       />
 
       <Tabs.Screen
-        name="volunteer"
-        options={{
-          title: 'Volunteer',
-          href: adminHref,
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="hand-extended" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="map"
+        name='map'
         options={{
           title: 'Map',
           href: null,
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="map" size={size} color={color} />
+            <MaterialCommunityIcons name='map' size={size} color={color} />
           ),
         }}
       />
+
       <Tabs.Screen
-        name="newsletter"
+        name='newsletter'
         options={{
           title: 'Newsletter',
           href: adminHref,
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="newspaper" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name='newspaper' size={size} color={color} />,
         }}
       />
 
       <Tabs.Screen
-        name="profile"
+        name='profile'
         options={{
           title: 'Profile',
           href: adminHref,
-          tabBarIcon: ({ color, size }) => (
-            <Octicons name="person" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Octicons name='person' size={size} color={color} />,
         }}
       />
 
-       {/* Admin only tabs */}
+      {/* Admin Tabs */}
       <Tabs.Screen
-        name="admin-dashboard"
+        name='admin-dashboard'
         options={{
           title: 'Dashboard',
           href: userHref,
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="home-variant-outline" size={size} color={color} />
+            <MaterialCommunityIcons name='home-variant-outline' size={size} color={color} />
           ),
         }}
       />
 
       <Tabs.Screen
-        name="ContentEdit"
+        name='ContentEdit'
         options={{
+          title: 'Content Edit',
           href: userHref,
-          headerShown: false,
-          title: "Content Edit",
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="newspaper-variant-multiple" size={size} color={color} />
+            <MaterialCommunityIcons name='newspaper-variant-multiple' size={size} color={color} />
           ),
         }}
       />
 
       <Tabs.Screen
-        name="admin-profile"
+        name='admin-profile'
         options={{
           title: 'Profile',
-          headerShown: false,
           href: userHref,
-          tabBarIcon: ({ color, size }) => (
-            <Octicons name="person" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Octicons name='person' size={size} color={color} />,
         }}
       />
-     
+
       <Tabs.Screen
-        name="admin-analytics"
+        name='admin-analytics'
         options={{
-          href: null,
           title: 'Analytics',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="chart-bar" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="VolunteerView"
-        options={{
           href: null,
-          title: 'Volunteer View',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="bar-chart" size = {size} color = {color}></Ionicons>
+            <MaterialCommunityIcons name='chart-bar' size={size} color={color} />
           ),
         }}
       />
+
       <Tabs.Screen
-       name = "AddEcoAction"
-        options = {{
+        name='VolunteerView'
+        options={{
+          title: 'Volunteer View',
+          href: null,
+          tabBarIcon: ({ color, size }) => <Ionicons name='bar-chart' size={size} color={color} />,
+        }}
+      />
+
+      {/* Hidden Routes */}
+      <Tabs.Screen
+        name='AddEcoAction'
+        options={{
           href: null,
           title: 'Add Eco Action',
         }}
       />
+
       <Tabs.Screen
-       name = "AdminEditEcoAction"
-        options = {{
+        name='AdminEditEcoAction'
+        options={{
           href: null,
           title: 'Edit Eco Action',
         }}
       />
+
       <Tabs.Screen
-        name="AdminNewsAddFormView"
+        name='AdminNewsAddFormView'
         options={{
           href: null,
           title: 'News Add Form',
         }}
       />
+
       <Tabs.Screen
-        name="AdminNewsEditFormView"
+        name='AdminNewsEditFormView'
         options={{
           href: null,
           title: 'Edit Newsletter',
@@ -174,5 +197,21 @@ export default function TabsLayout() {
       />
     </Tabs>
   );
-
 }
+
+const styles = StyleSheet.create({
+  iconContainer: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badge: {
+    position: 'absolute',
+    top: -2,
+    right: -6,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FF9212',
+  },
+});

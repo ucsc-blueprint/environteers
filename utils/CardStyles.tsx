@@ -1,13 +1,14 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet } from 'react-native';
 
 export const CardStyles = StyleSheet.create({
   feedHeader: {
     flexDirection: 'column',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    backgroundColor: '#ffffff',
   },
 
   userText: {
-    fontSize: 38,
+    fontSize: 24,
     paddingVertical: 20,
     marginLeft: 9,
     fontStyle: 'italic',
@@ -15,7 +16,7 @@ export const CardStyles = StyleSheet.create({
   },
 
   userName: {
-    fontWeight: '700', 
+    fontWeight: '700',
     color: '#79B128',
     fontStyle: 'normal',
   },
@@ -106,6 +107,48 @@ export const CardStyles = StyleSheet.create({
     width: 110,
   },
 
+  statTag: {
+    position: 'absolute',
+    top: 6,
+    left: 7,
+    backgroundColor: '#E0FAE2',
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: '#11C484',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+
+  statTagText: {
+    color: '#11C484',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+  userTag: {
+    position: 'absolute',
+    top: 6,
+    left: 5,
+    backgroundColor: '#E0FAE2',
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: '#11C484',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+
+  userTagText: {
+    color: '#11C484',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+
   contentColumn: {
     minWidth: 0,
     flexDirection: 'column',
@@ -120,7 +163,7 @@ export const CardStyles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  
+
   title: {
     fontSize: 15,
     fontWeight: '500',
@@ -139,10 +182,10 @@ export const CardStyles = StyleSheet.create({
 
   rsvp: {
     fontSize: 12,
-    color: "#4F6629",
+    color: '#4F6629',
     fontWeight: '700',
   },
-  
+
   rsvpContainer: {
     backgroundColor: '#E0FAE2',
     paddingHorizontal: 10,
@@ -188,7 +231,6 @@ export const CardStyles = StyleSheet.create({
   signUpButtonContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: 'white',
   },
 
   signUp: {
@@ -254,6 +296,10 @@ export const CardStyles = StyleSheet.create({
     gap: 10,
   },
 
+  confirmationContainerHighlight: {
+    backgroundColor: 'transparent',
+  },
+
   confirmationButtons: {
     flexDirection: 'row',
     paddingVertical: 5,
@@ -273,14 +319,13 @@ export const CardStyles = StyleSheet.create({
     width: 150,
     justifyContent: 'center',
     gap: 5,
-
   },
   confirmationText: {
     fontSize: 15,
     color: '#3A5513',
   },
 
-  deleteIconBackground:{
+  deleteIconBackground: {
     backgroundColor: '#FFE3E1',
     width: 35,
     height: 35,
@@ -289,11 +334,11 @@ export const CardStyles = StyleSheet.create({
     display: 'flex',
     justifyContent: 'center',
   },
-  
+
   // Required Cards
   requiredCard: {
     backgroundColor: '#FFF4DF',
     borderColor: '#FF9212',
     borderWidth: 1,
-  }
+  },
 });

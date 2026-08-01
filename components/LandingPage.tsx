@@ -8,16 +8,16 @@ const LandingPage = () => {
     <ImageBackground
       source={require('../assets/images/naturalbridges.jpg')}
       style={styles.background}
-      resizeMode={'cover'}>
-      <View style={styles.overlay}/>
+      resizeMode={'cover'}
+    >
+      <View style={styles.overlay} />
       <View style={styles.box}>
         <View style={{ flex: 128 }} />
         <View style={styles.textContainer}>
-          <Text style={styles.title}>
-            environteers
-          </Text>
+          <Text style={styles.title}>environteers</Text>
           <Text style={styles.subtitle}>
-            Inspiring informed action {'\n'}in Santa Cruz County {'\n'}<Text style={styles.italic}>and beyond.</Text>
+            Inspiring informed action {'\n'}in Santa Cruz County {'\n'}
+            <Text style={styles.italic}>and beyond.</Text>
           </Text>
         </View>
         <View style={{ flex: 97 }} />
@@ -28,18 +28,24 @@ const LandingPage = () => {
           <Pressable onPress={() => router.push('/signup')} style={styles.buttonRegister}>
             <Text style={styles.buttonTextGreen}>Create Account</Text>
           </Pressable>
-          <Pressable onPress={() => router.push('/login?isAdmin=true')} style={styles.buttonAdminLogin}>
+          <Pressable
+            onPress={() => router.push('/login?isAdmin=true')}
+            style={styles.buttonAdminLogin}
+          >
             <Text style={styles.buttonTextLight}>Admin Login</Text>
           </Pressable>
-          <Pressable onPress={() => router.push('/signup?isAdmin=true')} style={styles.buttonAdminRegister}>
+          <Pressable
+            onPress={() => router.push('/signup?isAdmin=true')}
+            style={styles.buttonAdminRegister}
+          >
             <Text style={styles.buttonTextNavy}>Admin Create Account</Text>
           </Pressable>
         </View>
         <View style={{ flex: 97 }} />
       </View>
     </ImageBackground>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   background: {
@@ -49,32 +55,32 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255,255,255,0.8)'
+    backgroundColor: 'rgba(255,255,255,0.8)',
   },
   box: {
     flex: 1,
-    flexDirection: "column",
-    alignItems: "center",
+    flexDirection: 'column',
+    alignItems: 'center',
   },
   textContainer: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   title: {
     fontSize: 54,
     fontWeight: 600,
-    color: "#86AE42",
+    color: '#86AE42',
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 20,
     lineHeight: 21,
     marginTop: 8,
-    textAlign: "center",
-    color: "#45483D"
+    textAlign: 'center',
+    color: '#45483D',
   },
   italic: {
-    fontStyle: "italic",
+    fontStyle: 'italic',
   },
   buttonContainer: {
     width: 307,
@@ -82,7 +88,7 @@ const styles = StyleSheet.create({
   },
   buttonLogin: {
     borderRadius: 12,
-    backgroundColor: "#3A5513",
+    backgroundColor: '#3A5513',
     height: 40,
     width: '100%',
     alignItems: 'center',
@@ -90,9 +96,9 @@ const styles = StyleSheet.create({
   },
   buttonRegister: {
     borderRadius: 12,
-    backgroundColor: "white",
+    backgroundColor: 'white',
     borderWidth: 1,
-    borderColor: "#3A5513",
+    borderColor: '#3A5513',
     height: 40,
     width: '100%',
     alignItems: 'center',
@@ -100,7 +106,7 @@ const styles = StyleSheet.create({
   },
   buttonAdminLogin: {
     borderRadius: 12,
-    backgroundColor: "#172A36",
+    backgroundColor: '#172A36',
     height: 40,
     width: '100%',
     alignItems: 'center',
@@ -109,9 +115,9 @@ const styles = StyleSheet.create({
   },
   buttonAdminRegister: {
     borderRadius: 12,
-    backgroundColor: "white",
+    backgroundColor: 'white',
     borderWidth: 1,
-    borderColor: "#172A36",
+    borderColor: '#172A36',
     height: 40,
     width: '100%',
     alignItems: 'center',
@@ -120,17 +126,17 @@ const styles = StyleSheet.create({
   buttonTextLight: {
     fontSize: 14,
     fontWeight: '700',
-    color: "#F2F7F5",
+    color: '#F2F7F5',
   },
   buttonTextGreen: {
     fontSize: 14,
     fontWeight: '700',
-    color: "#3A5513",
+    color: '#3A5513',
   },
   buttonTextNavy: {
     fontSize: 14,
     fontWeight: '700',
-    color: "#172A36",
+    color: '#172A36',
   },
 });
 

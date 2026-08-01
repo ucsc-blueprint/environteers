@@ -8,12 +8,12 @@ const meta = {
   title: 'Example/ProfileSettings',
   component: ProfileSettings,
   decorators: [
-  (Story) => (
-    <View style={{ height: screenHeight, width: "100%" }}>
-      <Story />
-    </View>
-  ),
-],
+    (Story) => (
+      <View style={{ height: screenHeight, width: '100%' }}>
+        <Story />
+      </View>
+    ),
+  ],
 } satisfies Meta<typeof ProfileSettings>;
 
 export default meta;

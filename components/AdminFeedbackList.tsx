@@ -9,7 +9,7 @@ interface AdminFeedbackListProps {
 export const AdminFeedbackList = ({ data }: AdminFeedbackListProps) => {
   return (
     <FlatList
-      style={{width: '100%', marginTop: 10}}
+      style={{ width: '100%', marginTop: 10 }}
       data={data}
       scrollEnabled={false}
       keyExtractor={(item, index) => `${item.user_id}-${index}`}

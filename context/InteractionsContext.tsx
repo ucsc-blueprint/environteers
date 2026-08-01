@@ -1,9 +1,9 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { EventCardDataProps } from "@/components/EventCard";
-import { InPersonCardDataProps } from "@/components/InPersonCard";
-import { OnlineCardDataProps } from "@/components/OnlineCard";
-import { useAuth } from "./AuthContext";
-import { supabase } from "@/constants/supabase";
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { EventCardDataProps } from '@/components/EventCard';
+import { InPersonCardDataProps } from '@/components/InPersonCard';
+import { OnlineCardDataProps } from '@/components/OnlineCard';
+import { useAuth } from './AuthContext';
+import { supabase } from '@/constants/supabase';
 
 export type CardProps = InPersonCardDataProps | OnlineCardDataProps | EventCardDataProps;
 
@@ -25,19 +25,25 @@ export const InteractionsProvider = ({ children }: { children: React.ReactNode }
   const [cards, setCards] = useState<CardProps[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!user?.id) return;
 
     setLoading(true);
 
     const [inPersonRes, onlineRes, eventRes] = await Promise.all([
-      supabase.from("interactions_eco_inperson").select(`*, inperson_ecoactions(*)`).eq("user_id", user.id),
-      supabase.from("interactions_eco_online").select(`*, online_ecoactions(*)`).eq("user_id", user.id),
-      supabase.from("interactions_events").select(`*, events(*)`).eq("user_id", user.id),
+      supabase
+        .from('interactions_eco_inperson')
+        .select(`*, inperson_ecoactions(*)`)
+        .eq('user_id', user.id),
+      supabase
+        .from('interactions_eco_online')
+        .select(`*, online_ecoactions(*)`)
+        .eq('user_id', user.id),
+      supabase.from('interactions_events').select(`*, events(*)`).eq('user_id', user.id),
     ]);
 
-    const inPerson: CardProps[] = (inPersonRes.data ?? []).map(i => ({
-      cardType: "in_person",
+    const inPerson: CardProps[] = (inPersonRes.data ?? []).map((i) => ({
+      cardType: 'in_person',
       cardInfo: i.inperson_ecoactions,
       liked: i.liked,
       signed_up: i.signed_up,
@@ -46,8 +52,8 @@ export const InteractionsProvider = ({ children }: { children: React.ReactNode }
       feedback: i.feedback,
     }));
 
-    const online: CardProps[] = (onlineRes.data ?? []).map(i => ({
-      cardType: "online",
+    const online: CardProps[] = (onlineRes.data ?? []).map((i) => ({
+      cardType: 'online',
       cardInfo: i.online_ecoactions,
       liked: i.liked,
       completed: i.completed,
@@ -55,8 +61,8 @@ export const InteractionsProvider = ({ children }: { children: React.ReactNode }
       feedback: i.feedback,
     }));
 
-    const events: CardProps[] = (eventRes.data ?? []).map(i => ({
-      cardType: "event",
+    const events: CardProps[] = (eventRes.data ?? []).map((i) => ({
+      cardType: 'event',
       cardInfo: i.events,
       liked: i.liked,
       signed_up: i.signed_up,
@@ -67,24 +73,21 @@ export const InteractionsProvider = ({ children }: { children: React.ReactNode }
 
     setCards([...inPerson, ...online, ...events]);
     setLoading(false);
-  };
+  }, [user?.id]);
 
   useEffect(() => {
     fetchData();
-  }, [user?.id]);
+  }, [fetchData]);
 
   const updateLike = (card: CardProps, liked: boolean) => {
-    setCards(prev => {
+    setCards((prev) => {
       const exists = prev.some(
-        c => c.cardInfo.id === card.cardInfo.id && c.cardType === card.cardType
+        (c) => c.cardInfo.id === card.cardInfo.id && c.cardType === card.cardType,
       );
       // Update card if already has been interacted with
       if (exists) {
-        return prev.map(c =>
-          c.cardInfo.id === card.cardInfo.id &&
-          c.cardType === card.cardType
-            ? { ...c, liked }
-            : c
+        return prev.map((c) =>
+          c.cardInfo.id === card.cardInfo.id && c.cardType === card.cardType ? { ...c, liked } : c,
         );
       }
       // If not, add new interaction card
@@ -93,17 +96,16 @@ export const InteractionsProvider = ({ children }: { children: React.ReactNode }
   };
 
   const updateSignUp = (card: CardProps, value: boolean | null) => {
-    setCards(prev => {
+    setCards((prev) => {
       const exists = prev.some(
-        c => c.cardInfo.id === card.cardInfo.id && c.cardType === card.cardType
+        (c) => c.cardInfo.id === card.cardInfo.id && c.cardType === card.cardType,
       );
       // Update card if already has been interacted with
       if (exists) {
-        return prev.map(c =>
-          c.cardInfo.id === card.cardInfo.id &&
-          c.cardType === card.cardType
+        return prev.map((c) =>
+          c.cardInfo.id === card.cardInfo.id && c.cardType === card.cardType
             ? { ...c, signed_up: value }
-            : c
+            : c,
         );
       }
       // If not, add new interaction card
@@ -112,17 +114,16 @@ export const InteractionsProvider = ({ children }: { children: React.ReactNode }
   };
 
   const updateCompleted = (card: CardProps, value: boolean | null) => {
-    setCards(prev => {
+    setCards((prev) => {
       const exists = prev.some(
-        c => c.cardInfo.id === card.cardInfo.id && c.cardType === card.cardType
+        (c) => c.cardInfo.id === card.cardInfo.id && c.cardType === card.cardType,
       );
       // Update card if already has been interacted with
       if (exists) {
-        return prev.map(c =>
-          c.cardInfo.id === card.cardInfo.id &&
-          c.cardType === card.cardType
+        return prev.map((c) =>
+          c.cardInfo.id === card.cardInfo.id && c.cardType === card.cardType
             ? { ...c, completed: value }
-            : c
+            : c,
         );
       }
       // If not, add new interaction card
@@ -131,36 +132,34 @@ export const InteractionsProvider = ({ children }: { children: React.ReactNode }
   };
 
   const updateFeedback = (card: CardProps, value: boolean | null) => {
-    setCards(prev => {
+    setCards((prev) => {
       const exists = prev.some(
-        c => c.cardInfo.id === card.cardInfo.id && c.cardType === card.cardType
+        (c) => c.cardInfo.id === card.cardInfo.id && c.cardType === card.cardType,
       );
       // Update card if already has been interacted with
       if (exists) {
-        return prev.map(c =>
-          c.cardInfo.id === card.cardInfo.id &&
-          c.cardType === card.cardType
+        return prev.map((c) =>
+          c.cardInfo.id === card.cardInfo.id && c.cardType === card.cardType
             ? { ...c, feedback: value }
-            : c
-        )
+            : c,
+        );
       }
       // If not, add new interaction card
-      return [...prev, { ...card, feedback: value}]
-    })
-  }
+      return [...prev, { ...card, feedback: value }];
+    });
+  };
 
   const updateClicked = (card: CardProps) => {
-    setCards(prev => {
+    setCards((prev) => {
       const exists = prev.some(
-        c => c.cardInfo.id === card.cardInfo.id && c.cardType === card.cardType
+        (c) => c.cardInfo.id === card.cardInfo.id && c.cardType === card.cardType,
       );
       // Update card if already has been interacted with
       if (exists) {
-        return prev.map(c =>
-          c.cardInfo.id === card.cardInfo.id &&
-          c.cardType === card.cardType
+        return prev.map((c) =>
+          c.cardInfo.id === card.cardInfo.id && c.cardType === card.cardType
             ? { ...c, clicked: true }
-            : c
+            : c,
         );
       }
       // If not, add new interaction card
@@ -185,11 +184,10 @@ export const InteractionsProvider = ({ children }: { children: React.ReactNode }
   );
 };
 
-
 export const useInteractions = () => {
   const context = useContext(InteractionsContext);
   if (!context) {
-    throw new Error("useInteractions must be used within InteractionsProvider");
+    throw new Error('useInteractions must be used within InteractionsProvider');
   }
   return context;
 };

@@ -1,10 +1,10 @@
 import React from 'react';
-import { StyleSheet, Text, View, Pressable} from 'react-native';
+import { StyleSheet, Text, View, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Trash, Pencil } from 'lucide-react-native';
 import { Image } from 'expo-image';
-import { supabase } from "@/constants/supabase";
-import { useAuth } from "@/context/AuthContext";
+import { supabase } from '@/constants/supabase';
+import { useAuth } from '@/context/AuthContext';
 
 export interface NewsCardProps {
   newsId: string;
@@ -31,16 +31,15 @@ export const NewsCard = ({
   onDelete,
   onEdit,
 }: NewsCardProps) => {
-
   const { user } = useAuth();
 
   const handlePress = async () => {
-    if (user) {
+    if (user && !adminView) {
       const { error } = await supabase.from('interaction_news').insert({
         user_id: user.id,
         news_id: newsId,
       });
-      if (error) console.error("Failed to track newsletter read:", error);
+      if (error) console.error('Failed to track newsletter read:', error);
     }
     onPress();
   };
@@ -57,26 +56,30 @@ export const NewsCard = ({
 
       <View style={styles.bottomRow}>
         <View style={styles.meta}>
-          <Ionicons name="calendar-outline" size={14} color="#777" />
+          <Ionicons name='calendar-outline' size={14} color='#777' />
           <Text style={styles.metaText}>{date}</Text>
         </View>
 
-        {readCount !== undefined && (
-          <Text style={styles.readCount}>{readCount} total reads</Text>
-        )}
+        {readCount !== undefined && <Text style={styles.readCount}>{readCount} total reads</Text>}
 
         {adminView && (
-          <View style={{flexDirection: "row"}}>
-            <Pressable onPress={() => {
-              onDelete?.();
-            }} style={styles.deleteButton}>
-              <Trash size={22} color="#ea4336" />
+          <View style={{ flexDirection: 'row' }}>
+            <Pressable
+              onPress={() => {
+                onDelete?.();
+              }}
+              style={styles.deleteButton}
+            >
+              <Trash size={22} color='#ea4336' />
             </Pressable>
 
-            <Pressable onPress={() => {
-              onEdit?.();
-            }} style={styles.editButton}>
-              <Pencil size={22} color="#0082d3" />
+            <Pressable
+              onPress={() => {
+                onEdit?.();
+              }}
+              style={styles.editButton}
+            >
+              <Pencil size={22} color='#0082d3' />
             </Pressable>
           </View>
         )}
@@ -84,7 +87,6 @@ export const NewsCard = ({
     </Pressable>
   );
 };
-
 
 const styles = StyleSheet.create({
   card: {
@@ -111,10 +113,10 @@ const styles = StyleSheet.create({
   },
 
   bottomRow: {
-    flexDirection: "row", 
-    alignContent: "space-between", 
-    justifyContent: "space-between", 
-    alignItems: "center", 
+    flexDirection: 'row',
+    alignContent: 'space-between',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginHorizontal: 12,
     marginTop: 6,
     marginBottom: 8,
@@ -143,7 +145,7 @@ const styles = StyleSheet.create({
     borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: "#FFE3E1"
+    backgroundColor: '#FFE3E1',
   },
 
   editButton: {
@@ -152,7 +154,7 @@ const styles = StyleSheet.create({
     borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: "#E1F0FF",
+    backgroundColor: '#E1F0FF',
     marginLeft: 16,
-  }
+  },
 });

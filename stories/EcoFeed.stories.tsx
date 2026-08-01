@@ -2,8 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-native-web-vite';
 import { View } from 'react-native';
 import { fn } from 'storybook/test';
 
-import { EcoFeed } from '@/components/EcoFeed';
-import { Header } from '@/components/EcoFeed'
+import { Header, EcoFeed } from '@/components/EcoFeed';
 
 const meta = {
   title: 'Example/EcoFeed',
@@ -41,10 +40,10 @@ export const Feed: Story = {
       <Header resultsCount={25} />
       <EcoFeed
         {...baseEcoFeedProps}
-        type="Eco-Action"
-        title="SC Mountains Trail Stewardship: Hike & Help at Arana Gulch"
-        date="Nov 3 | 4–5pm"
-        location="Frederick Street Entrance, 440 Frederick St."
+        type='Eco-Action'
+        title='SC Mountains Trail Stewardship: Hike & Help at Arana Gulch'
+        date='Nov 3 | 4–5pm'
+        location='Frederick Street Entrance, 440 Frederick St.'
         spotsLeft={2}
         onLearnMore={fn()}
         onSignUp={fn()}
@@ -52,20 +51,20 @@ export const Feed: Story = {
 
       <EcoFeed
         {...baseEcoFeedProps}
-        type="Event"
-        title="Community Beach Cleanup"
-        date="Nov 10 | 9–11am"
-        location="Main Beach, Santa Cruz"
+        type='Event'
+        title='Community Beach Cleanup'
+        date='Nov 10 | 9–11am'
+        location='Main Beach, Santa Cruz'
         onLearnMore={fn()}
         onSignUp={fn()}
       />
 
       <EcoFeed
         {...baseEcoFeedProps}
-        type="Eco-Action"
-        title="Tree Planting Day"
-        date="Nov 18 | 1–3pm"
-        location="DeLaveaga Park"
+        type='Eco-Action'
+        title='Tree Planting Day'
+        date='Nov 18 | 1–3pm'
+        location='DeLaveaga Park'
         spotsLeft={5}
         onLearnMore={fn()}
         onSignUp={fn()}

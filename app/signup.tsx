@@ -4,58 +4,79 @@ import { supabase } from '@/constants/supabase';
 import Toast from 'react-native-toast-message';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
+import * as Linking from 'expo-linking';
 import React from 'react';
-
 export default function SignupScreen() {
   const router = useRouter();
-  const {user, profile} = useAuth();
-    
+  const { user, profile } = useAuth();
+
   React.useEffect(() => {
     if (user && profile) {
-      router.push('/(tabs)/volunteer')
+      router.push('/(tabs)/volunteer');
     }
-  }, [user, profile, router])
+  }, [user, profile, router]);
 
   const { isAdmin: isAdminParam } = useLocalSearchParams();
 
-  async function onSubmit(firstName: string, lastName: string, email: string, password: string, isAdmin: boolean) {
+  async function onSubmit(
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string,
+    isAdmin: boolean,
+  ) {
+    const redirectTo = Linking.createURL('confirm'); // link for going back into the app for the email verification button
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: redirectTo,
+      },
     });
     if (error) {
       Toast.show({
         type: 'error',
         text1: 'Signup failed',
-        text2: error.message
-      })
+        text2: error.message,
+      });
       return;
-    };
-    const {error: insertError} = await supabase.from('users').insert({
-      user_id: data.user!.id,
+    }
+    if (!data.user) {
+      Toast.show({
+        type: 'error',
+        text1: 'Signup failed',
+        text2: 'User account was not created.',
+      });
+      return;
+    }
+
+    const { error: insertError } = await supabase.from('users').insert({
+      user_id: data.user.id,
       first_name: firstName,
       last_name: lastName,
       email,
-      is_admin: isAdmin
-    })
+      pending_admin: isAdmin,
+    });
     if (insertError) {
       Toast.show({
         type: 'error',
         text1: 'Signup failed',
-        text2: insertError.message
-      })
+        text2: insertError.message,
+      });
       return;
-    };
-    await supabase.auth.signInWithPassword({ email, password });
+    }
 
     Toast.show({
       type: 'success',
-      text1: 'You are now signed up',
-    })    
+      text1: 'check your email',
+      text2: 'Click the verification link in your email to complete the signup process',
+    });
+    router.push({ pathname: '/verifyEmail', params: { email } });
   }
   return (
-    <View style={{flex: 1}}>
+    <View style={{ flex: 1 }}>
       <SignupForm onSubmit={onSubmit} isAdmin={isAdminParam === 'true'} />
     </View>
-  )
+  );
 }

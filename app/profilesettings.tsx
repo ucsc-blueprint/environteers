@@ -1,7 +1,7 @@
-import React from "react";
-import { useAuth } from "@/context/AuthContext";
-import ProfileSettings from "../components/ProfileSettings";
-import { supabase } from "../constants/supabase";
+import React from 'react';
+import { useAuth } from '@/context/AuthContext';
+import ProfileSettings from '../components/ProfileSettings';
+import { supabase } from '../constants/supabase';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
@@ -13,9 +13,10 @@ export default function Settings() {
     lastName: string,
     email: string,
     currentPassword: string,
-    password: string
+    password: string,
+    profilePicture: string | null,
   ): Promise<string | null> => {
-    if (!user) return "User not logged in";
+    if (!user) return 'User not logged in';
 
     const trimmedFirstName = firstName.trim();
     const trimmedLastName = lastName.trim();
@@ -23,14 +24,13 @@ export default function Settings() {
 
     // Must fill out both current and new password, not just one
     if ((currentPassword && !password) || (password && !currentPassword)) {
-        return "Please fill in all password fields";
+      return 'Please fill in all password fields';
     }
 
     // If user wants to change password, verify current password first
     if (password) {
-
       if (!currentPassword) {
-        return "Please enter your current password";
+        return 'Please enter your current password';
       }
 
       const { error: loginError } = await supabase.auth.signInWithPassword({
@@ -39,27 +39,24 @@ export default function Settings() {
       });
 
       if (loginError) {
-        return "Current password is incorrect";
+        return 'Current password is incorrect';
       }
     }
 
     // Update name
-    if (trimmedFirstName !== "" || trimmedLastName !== "") {
+    if (trimmedFirstName !== '' || trimmedLastName !== '') {
       const updates = {};
 
-      if (trimmedFirstName !== "" && trimmedFirstName !== profile?.first_name) {
+      if (trimmedFirstName !== '' && trimmedFirstName !== profile?.first_name) {
         updates.first_name = trimmedFirstName;
       }
 
-      if (trimmedLastName !== "" && trimmedLastName !== profile?.last_name) {
+      if (trimmedLastName !== '' && trimmedLastName !== profile?.last_name) {
         updates.last_name = trimmedLastName;
       }
 
       if (Object.keys(updates).length > 0) {
-        const { error } = await supabase
-          .from("users")
-          .update(updates)
-          .eq("user_id", user.id);
+        const { error } = await supabase.from('users').update(updates).eq('user_id', user.id);
 
         if (error) {
           Toast.show({
@@ -71,9 +68,22 @@ export default function Settings() {
       }
     }
 
+    // Update profile picture
+    if (profilePicture !== (profile?.profile_picture ?? null)) {
+      const { error } = await supabase
+        .from('users')
+        .update({ profile_picture: profilePicture || null })
+        .eq('user_id', user.id);
+
+      if (error) {
+        Toast.show({ type: 'error', text1: 'Failed to update profile picture' });
+        return null;
+      }
+    }
+
     // Update email
     const trimmedEmail = email.trim();
-    if (trimmedEmail !== "" && trimmedEmail !== user?.email) {
+    if (trimmedEmail !== '' && trimmedEmail !== user?.email) {
       const { error } = await supabase.auth.updateUser({
         email: trimmedEmail,
       });
@@ -126,9 +136,10 @@ export default function Settings() {
     <SafeAreaView style={{ flex: 1, backgroundColor: '#EAF2F6' }}>
       <ProfileSettings
         onSubmit={handleProfileUpdate}
-        initialFirstName={profile?.first_name ?? ""}
-        initialLastName={profile?.last_name ?? ""}
-        initialEmail={user?.email ?? ""}
+        initialFirstName={profile?.first_name ?? ''}
+        initialLastName={profile?.last_name ?? ''}
+        initialEmail={user?.email ?? ''}
+        initialProfilePicture={profile?.profile_picture ?? null}
       />
     </SafeAreaView>
   );

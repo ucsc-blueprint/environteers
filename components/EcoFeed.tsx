@@ -1,16 +1,11 @@
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from '@/context/AuthContext';
 import { View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
-import React, { useState } from "react";
-import { 
-  mdiMenu,
-  mdiBell,
-} from '@mdi/js';
-import { CardStyles } from "@/app/stylesheets/CardStyles";
-import { InPersonCard } from "@/components/InPersonCard";
-import { OnlineCard } from "@/components/OnlineCard";
-import { EventCard } from "@/components/EventCard";
-import { CardProps } from "@/app/(tabs)/volunteer";
-import { renderIcon } from "@/app/utils/cards";
+import React, { useState } from 'react';
+import { CardStyles } from '@/utils/CardStyles';
+import { InPersonCard } from '@/components/InPersonCard';
+import { OnlineCard } from '@/components/OnlineCard';
+import { EventCard } from '@/components/EventCard';
+import { CardProps } from '@/app/(tabs)/volunteer';
 import { SlidersHorizontal } from 'lucide-react-native';
 import { EcoFeedFilterDropdown } from '@/components/EcoFeedFilterDropdown';
 
@@ -22,54 +17,59 @@ type HeaderProps = {
   setFilterTypes(types: string[]): void;
   maxDistance: number | null;
   setMaxDistance(distance: number | null): void;
+  hideTitle?: boolean;
 };
 
 type ExpandableProps = {
-  isSelected?: boolean,
-  setSelectedId?: React.Dispatch<React.SetStateAction<string | null>>; 
+  isSelected?: boolean;
+  showFeedback?: boolean;
+  setSelectedId?: React.Dispatch<React.SetStateAction<string | null>>;
   highlight?: boolean;
   onDelete?: () => void;
-  onHide? : () => void;
+  onHide?: () => void;
+  onPress?: () => void;
 };
 
-export const Header = ({ 
+export const Header = ({
   resultsCount,
   search,
   setSearch,
   filterTypes,
   setFilterTypes,
   maxDistance,
-  setMaxDistance
+  setMaxDistance,
+  hideTitle = false,
 }: HeaderProps) => {
   const { profile } = useAuth();
   const [showFilters, setShowFilters] = useState(false);
 
   return (
-    <View style={CardStyles.feedHeader}>
-      {/* Navbar (Top)*/}
-      <View style={CardStyles.formatBetween}>
-        {renderIcon(24, mdiMenu, 'black')}
-        {renderIcon(24, mdiBell, 'black')}
-      </View>
-      <Text style={CardStyles.userText}>Ready to take action 
-        <Text style={ CardStyles.userName}> {profile?.first_name} {profile?.last_name}?</Text>
-      </Text>
+    <View style={[CardStyles.feedHeader, hideTitle && styles.headerNoTitle]}>
+      {!hideTitle && (
+        <Text style={CardStyles.userText}>
+          Ready to take action
+          <Text style={CardStyles.userName}>
+            {' '}
+            {profile?.first_name} {profile?.last_name}?
+          </Text>
+        </Text>
+      )}
       {/* Searchbar */}
       <View>
-        <View style={styles.searchRow}>
+        <View style={[styles.searchRow, hideTitle && styles.searchRowAdmin]}>
           <TextInput
-            placeholder="Search..."
-            placeholderTextColor="#868E8B"
+            placeholder='Search...'
+            placeholderTextColor='#868E8B'
             value={search}
             onChangeText={setSearch}
-            style={styles.searchInput}
+            style={[styles.searchInput, hideTitle && styles.searchInputAdmin]}
           />
 
           <Pressable
-            onPress={() => setShowFilters(prev => !prev)}
-            style={styles.filterButton}
+            onPress={() => setShowFilters((prev) => !prev)}
+            style={[styles.filterButton, hideTitle && styles.filterButtonAdmin]}
           >
-            <SlidersHorizontal size={18} color="black" />
+            <SlidersHorizontal size={18} color='black' />
           </Pressable>
         </View>
 
@@ -77,9 +77,9 @@ export const Header = ({
           <View style={{ marginTop: 16 }}>
             <EcoFeedFilterDropdown
               typeOptions={[
-                { label: "In-Person Eco Actions", value: "in_person" },
-                { label: "Online Eco Actions", value: "online" },
-                { label: "Events", value: "event" },
+                { label: 'In-Person Eco Actions', value: 'in_person' },
+                { label: 'Online Eco Actions', value: 'online' },
+                { label: 'Events', value: 'event' },
               ]}
               selectedTypes={filterTypes}
               selectedDistance={maxDistance}
@@ -93,7 +93,7 @@ export const Header = ({
         )}
       </View>
     </View>
-    );
+  );
 };
 
 export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
@@ -105,55 +105,62 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
   const toggleExpanded = () => {
     if (props.setSelectedId) {
       const key = `${card.cardInfo.id}-${card.cardType}`;
-      props.setSelectedId(prev => (prev === key ? null : key));
+      props.setSelectedId((prev) => (prev === key ? null : key));
+      props.onPress?.();
     }
-   };
+  };
 
   if (!card) return null;
 
   switch (card.cardType) {
-    case "in_person":
+    case 'in_person':
       return (
-        <InPersonCard 
-          {...card} 
+        <InPersonCard
+          {...card}
           highlight={props.highlight}
+          showFeedback={props.showFeedback === true}
           onDelete={props.onDelete}
           onHide={props.onHide}
-          liked={card.liked} 
-          signed_up={card.signed_up} 
-          completed={card.completed} 
+          liked={card.liked}
+          signed_up={card.signed_up}
+          completed={card.completed}
           clicked={card.clicked}
           feedbackVisible={feedbackVisible}
           setFeedbackVisible={setFeedbackVisible}
           {...(props.setSelectedId ? { expanded, onToggle: toggleExpanded } : {})}
+          statCount={card.statCount}
         />
       );
-    case "online":
+    case 'online':
       return (
-        <OnlineCard 
-          {...card} 
+        <OnlineCard
+          {...card}
           highlight={props.highlight}
+          showFeedback={props.showFeedback === true}
           onDelete={props.onDelete}
           onHide={props.onHide}
-          liked={card.liked} 
-          completed={card.completed} 
+          liked={card.liked}
+          completed={card.completed}
           clicked={card.clicked}
+          statCount={card.statCount}
         />
       );
-    case "event":
+    case 'event':
       return (
-        <EventCard 
-          {...card} 
+        <EventCard
+          {...card}
           highlight={props.highlight}
+          showFeedback={props.showFeedback === true}
           onDelete={props.onDelete}
           onHide={props.onHide}
-          liked={card.liked} 
-          signed_up={card.signed_up} 
-          completed={card.completed} 
+          liked={card.liked}
+          signed_up={card.signed_up}
+          completed={card.completed}
           clicked={card.clicked}
           feedbackVisible={feedbackVisible}
           setFeedbackVisible={setFeedbackVisible}
           {...(props.setSelectedId ? { expanded, onToggle: toggleExpanded } : {})}
+          statCount={card.statCount}
         />
       );
     default:
@@ -162,16 +169,25 @@ export const EcoFeed = (props: { card: CardProps } & ExpandableProps) => {
 };
 
 const styles = StyleSheet.create({
+  headerNoTitle: {
+    backgroundColor: 'transparent',
+  },
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: "#EAF2F6",
+    backgroundColor: '#EAF2F6',
     borderRadius: 8,
+  },
+  searchRowAdmin: {
+    backgroundColor: '#fff',
   },
   searchInput: {
     flex: 1,
     padding: 12,
     borderRadius: 8,
+  },
+  searchInputAdmin: {
+    backgroundColor: '#fff',
   },
   filterButton: {
     width: 35,
@@ -182,4 +198,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 8,
   },
-})
+  filterButtonAdmin: {
+    backgroundColor: '#EAF2F6',
+  },
+});

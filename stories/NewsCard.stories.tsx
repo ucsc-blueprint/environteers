@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-native-web-vite';
 import { View } from 'react-native';
 import React from 'react';
-import {NewsCard} from '@/components/NewsCard';
+import { NewsCard } from '@/components/NewsCard';
 
 const meta = {
   title: 'UI/NewsCard',
@@ -24,9 +24,11 @@ export const Default: Story = {
     title: 'Title',
     date: '01/12/2026',
     editionNumber: 5,
-    previewImage: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bmV3c3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60',
+    previewImage:
+      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bmV3c3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60',
     adminView: false,
-    onPress: () => { console.log('NewsCard pressed'); },
+    onPress: () => {
+      console.log('NewsCard pressed');
     },
-
+  },
 };
