@@ -11,10 +11,10 @@ module.exports = ({ config }) => ({
     newArchEnabled: true,
     ios: {
       supportsTablet: true,
-      bundleIdentifier: 'org.environteers.app',
+      bundleIdentifier: 'org.environteers.Environteers',
     },
     android: {
-      package: 'org.environteers.app',
+      package: 'org.environteers.environteers',
       config: {
         googleMaps: {
           apiKey: process.env.GOOGLE_MAPS_API_KEY,
